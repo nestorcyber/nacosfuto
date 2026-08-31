@@ -1,41 +1,41 @@
-import React from 'react';
-import { FaUserGraduate, FaLaptopCode, FaChartPie, FaArrowRight } from 'react-icons/fa';
+﻿import React from 'react';
+import { FaGraduationCap, FaLaptopCode, FaChartPie, FaArrowRight } from 'react-icons/fa';
 import ScrollToTopLink from '../ScrollToTopLink';
 
 const Cards = () => {
   const quickAccessLinks = [
     {
-      icon: <FaUserGraduate />,
-      title: "Prospective Students",
-      description: "Discover our curriculum, admission requirements, and what it takes to join the next generation of tech leaders at FUTO.",
+      icon: <FaGraduationCap />,
+      title: "Admissions & Programs",
+      description: "Discover our curriculum, degree options, admission requirements, and what it takes to join the next generation of tech leaders.",
       link: "/admissions",
-      gradient: "from-green-500 to-emerald-400"
+      gradient: "from-[#138601] to-[#3db92c]"
     },
     {
       icon: <FaLaptopCode />,
-      title: "Portal & Materials",
-      description: "Your centralized hub. Access lecture notes, check results, and manage your academic records seamlessly in one secure place.",
-      link: "/dashboard",
-      gradient: "from-blue-500 to-indigo-400"
+      title: "Learning Resources",
+      description: "Access curated lecture notes, textbook materials, video lectures, and recommended study resources in one convenient hub.",
+      link: "/resources",
+      gradient: "from-[#0f6c01] to-[#138601]"
     },
     {
       icon: <FaChartPie />,
-      title: "Academic Analytics",
-      description: "Calculate your CGPA effortlessly and track your academic progress over time with our powerful visual analytics tools.",
-      link: "/academic-analytics",
-      gradient: "from-purple-500 to-pink-400"
+      title: "Department Overview",
+      description: "Learn about our rich 40+ year history, esteemed faculty members, administration, research facilities, and student community.",
+      link: "/about",
+      gradient: "from-[#138601] to-emerald-500"
     }
   ];
 
   return (
-    <section className="py-24 bg-white dark:bg-gray-800 transition-colors duration-300">
+    <section className="py-24 bg-[#f4faf3] dark:bg-[#041801] transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col items-center mb-16 text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4">
-            Quick <span className="text-green-500">Access</span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-4">
+            Quick <span className="text-[#138601] dark:text-[#4bd043]">Access</span>
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 max-w-2xl text-lg">
-            Essential tools and resources tailored for our community.
+          <p className="text-[#083002]/70 dark:text-green-100/70 max-w-2xl text-lg">
+            Essential tools, resources, and links tailored for our community.
           </p>
         </div>
 
@@ -44,31 +44,28 @@ const Cards = () => {
             <ScrollToTopLink
               key={index}
               to={item.link}
-              className="group relative bg-gray-50 dark:bg-gray-900 rounded-3xl p-8 border border-gray-100 dark:border-gray-800 hover:border-transparent transition-all duration-500 flex flex-col h-full overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2"
+              className="group relative bg-white dark:bg-[#083002] rounded-3xl p-8 border border-[#138601]/20 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#4bd043] transition-all duration-500 flex flex-col h-full overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2"
             >
-              {/* Gradient Hover Background */}
-              <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 bg-gradient-to-br ${item.gradient}`} />
-              
               {/* Icon Container */}
               <div className="mb-8 relative">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white text-2xl shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white text-2xl shadow-lg shadow-[#138601]/30 transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
                   {item.icon}
                 </div>
               </div>
 
               {/* Content */}
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-green-500 group-hover:to-emerald-500 transition-all duration-300">
+              <h3 className="text-2xl font-bold text-[#083002] dark:text-white mb-4 group-hover:text-[#138601] dark:group-hover:text-[#4bd043] transition-colors duration-300">
                 {item.title}
               </h3>
               
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-8 flex-grow">
+              <p className="text-[#083002]/75 dark:text-green-100/75 leading-relaxed mb-8 flex-grow">
                 {item.description}
               </p>
 
               {/* Action Indicator */}
-              <div className="mt-auto flex items-center text-sm font-bold uppercase tracking-wider text-gray-400 group-hover:text-green-500 transition-colors duration-300">
+              <div className="mt-auto flex items-center text-sm font-bold uppercase tracking-wider text-[#138601] dark:text-[#4bd043] transition-colors duration-300">
                 <span>Explore</span>
-                <FaArrowRight className="ml-2 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500" />
+                <FaArrowRight className="ml-2 transform group-hover:translate-x-1.5 transition-transform duration-300" />
               </div>
             </ScrollToTopLink>
           ))}

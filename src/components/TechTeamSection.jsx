@@ -1,42 +1,39 @@
-import React from 'react';
-import { useTheme } from '../context/ThemeContext';
+﻿import React from 'react';
 import { FiArrowRight } from 'react-icons/fi';
-import devNestor from '../assets/nacos8.jpg';
-import devKelechi from '../assets/nacos9.jpg';
-import devChukwudumebi from '../assets/nacos10.jpg';
-import devDaniel from '../assets/nacos11.jpg';
+import devVictor from '../assets/executives/ict_asst_victory.jpg';
+import devIfeanyi from '../assets/executives/ict_dir_ifeanyi.jpg';
+import devDaniel from '../assets/executives/daniel_chukwuka.jpg';
+import devDavid from '../assets/executives/state_ict_okikere.jpg';
 
 const TechTeamSection = () => {
-    const { theme } = useTheme();
-
     const team = [
         {
             name: "Nestor Anyanwu",
-            role: "Product Manager",
-            association: "Lead PM, NACOS FUTO",
-            image: devNestor,
-            portfolio: "https://www.linkedin.com/in/nestoranyanwu/",
-            track: "Product & Architecture"
+            role: "Fullstack / Lead Dev",
+            association: "Director of ICT, NACOS FUTO",
+            image: devIfeanyi,
+            portfolio: "https://www.linkedin.com/in/anyanwu-ifeanyichukwu-63309a250/",
+            track: "Full-Stack & Systems"
+        },
+        {
+            name: "Victory Otuonye",
+            role: "Frontend Engineer",
+            association: "Asst. Director of ICT, NACOS FUTO",
+            image: devVictor,
+            portfolio: "https://www.linkedin.com/in/victory-otuonye-a99166324/",
+            track: "Frontend & Architecture"
         },
         {
             name: "Kelechukwu Okere",
-            role: "QA Tester",
-            association: "QA Lead, NACOS FUTO",
-            image: devKelechi,
-            portfolio: "https://www.linkedin.com/in/kelechukwu-okere-7173b52a7/",
-            track: "Quality & System Testing"
+            role: "Lead Software Architect",
+            association: "State Director of ICT, NACOS Imo",
+            image: devDavid,
+            portfolio: "https://www.linkedin.com/in/kelechi-okere-854722245/",
+            track: "Backend & Cloud"
         },
         {
-            name: "Chukwudumebi Oruche",
-            role: "Developer",
-            association: "Full-Stack Dev, NACOS FUTO",
-            image: devChukwudumebi,
-            portfolio: "https://www.linkedin.com/in/dumebioruche/",
-            track: "Systems & API Logic"
-        },
-        {
-            name: "Daniel Maduka",
-            role: "Developer",
+            name: "Daniel Chukwuka",
+            role: "Frontend Engineer",
             association: "Full-Stack Dev, NACOS FUTO",
             image: devDaniel,
             portfolio: "https://www.linkedin.com/in/daniel-maduka-a312b7345/",
@@ -45,31 +42,33 @@ const TechTeamSection = () => {
     ];
 
     return (
-        <section className="py-20 border-t bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-6 text-center">
-                <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
-                    Developed by the ICT Team
+        <section className="py-24 bg-white dark:bg-[#041801] border-t border-[#138601]/20 dark:border-[#138601]/30 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-extrabold uppercase tracking-widest mb-4 shadow-sm">
+                    NACOS TECH CREW
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#083002] dark:text-white mb-4 tracking-tight leading-tight">
+                    Developed by the <span className="bg-gradient-to-r from-[#138601] to-[#3db92c] bg-clip-text text-transparent">ICT Team</span>
                 </h2>
-                <p className="text-base md:text-lg opacity-75 max-w-2xl mx-auto mb-16 leading-relaxed">
-                    NACOS Synergy Executives 2025/2026.
+                <p className="text-base sm:text-lg text-[#083002]/70 dark:text-green-100/70 max-w-2xl mx-auto mb-16 leading-relaxed">
+                    Built with passion by the NACOS Synergy ICT Developers 2025/2026.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-items-center">
                     {team.map((member, index) => (
                         <div
                             key={index}
-                            className={`w-full max-w-[280px] rounded-3xl overflow-hidden border shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative flex flex-col justify-between ${theme === 'dark' ? 'bg-gray-900 border-gray-800 text-white' : 'bg-white border-gray-200/80 text-gray-900'
-                                }`}
+                            className="w-full max-w-[280px] rounded-3xl overflow-hidden border border-[#138601]/20 dark:border-[#138601]/30 bg-[#f8fdf7] dark:bg-[#083002] shadow-md hover:shadow-2xl hover:border-[#138601] dark:hover:border-[#4bd043] hover:-translate-y-2 transition-all duration-500 relative flex flex-col justify-between"
                         >
-                            {/* Top abstract mesh gradient background */}
-                            <div className="h-20 w-full bg-gradient-to-r from-green-500/20 via-teal-500/30 to-blue-500/20 relative">
+                            {/* Top abstract gradient mesh */}
+                            <div className="h-20 w-full bg-gradient-to-r from-[#138601]/30 via-[#3db92c]/40 to-[#083002]/30 relative">
                                 <div className="absolute inset-0 backdrop-blur-sm" />
                             </div>
 
                             {/* Overlapping Profile Photo */}
                             <div className="-mt-12 flex justify-center z-10">
-                                <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-green-500 to-teal-400 shadow-xl">
-                                    <div className="w-full h-full rounded-full overflow-hidden border-2 border-white dark:border-gray-900 bg-gray-100 dark:bg-gray-800">
+                                <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#138601] to-[#4bd043] shadow-xl">
+                                    <div className="w-full h-full rounded-full overflow-hidden border-2 border-white dark:border-[#083002] bg-[#041801]">
                                         <img
                                             src={member.image}
                                             alt={member.name}
@@ -82,20 +81,19 @@ const TechTeamSection = () => {
                             {/* Info & Details */}
                             <div className="px-6 pt-4 pb-6 flex-grow flex flex-col justify-between text-center items-center">
                                 <div>
-                                    <h3 className="text-lg font-black tracking-tight mb-1">{member.name}</h3>
-                                    <p className="text-xs font-bold text-green-500 mb-3 uppercase tracking-wider">{member.role}</p>
+                                    <h3 className="text-lg font-black text-[#083002] dark:text-white tracking-tight mb-1">{member.name}</h3>
+                                    <p className="text-xs font-extrabold text-[#138601] dark:text-[#4bd043] mb-3 uppercase tracking-wider">{member.role}</p>
 
-                                    <span className="inline-block text-[10px] font-extrabold text-gray-500 dark:text-gray-400 mb-6 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700/50">
+                                    <span className="inline-block text-[10px] font-bold text-[#083002]/80 dark:text-green-200/80 mb-6 bg-white dark:bg-[#041801] px-3 py-1.5 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30">
                                         {member.association}
                                     </span>
                                 </div>
 
-                                {/* Portfolio CTA Button */}
                                 <a
                                     href={member.portfolio}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-full flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-300 shadow hover:shadow-green-500/20 cursor-pointer"
+                                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#138601] hover:bg-[#0f6c01] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md shadow-[#138601]/30 cursor-pointer"
                                 >
                                     View Portfolio <FiArrowRight />
                                 </a>

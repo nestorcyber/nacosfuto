@@ -1,10 +1,5 @@
 ﻿import React from "react";
-import { 
-  FiBookOpen, 
-  FiAward, 
-  FiCode, 
-  FiCheckCircle 
-} from "react-icons/fi";
+import { FiCheckCircle } from "react-icons/fi";
 import { FaGraduationCap, FaLaptopCode, FaTrophy, FaChalkboardTeacher } from "react-icons/fa";
 import studentGroupImg from "../../assets/gallery_student_group.jpg";
 import ScrollToTopLink from "../ScrollToTopLink";
@@ -44,15 +39,15 @@ const offerings = {
   ]
 };
 
-const FeatureCard = ({ icon, title, description, badge, align = "left" }) => {
+const FeatureCard = ({ icon, title, description, badge }) => {
   return (
-    <div className="group relative p-6 sm:p-7 rounded-2xl bg-white dark:bg-[#083002] border border-[#138601]/15 dark:border-[#138601]/30 shadow-sm hover:shadow-xl hover:border-[#138601]/50 transition-all duration-300 flex flex-col justify-between">
+    <div className="group relative p-6 sm:p-7 rounded-3xl bg-[#f8fdf7] dark:bg-[#083002] border border-[#138601]/20 dark:border-[#138601]/30 shadow-md hover:shadow-2xl hover:border-[#138601] dark:hover:border-[#4bd043] transition-all duration-300 flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <div className="w-12 h-12 rounded-xl bg-[#138601] text-white flex items-center justify-center shadow-md shadow-[#138601]/30 group-hover:scale-110 transition-transform duration-300">
+          <div className="w-12 h-12 rounded-2xl bg-[#138601] text-white flex items-center justify-center shadow-md shadow-[#138601]/30 group-hover:scale-110 transition-transform duration-300">
             {icon}
           </div>
-          <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#f2fbf1] dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border border-[#138601]/20">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-white dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border border-[#138601]/25 shadow-sm">
             {badge}
           </span>
         </div>
@@ -66,8 +61,8 @@ const FeatureCard = ({ icon, title, description, badge, align = "left" }) => {
         </p>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-[#138601]/10 dark:border-white/10 flex items-center text-xs font-semibold text-[#138601] dark:text-[#4bd043]">
-        <FiCheckCircle className="mr-1.5" />
+      <div className="mt-4 pt-3 border-t border-[#138601]/10 dark:border-white/10 flex items-center text-xs font-bold text-[#138601] dark:text-[#4bd043]">
+        <FiCheckCircle className="mr-1.5 text-sm" />
         <span>Active Program</span>
       </div>
     </div>
@@ -84,7 +79,7 @@ const WhatWeOffer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-extrabold uppercase tracking-widest mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-extrabold uppercase tracking-widest mb-4 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-[#138601] animate-pulse" />
             WHAT WE OFFER
           </div>
@@ -98,8 +93,8 @@ const WhatWeOffer = () => {
 
           {/* Accent decorative bar */}
           <div className="flex items-center justify-center gap-2 mb-6">
-            <div className="w-12 h-1 rounded-full bg-[#138601]" />
-            <div className="w-3 h-1 rounded-full bg-[#4bd043]" />
+            <div className="w-12 h-1.5 rounded-full bg-[#138601]" />
+            <div className="w-3 h-1.5 rounded-full bg-[#4bd043]" />
           </div>
 
           <p className="text-base sm:text-lg text-[#083002]/70 dark:text-green-100/70 leading-relaxed">
@@ -112,7 +107,7 @@ const WhatWeOffer = () => {
           {/* Left Column - 2 Cards (4 cols) */}
           <div className="lg:col-span-4 flex flex-col gap-6">
             {offerings.left.map((item, idx) => (
-              <FeatureCard key={idx} {...item} align="left" />
+              <FeatureCard key={idx} {...item} />
             ))}
           </div>
 
@@ -124,10 +119,10 @@ const WhatWeOffer = () => {
                 alt="FUTO NACOS Computing Students"
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#083002]/90 via-[#083002]/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#083002]/95 via-[#083002]/30 to-transparent" />
 
               {/* Floating Bottom Card */}
-              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/90 dark:bg-[#083002]/90 backdrop-blur-md border border-[#138601]/30 text-center shadow-lg">
+              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/95 dark:bg-[#083002]/95 backdrop-blur-md border border-[#138601]/30 text-center shadow-xl">
                 <p className="text-xs font-bold uppercase tracking-wider text-[#138601] dark:text-[#4bd043] mb-1">
                   Community & Innovation
                 </p>
@@ -137,7 +132,7 @@ const WhatWeOffer = () => {
                 <div className="mt-2.5">
                   <ScrollToTopLink
                     to="/about"
-                    className="inline-block text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] px-4 py-1.5 rounded-lg transition-colors shadow-sm"
+                    className="inline-block text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] px-4 py-1.5 rounded-xl transition-colors shadow-md shadow-[#138601]/30"
                   >
                     Explore Community &rarr;
                   </ScrollToTopLink>
@@ -149,7 +144,7 @@ const WhatWeOffer = () => {
           {/* Right Column - 2 Cards (4 cols) */}
           <div className="lg:col-span-4 flex flex-col gap-6">
             {offerings.right.map((item, idx) => (
-              <FeatureCard key={idx} {...item} align="right" />
+              <FeatureCard key={idx} {...item} />
             ))}
           </div>
         </div>

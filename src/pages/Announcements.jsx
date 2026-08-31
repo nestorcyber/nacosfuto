@@ -39,40 +39,40 @@ export default function Announcements() {
   const displayAnnouncements = announcements && announcements.length > 0 ? announcements : sampleAnnouncements;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-[#041801] text-[#083002] dark:text-white transition-colors duration-300">
       <Navbar />
 
       <main className="flex-grow max-w-5xl mx-auto p-6 w-full py-12">
-        <div className="flex items-center gap-4 mb-8 pb-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
-            <FiBell size={24} className="text-green-600 dark:text-green-400" />
+        <div className="flex items-center gap-4 mb-8 pb-4 border-b border-[#138601]/20 dark:border-[#138601]/30">
+          <div className="w-12 h-12 bg-[#138601]/10 dark:bg-[#138601]/25 rounded-2xl flex items-center justify-center border border-[#138601]/20">
+            <FiBell size={24} className="text-[#138601] dark:text-[#4bd043]" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Announcements & Notices</h1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+            <h1 className="text-3xl font-black text-[#083002] dark:text-white">Announcements & Notices</h1>
+            <p className="text-[#083002]/70 dark:text-green-100/70 text-sm mt-1">
               Official bulletins and department updates
             </p>
           </div>
         </div>
 
         {loading ? (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-12 text-center">
-            <p className="text-gray-500 dark:text-gray-400">Loading announcements...</p>
+          <div className="bg-[#f8fdf7] dark:bg-[#083002] rounded-3xl p-12 text-center border border-[#138601]/20 dark:border-[#138601]/30">
+            <p className="text-[#083002]/70 dark:text-green-100/70 font-semibold">Loading announcements...</p>
           </div>
         ) : displayAnnouncements.length === 0 ? (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-12 text-center">
-            <p className="text-gray-600 dark:text-gray-300">No announcements available at this time.</p>
+          <div className="bg-[#f8fdf7] dark:bg-[#083002] rounded-3xl p-12 text-center border border-[#138601]/20 dark:border-[#138601]/30">
+            <p className="text-[#083002]/70 dark:text-green-100/70 font-semibold">No announcements available at this time.</p>
           </div>
         ) : (
           <div className="grid gap-6">
             {displayAnnouncements.map((announcement) => (
               <div
                 key={announcement.id}
-                className="border border-gray-200 dark:border-gray-700 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all bg-white dark:bg-gray-800"
+                className="border border-[#138601]/20 dark:border-[#138601]/30 p-7 rounded-3xl shadow-md hover:shadow-2xl transition-all bg-[#f8fdf7] dark:bg-[#083002] hover:border-[#138601] dark:hover:border-[#4bd043]"
               >
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{announcement.title}</h3>
-                  <span className="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full whitespace-nowrap">
+                  <h3 className="text-xl font-bold text-[#083002] dark:text-white">{announcement.title}</h3>
+                  <span className="text-xs font-extrabold text-[#138601] dark:text-[#4bd043] bg-white dark:bg-[#041801] px-3 py-1 rounded-full border border-[#138601]/20 whitespace-nowrap shadow-sm">
                     {new Date(announcement.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'short',
@@ -80,10 +80,10 @@ export default function Announcements() {
                     })}
                   </span>
                 </div>
-                <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed text-base">
+                <p className="mt-3 text-[#083002]/75 dark:text-green-100/75 leading-relaxed text-base">
                   {announcement.content}
                 </p>
-                <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                <div className="mt-5 pt-4 border-t border-[#138601]/15 dark:border-white/10 flex items-center justify-between text-xs text-[#083002]/60 dark:text-green-200/60 font-semibold">
                   <span>Posted by: {announcement.author || (announcement.first_name ? `${announcement.first_name} ${announcement.last_name}` : 'Admin')}</span>
                 </div>
               </div>

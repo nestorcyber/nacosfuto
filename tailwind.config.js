@@ -8,6 +8,11 @@
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Avenir Next"', '"Avenir"', '"Nunito Sans"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        heading: ['"Circular Std"', '"Circular"', '"Outfit"', '"Plus Jakarta Sans"', '-apple-system', 'sans-serif'],
+        body: ['"Avenir Next"', '"Avenir"', '"Nunito Sans"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+      },
       colors: {
         nacos: {
           green: '#138601',

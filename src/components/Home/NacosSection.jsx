@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaUserTie } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight, FiArrowRight } from 'react-icons/fi';
 import ScrollToTopLink from '../ScrollToTopLink';
@@ -226,7 +226,7 @@ const NacosSection = () => {
   }
 
   return (
-    <section className="py-24 bg-green-900 dark:bg-green-955 text-white overflow-hidden transition-colors duration-300">
+    <section className="py-24 bg-[#083002] dark:bg-[#021200] border-t border-b border-[#138601]/20 text-white overflow-hidden transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6">
         {/* Centered Introduction Header (Prevents blocking or overlapping with carousel) */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -277,7 +277,7 @@ const NacosSection = () => {
                     filter: `blur(${blurVal}px)`,
                     zIndex: isActive ? 30 : 20,
                   }}
-                  className="absolute left-1/2 top-1/2 h-[260px] sm:h-[340px] md:h-[390px] rounded-[2rem] overflow-hidden border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 shadow-2xl transition-shadow duration-[600ms] group pointer-events-auto"
+                  className="absolute left-1/2 top-1/2 h-[260px] sm:h-[340px] md:h-[390px] rounded-[2rem] overflow-hidden border border-gray-200 dark:border-gray-800 bg-[#083002] dark:bg-[#083002] border-2 border-[#138601]/40 shadow-2xl transition-shadow duration-[600ms] group pointer-events-auto"
                 >
                   {/* Background image */}
                   <div className="absolute inset-0 w-full h-full pointer-events-none">
