@@ -5,6 +5,7 @@ import HeroCarousel from "../components/Home/HeroCarousel";
 import headerImg from "../assets/header.jpg";
 import ScrollToTopLink from "../components/ScrollToTopLink";
 import DepartmentStats from "../components/Home/DepartmentStats";
+import WhatWeOffer from "../components/Home/WhatWeOffer";
 import Cards from "../components/Home/Cards";
 import Analytics from "../components/Home/Analytics";
 import NewsSlider from "../components/Home/NewSlider";
@@ -86,7 +87,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-[#041801] text-[#083002] dark:text-white transition-colors duration-200">
       <Navbar />
       <main className="flex-grow">
         {/* Desktop hero image */}
@@ -99,14 +100,14 @@ const Home = () => {
           }}
         >
           {/* High-tech glassmorphic gradient overlay mesh */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-gray-950 via-gray-900/70 to-green-950/40" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(22,163,74,0.15),transparent_45%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_40%)]" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#041801] via-[#083002]/80 to-[#138601]/40" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(19,134,1,0.25),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(75,208,67,0.18),transparent_40%)]" />
 
           <div className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg tracking-tight leading-tight">
               Empowering the Next Generation of <br />
-              <span className="text-green-400">Computer Scientists</span>
+              <span className="text-[#4bd043]">Computer Scientists</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-100 mb-8 max-w-2xl drop-shadow-md font-medium">
               Join FUTO's vibrant CS community. Innovate, learn, and lead the future of technology.
@@ -114,13 +115,13 @@ const Home = () => {
             <div className="flex gap-4">
               <ScrollToTopLink
                 to="/about"
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/30"
+                className="bg-[#138601] hover:bg-[#0f6c01] text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#138601]/40"
               >
                 Learn More
               </ScrollToTopLink>
               <ScrollToTopLink
                 to="/admissions"
-                className="bg-transparent border-2 border-white hover:bg-white hover:text-gray-900 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg"
+                className="bg-transparent border-2 border-white hover:bg-white hover:text-[#083002] text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg"
               >
                 Admissions
               </ScrollToTopLink>
@@ -133,58 +134,65 @@ const Home = () => {
           <HeroCarousel />
         </div>
 
-        {/* 1. Department at a Glance (Immediately after Hero) */}
+        {/* 1. Department at a Glance */}
         <div ref={addToRefs} className="opacity-0">
           <DepartmentStats />
         </div>
 
-        {/* 2. Why Choose Computer Science FUTO */}
+        {/* 2. What We Offer Section */}
+        <div ref={addToRefs} className="opacity-0">
+          <WhatWeOffer />
+        </div>
+
+        {/* 3. Why Choose Computer Science FUTO */}
         <div ref={addToRefs} className="opacity-0">
           <Cards />
         </div>
 
-        {/* 3. Upskill Section */}
+        {/* 4. Upskill Section */}
         <div ref={addToRefs} className="opacity-0">
           <UpskillSection />
         </div>
 
-        {/* 4. Upcoming Events */}
+        {/* 5. Upcoming Events */}
         <div ref={addToRefs} className="opacity-0">
           <UpcomingEvents />
         </div>
 
-        {/* 5. Educational Features & Analytics */}
+        {/* 6. Educational Features & Analytics */}
         <div ref={addToRefs} className="opacity-0">
           <Analytics />
         </div>
 
-        {/* 6. NACOS Section */}
+        {/* 7. NACOS Section */}
         <div ref={addToRefs} className="opacity-0">
           <NacosSection />
         </div>
 
-        {/* 7. Alumni Section */}
+        {/* 8. Alumni Section */}
         <div ref={addToRefs} className="opacity-0">
-          <section className="py-24 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+          <section className="py-24 bg-[#f2fbf1] dark:bg-[#083002] text-[#083002] dark:text-white transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 text-center">
-              <h2 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Our Alumni</h2>
-              <p className="mb-8 text-gray-600 dark:text-gray-400">Join a network of successful graduates making waves in the tech industry.</p>
-              <div className="rounded-xl overflow-hidden shadow-lg h-64 md:h-96 bg-gray-200 dark:bg-gray-700 relative border border-gray-200 dark:border-gray-800">
+              <h2 className="text-3xl font-bold mb-8 text-[#083002] dark:text-white">Our Alumni</h2>
+              <p className="mb-8 text-[#083002]/80 dark:text-green-100/80">Join a network of successful graduates making waves in the tech industry.</p>
+              <div className="rounded-2xl overflow-hidden shadow-lg h-64 md:h-96 bg-gray-200 dark:bg-gray-700 relative border border-[#138601]/20 dark:border-[#138601]/30">
                 <img src={alumniHomeImg} alt="FUTO CSC Alumni Group" className="w-full h-full object-cover object-center" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <ScrollToTopLink to="/about/alumni" className="bg-white text-gray-900 px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition">Meet Our Alumni</ScrollToTopLink>
+                  <ScrollToTopLink to="/about/alumni" className="bg-white text-[#083002] px-8 py-3 rounded-xl font-bold hover:bg-[#f2fbf1] transition shadow-lg">
+                    Meet Our Alumni
+                  </ScrollToTopLink>
                 </div>
               </div>
             </div>
           </section>
         </div>
 
-        {/* 8. Quick Help CTA */}
+        {/* 9. Quick Help CTA */}
         <div ref={addToRefs} className="opacity-0">
           <QuickHelpCTA />
         </div>
 
-        {/* 9. Tech Team Section */}
+        {/* 10. Tech Team Section */}
         <div ref={addToRefs} className="opacity-0">
           <TechTeamSection />
         </div>
