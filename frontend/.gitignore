@@ -1,0 +1,71 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+.pnpm-store/
+.yarn/
+bower_components/
+
+# Build directories
+dist/
+dist-ssr/
+build/
+.android/
+.ios/
+.web/
+.windows/
+.macos/
+.linux/
+.dart_tool/
+
+# Debug files
+*.local
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Editor files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Flutter/Dart specific
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+.fvm/
+.flutter/
+
+# Coverage
+coverage/
+*.lcov
+
+# System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
