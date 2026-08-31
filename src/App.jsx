@@ -61,8 +61,8 @@ function App() {
         theme="colored"
       />
       <GSAPWrapper>
-        <UnreadAnnouncementBanner />
         <BrowserRouter>
+          <UnreadAnnouncementBanner />
           <Routes>
             {/* Core Website Pages */}
             <Route path="/" element={<Home />} />
