@@ -1,7 +1,7 @@
 {
     "scripts":  {
                     "dev":  "npm --prefix frontend run dev",
-                    "build":  "npm --prefix frontend run build",
+                    "build":  "npm --prefix frontend install \u0026\u0026 npm --prefix frontend run build",
                     "preview":  "npm --prefix frontend run preview"
                 },
     "dependencies":  {
