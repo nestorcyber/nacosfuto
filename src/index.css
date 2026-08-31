@@ -1,12 +1,81 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme {
   --font-sans: "Plus Jakarta Sans", sans-serif;
   --font-serif: "Plus Jakarta Sans", sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+
+  /* Primary Brand Greens (#138601, #FFFFFF, #083002) */
+  --color-green-50: #f2fbf1;
+  --color-green-100: #dcf6da;
+  --color-green-200: #bbf0b7;
+  --color-green-300: #88e482;
+  --color-green-400: #4bd043;
+  --color-green-500: #1fb416;
+  --color-green-600: #138601;
+  --color-green-700: #0f6c01;
+  --color-green-800: #0d5602;
+  --color-green-900: #083002;
+  --color-green-950: #041b01;
+
+  --color-nacos-green: #138601;
+  --color-nacos-dark: #083002;
+  --color-nacos-black: #041901;
+  --color-nacos-light: #f2fbf1;
+  --color-nacos-white: #ffffff;
+
+  --color-primary: #138601;
+  --color-primary-dark: #083002;
+  --color-primary-light: #4bd043;
 }
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+
+/* Global Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #ffffff;
+  color: #083002;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="dark"] body,
+.dark body {
+  background-color: #041801;
+  color: #ffffff;
+}
+
+::selection {
+  background-color: #138601;
+  color: #ffffff;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f2fbf1;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track,
+.dark ::-webkit-scrollbar-track {
+  background: #083002;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #138601;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0f6c01;
+}
 
 /* Base Animation Styles */
 @keyframes fadeInUp {

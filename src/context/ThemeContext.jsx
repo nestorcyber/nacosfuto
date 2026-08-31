@@ -1,12 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+﻿import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('system');
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
-    // Client-side only code
     const storedTheme = localStorage.getItem('theme');
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
@@ -18,12 +17,22 @@ export function ThemeProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    const isDark = theme === 'system' 
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches 
+      : theme === 'dark';
+    
+    const resolvedTheme = isDark ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', resolvedTheme);
+    
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
     if (theme === 'system') {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', systemDark ? 'dark' : 'light');
       localStorage.removeItem('theme');
     } else {
-      document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme', theme);
     }
   }, [theme]);
@@ -31,7 +40,6 @@ export function ThemeProvider({ children }) {
   const toggleTheme = () => {
     setTheme(prev => {
       if (prev === 'dark') return 'light';
-      if (prev === 'light') return 'dark';
       return 'dark';
     });
   };
