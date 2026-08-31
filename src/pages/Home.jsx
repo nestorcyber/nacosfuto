@@ -5,7 +5,6 @@ import HeroCarousel from "../components/Home/HeroCarousel";
 import headerImg from "../assets/header.jpg";
 import ScrollToTopLink from "../components/ScrollToTopLink";
 import DepartmentStats from "../components/Home/DepartmentStats";
-import WhatWeOffer from "../components/Home/WhatWeOffer";
 import Cards from "../components/Home/Cards";
 import Analytics from "../components/Home/Analytics";
 import NewsSlider from "../components/Home/NewSlider";
@@ -139,37 +138,32 @@ const Home = () => {
           <DepartmentStats />
         </div>
 
-        {/* 2. What We Offer Section */}
-        <div ref={addToRefs} className="opacity-0">
-          <WhatWeOffer />
-        </div>
-
-        {/* 3. Why Choose Computer Science FUTO */}
+        {/* 2. Why Choose Computer Science FUTO */}
         <div ref={addToRefs} className="opacity-0">
           <Cards />
         </div>
 
-        {/* 4. Upskill Section */}
+        {/* 3. Upskill Section */}
         <div ref={addToRefs} className="opacity-0">
           <UpskillSection />
         </div>
 
-        {/* 5. Upcoming Events */}
+        {/* 4. Upcoming Events */}
         <div ref={addToRefs} className="opacity-0">
           <UpcomingEvents />
         </div>
 
-        {/* 6. Educational Features & Analytics */}
+        {/* 5. Educational Features & Analytics */}
         <div ref={addToRefs} className="opacity-0">
           <Analytics />
         </div>
 
-        {/* 7. NACOS Section */}
+        {/* 6. NACOS Section */}
         <div ref={addToRefs} className="opacity-0">
           <NacosSection />
         </div>
 
-        {/* 8. Alumni Section */}
+        {/* 7. Alumni Section */}
         <div ref={addToRefs} className="opacity-0">
           <section className="py-24 bg-[#f2fbf1] dark:bg-[#083002] text-[#083002] dark:text-white transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 text-center">
@@ -187,12 +181,12 @@ const Home = () => {
           </section>
         </div>
 
-        {/* 9. Quick Help CTA */}
+        {/* 8. Quick Help CTA */}
         <div ref={addToRefs} className="opacity-0">
           <QuickHelpCTA />
         </div>
 
-        {/* 10. Tech Team Section */}
+        {/* 9. Tech Team Section */}
         <div ref={addToRefs} className="opacity-0">
           <TechTeamSection />
         </div>

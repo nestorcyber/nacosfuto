@@ -1,10 +1,9 @@
 ﻿@import "tailwindcss";
 
 @theme {
-  /* Typography Definitions */
-  --font-sans: "Avenir Next", "Avenir", "Nunito Sans", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --font-heading: "Circular Std", "Circular", "Outfit", "Plus Jakarta Sans", -apple-system, sans-serif;
-  --font-body: "Avenir Next", "Avenir", "Nunito Sans", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  /* Typography */
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-serif: "Plus Jakarta Sans", sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", monospace;
 
   /* Primary Brand Greens (#138601, #FFFFFF, #083002) */
@@ -71,31 +70,17 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
 
-/* Global Typography & Base Styles */
+/* Global Base Styles */
 html {
   scroll-behavior: smooth;
-  font-family: var(--font-body), "Avenir Next", "Avenir", "Nunito Sans", "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans), "Plus Jakarta Sans", sans-serif;
 }
 
 body {
   background-color: #ffffff;
   color: #083002;
-  font-family: var(--font-body), "Avenir Next", "Avenir", "Nunito Sans", "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans), "Plus Jakarta Sans", sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Headings Typography - Circular Geometric Sans-Serif */
-h1, h2, h3, h4, h5, h6, .font-heading {
-  font-family: var(--font-heading), "Circular Std", "Circular", "Outfit", "Plus Jakarta Sans", sans-serif;
-  letter-spacing: -0.025em;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-}
-
-/* Body Text Typography - Avenir Next Clean Sans-Serif */
-p, span, a, input, button, select, textarea, li, .font-body {
-  font-family: var(--font-body), "Avenir Next", "Avenir", "Nunito Sans", "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
 [data-theme="dark"] body,
