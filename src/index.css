@@ -16,17 +16,55 @@
   --color-green-700: #0f6c01;
   --color-green-800: #0d5602;
   --color-green-900: #083002;
-  --color-green-950: #041b01;
+  --color-green-950: #041801;
 
+  /* Custom Nacos Theme Identifiers */
   --color-nacos-green: #138601;
   --color-nacos-dark: #083002;
-  --color-nacos-black: #041901;
+  --color-nacos-black: #041801;
   --color-nacos-light: #f2fbf1;
   --color-nacos-white: #ffffff;
 
   --color-primary: #138601;
   --color-primary-dark: #083002;
   --color-primary-light: #4bd043;
+
+  /* Dark mode surface re-mapping for gray/slate/zinc to #083002 / #041801 system */
+  --color-gray-50: #f7fdf6;
+  --color-gray-100: #eefbee;
+  --color-gray-200: #d7f8d6;
+  --color-gray-300: #b2f0b0;
+  --color-gray-400: #7de479;
+  --color-gray-500: #42d13b;
+  --color-gray-600: #1b680d;
+  --color-gray-700: #0d4603;
+  --color-gray-800: #083002;
+  --color-gray-900: #041801;
+  --color-gray-950: #021000;
+
+  --color-slate-50: #f7fdf6;
+  --color-slate-100: #eefbee;
+  --color-slate-200: #d7f8d6;
+  --color-slate-300: #b2f0b0;
+  --color-slate-400: #7de479;
+  --color-slate-500: #42d13b;
+  --color-slate-600: #1b680d;
+  --color-slate-700: #0d4603;
+  --color-slate-800: #083002;
+  --color-slate-900: #041801;
+  --color-slate-950: #021000;
+
+  --color-zinc-50: #f7fdf6;
+  --color-zinc-100: #eefbee;
+  --color-zinc-200: #d7f8d6;
+  --color-zinc-300: #b2f0b0;
+  --color-zinc-400: #7de479;
+  --color-zinc-500: #42d13b;
+  --color-zinc-600: #1b680d;
+  --color-zinc-700: #0d4603;
+  --color-zinc-800: #083002;
+  --color-zinc-900: #041801;
+  --color-zinc-950: #021000;
 }
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));

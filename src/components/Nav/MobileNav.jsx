@@ -81,22 +81,21 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
   return (
     <div
       className={`md:hidden fixed inset-0 z-40 ${
-        theme === "light" ? "bg-white" : "bg-gray-900"
-      } bg-opacity-95 backdrop-blur-sm`}
-      style={theme === "light" ? { boxShadow: "0 0 0 100vmax #fff inset" } : {}}
+        theme === "light" ? "bg-white text-[#083002]" : "bg-[#041801] text-white"
+      } bg-opacity-98 backdrop-blur-md transition-colors`}
     >
       <div className="flex flex-col h-full p-6 overflow-y-auto">
         <button
           onClick={closeMenu}
-          className={`self-end text-2xl p-2 cursor-pointer ${
-            theme === "light" ? "text-[#07160c]" : "text-white"
+          className={`self-end text-2xl p-2 cursor-pointer rounded-lg ${
+            theme === "light" ? "text-[#083002] hover:bg-[#f2fbf1]" : "text-white hover:bg-white/10"
           }`}
           aria-label="Close menu"
         >
           ✕
         </button>
 
-        <div className="flex flex-col space-y-0">
+        <div className="flex flex-col space-y-0 mt-2">
           <NavLink to="/" icon={AiOutlineHome} mobile onClick={closeMenu}>
             Home
           </NavLink>
@@ -107,13 +106,13 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
               <button
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer ${
                   theme === "light"
-                    ? "bg-white text-[#07160c] border border-gray-200 shadow-sm"
-                    : "bg-gray-700 dark:bg-gray-800 text-green-400"
-                } font-semibold text-lg hover:bg-green-50 transition-all duration-200 focus:outline-none ${
+                    ? "bg-[#f2fbf1] text-[#083002] border border-[#138601]/20 shadow-sm"
+                    : "bg-[#083002] text-[#4bd043] border border-[#138601]/30 shadow-black/40"
+                } font-semibold text-lg transition-all duration-200 focus:outline-none ${
                   openCategory === category
                     ? theme === "light"
-                      ? "bg-green-50"
-                      : "bg-gray-600"
+                      ? "bg-[#e2f7df]"
+                      : "bg-[#0d4603]"
                     : ""
                 }`}
                 onClick={() => handleCategoryClick(category)}
@@ -123,16 +122,16 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
                   <FiChevronDown
                     className={
                       theme === "light"
-                        ? "ml-2 text-[#07160c]"
-                        : "ml-2 text-green-400"
+                        ? "ml-2 text-[#083002]"
+                        : "ml-2 text-[#4bd043]"
                     }
                   />
                 ) : (
                   <FiChevronRight
                     className={
                       theme === "light"
-                        ? "ml-2 text-[#07160c]"
-                        : "ml-2 text-green-400"
+                        ? "ml-2 text-[#083002]"
+                        : "ml-2 text-[#4bd043]"
                     }
                   />
                 )}
@@ -141,8 +140,8 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
                 <ul
                   className={`mt-2 mb-2 rounded-xl shadow-inner ${
                     theme === "light"
-                      ? "bg-white border border-gray-100"
-                      : "bg-gray-800"
+                      ? "bg-white border border-[#138601]/15"
+                      : "bg-[#083002]/90 border border-[#138601]/30"
                   }`}
                 >
                   {items.map((item) => (
@@ -152,10 +151,10 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
                           href={item.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`block py-2 px-5 rounded transition-colors text-base font-medium ${
+                          className={`block py-2.5 px-5 rounded-lg transition-colors text-base font-medium ${
                             theme === "light"
-                              ? "text-[#07160c] hover:bg-green-50"
-                              : "text-white hover:bg-gray-700"
+                              ? "text-[#083002] hover:bg-[#f2fbf1] hover:text-[#138601]"
+                              : "text-green-100 hover:bg-[#138601]/25 hover:text-[#4bd043]"
                           }`}
                           onClick={closeMenu}
                         >
@@ -164,14 +163,12 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
                       ) : (
                         <ScrollToTopLink
                           to={item.link}
-                          className={`block py-2 px-5 rounded transition-colors text-base font-medium ${
+                          className={`block py-2.5 px-5 rounded-lg transition-colors text-base font-medium ${
                             location.pathname === item.link
-                              ? theme === "light"
-                                ? "bg-green-700 text-white"
-                                : "bg-green-600 text-white"
+                              ? "bg-[#138601] text-white"
                               : theme === "light"
-                              ? "text-[#07160c] hover:bg-green-50"
-                              : "text-white hover:bg-gray-700"
+                              ? "text-[#083002] hover:bg-[#f2fbf1] hover:text-[#138601]"
+                              : "text-green-100 hover:bg-[#138601]/25 hover:text-[#4bd043]"
                           }`}
                           onClick={closeMenu}
                         >
@@ -186,20 +183,24 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
           ))}
         </div>
 
-        <div className="mt-auto pt-6 border-t border-gray-700">
+        <div className="mt-auto pt-6 border-t border-[#138601]/20">
           <div className="grid grid-cols-1 w-full gap-3">
             <a
               href={import.meta.env.VITE_PORTAL_URL || "https://portal.futocsc.edu.ng"}
               target="_blank"
               rel="noopener noreferrer"
               onClick={closeMenu}
-              className="w-full text-center py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
+              className="w-full text-center py-3 px-4 bg-[#138601] hover:bg-[#0f6c01] text-white font-bold rounded-xl shadow-lg shadow-[#138601]/30 transition-colors"
             >
               Visit Portal
             </a>
             <button
               onClick={handleThemeToggle}
-              className="w-full flex items-center justify-center py-3 px-4 bg-gray-700 hover:bg-gray-600 transition-colors text-white rounded-lg"
+              className={`w-full flex items-center justify-center py-3 px-4 transition-colors font-semibold rounded-xl ${
+                theme === "dark" 
+                  ? "bg-[#083002] text-yellow-300 border border-[#138601]/30 hover:bg-[#0d4603]" 
+                  : "bg-[#f2fbf1] text-[#083002] border border-[#138601]/20 hover:bg-[#e2f7df]"
+              }`}
             >
               {theme === "dark" ? (
                 <>
@@ -208,7 +209,7 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
                 </>
               ) : (
                 <>
-                  <BsMoon className="mr-3" />
+                  <BsMoon className="mr-3 text-[#083002]" />
                   Dark Mode
                 </>
               )}

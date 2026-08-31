@@ -13,8 +13,8 @@ const NavDropdown = ({ label, items, theme }) => {
       <button
         className={`flex items-center space-x-1 font-semibold transition-colors cursor-pointer ${
           theme === "light"
-            ? "text-gray-700 hover:text-green-700"
-            : "text-gray-300 hover:text-green-400"
+            ? "text-[#083002] hover:text-[#138601]"
+            : "text-gray-200 hover:text-[#4bd043]"
         }`}
       >
         <span className="whitespace-nowrap tracking-wide">{label}</span>
@@ -23,10 +23,10 @@ const NavDropdown = ({ label, items, theme }) => {
 
       {/* Dropdown Menu */}
       <div
-        className={`absolute top-full left-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 w-56 z-50 rounded-lg shadow-xl border ${
+        className={`absolute top-full left-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 w-56 z-50 rounded-xl shadow-xl border ${
           theme === "light"
-            ? "bg-white border-gray-100 text-gray-800"
-            : "bg-gray-800 border-gray-700 text-gray-100"
+            ? "bg-white border-[#138601]/20 text-[#083002]"
+            : "bg-[#083002] border-[#138601]/30 text-white shadow-black/60"
         }`}
       >
         {items.map((item, idx) => {
@@ -37,10 +37,10 @@ const NavDropdown = ({ label, items, theme }) => {
                 href={item.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`block px-4 py-2 text-sm font-medium transition-colors ${
+                className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
                   theme === "light"
-                    ? "hover:bg-green-50 hover:text-green-700 text-gray-700"
-                    : "hover:bg-gray-700 hover:text-green-400 text-gray-300"
+                    ? "hover:bg-[#f2fbf1] hover:text-[#138601] text-[#083002]"
+                    : "hover:bg-[#138601]/25 hover:text-[#4bd043] text-green-100"
                 }`}
               >
                 {item.name}
@@ -51,10 +51,10 @@ const NavDropdown = ({ label, items, theme }) => {
             <ScrollToTopLink
               key={idx}
               to={item.link}
-              className={`block px-4 py-2 text-sm font-medium transition-colors ${
+              className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
                 theme === "light"
-                  ? "hover:bg-green-50 hover:text-green-700 text-gray-700"
-                  : "hover:bg-gray-700 hover:text-green-400 text-gray-300"
+                  ? "hover:bg-[#f2fbf1] hover:text-[#138601] text-[#083002]"
+                  : "hover:bg-[#138601]/25 hover:text-[#4bd043] text-green-100"
               }`}
             >
               {item.name}
@@ -98,8 +98,8 @@ const MoreDropdown = ({ theme }) => {
       <button
         className={`flex items-center space-x-1 font-semibold transition-colors cursor-pointer ${
           theme === "light"
-            ? "text-gray-700 hover:text-green-700"
-            : "text-gray-300 hover:text-green-400"
+            ? "text-[#083002] hover:text-[#138601]"
+            : "text-gray-200 hover:text-[#4bd043]"
         }`}
       >
         <span className="whitespace-nowrap tracking-wide">MORE</span>
@@ -107,15 +107,15 @@ const MoreDropdown = ({ theme }) => {
       </button>
       {/* Mega Menu Dropdown */}
       <div
-        className={`absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-6 w-[640px] z-50 rounded-lg shadow-xl border grid grid-cols-2 lg:grid-cols-4 gap-6 ${
+        className={`absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-6 w-[640px] z-50 rounded-2xl shadow-2xl border grid grid-cols-2 lg:grid-cols-4 gap-6 ${
           theme === "light"
-            ? "bg-white border-gray-100 text-gray-800"
-            : "bg-gray-800 border-gray-700 text-gray-100"
+            ? "bg-white border-[#138601]/20 text-[#083002]"
+            : "bg-[#083002] border-[#138601]/30 text-white shadow-black/60"
         }`}
       >
         {Object.entries(moreCategories).map(([category, items]) => (
           <div key={category} className="space-y-2 text-left">
-            <h4 className="text-xs font-bold tracking-wider text-green-600 dark:text-green-400 uppercase">
+            <h4 className="text-xs font-extrabold tracking-wider text-[#138601] dark:text-[#4bd043] uppercase">
               {category}
             </h4>
             <ul className="space-y-1">
@@ -125,8 +125,8 @@ const MoreDropdown = ({ theme }) => {
                     to={item.link}
                     className={`block py-1 text-sm font-medium transition-colors ${
                       theme === "light"
-                        ? "hover:text-green-700 text-gray-600"
-                        : "hover:text-green-400 text-gray-300"
+                        ? "hover:text-[#138601] text-[#083002]/80"
+                        : "hover:text-[#4bd043] text-green-100/80"
                     }`}
                   >
                     {item.name}
@@ -183,15 +183,15 @@ const DesktopNav = () => {
   return (
     <nav
       className={`hidden md:flex w-full items-center justify-between gap-4 px-1 lg:gap-6 lg:px-2 ${
-        theme === "light" ? "text-black" : "text-white"
+        theme === "light" ? "text-[#083002]" : "text-white"
       }`}
     >
       {/* Navigation Links Group */}
       <div className="flex items-center gap-4 lg:gap-6">
         <NavLink
           to="/"
-          className={`tracking-wide ${
-            theme === "light" ? "text-gray-700 hover:text-green-700" : "text-gray-300 hover:text-green-400"
+          className={`tracking-wide font-semibold ${
+            theme === "light" ? "text-[#083002] hover:text-[#138601]" : "text-gray-200 hover:text-[#4bd043]"
           }`}
         >
           HOME
@@ -208,14 +208,14 @@ const DesktopNav = () => {
       <div className="flex items-center gap-2 lg:gap-4">
         <button
           onClick={toggleTheme}
-          className={`p-2 rounded-full text-xl transition-colors cursor-pointer ${
+          className={`p-2 rounded-full text-xl transition-all cursor-pointer ${
             theme === "light"
-              ? "text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-green-700"
-              : "text-white bg-gray-800 hover:bg-gray-700"
+              ? "text-[#083002] bg-[#f2fbf1] hover:bg-[#e4f7e2] hover:text-[#138601]"
+              : "text-yellow-300 bg-[#0d4603] hover:bg-[#138601]/40"
           }`}
           aria-label="Toggle dark mode"
         >
-          {theme === "dark" ? <BsSun className="text-yellow-300" /> : <BsMoon />}
+          {theme === "dark" ? <BsSun className="text-yellow-300" /> : <BsMoon className="text-[#083002]" />}
         </button>
 
         <div className="w-[180px] lg:w-[220px]">
@@ -227,7 +227,7 @@ const DesktopNav = () => {
             href={import.meta.env.VITE_PORTAL_URL || "https://portal.futocsc.edu.ng"}
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-4 py-2 rounded-md font-semibold text-xs tracking-wider transition-colors whitespace-nowrap uppercase"
+            className="border border-[#138601] text-[#138601] dark:text-[#4bd043] dark:border-[#4bd043] hover:bg-[#138601] hover:text-white dark:hover:bg-[#138601] dark:hover:text-white px-4 py-2 rounded-xl font-bold text-xs tracking-wider transition-all whitespace-nowrap uppercase shadow-sm"
           >
             Portal
           </a>

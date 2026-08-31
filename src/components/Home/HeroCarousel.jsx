@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { useState, useEffect } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
@@ -217,14 +217,14 @@ const HeroCarousel = () => {
         <div className="flex flex-col justify-center pl-8">
           <h1
             className={`text-4xl font-extrabold mb-4 ${
-              isLight ? "text-[#07160c]" : "text-green-600"
+              isLight ? "text-[#083002]" : "text-green-600"
             }`}
           >
             FUTO: Your Gateway to Success
           </h1>
           <p
             className={`text-lg mb-6 ${
-              isLight ? "text-[#145c2c]" : "text-gray-200"
+              isLight ? "text-[#138601]" : "text-gray-200"
             }`}
           >
             Join a vibrant community, access world-class resources, and shape
@@ -246,3 +246,4 @@ const HeroCarousel = () => {
 };
 
 export default HeroCarousel;
+

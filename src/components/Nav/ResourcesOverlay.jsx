@@ -68,38 +68,15 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
 
   if (!isOpen) return null;
 
-  const isDesktop = window.innerWidth >= 768;
-  const forceDark = isDesktop;
-  const isLight =
-    !forceDark &&
-    (document.body.classList.contains("light") ||
-      (window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: light)").matches));
-
   return (
     <div
-      className={`fixed inset-0 z-40 pt-16 overflow-y-auto ${
-        forceDark
-          ? "bg-gray-800 dark:bg-gray-900"
-          : isLight
-          ? "bg-white"
-          : "bg-gray-800 dark:bg-gray-900"
-      }`}
-      style={
-        isLight && !forceDark ? { boxShadow: "0 0 0 100vmax #fff inset" } : {}
-      }
+      className="fixed inset-0 z-40 pt-16 overflow-y-auto bg-white/95 dark:bg-[#041801]/98 backdrop-blur-xl transition-colors duration-300"
     >
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex justify-end mb-8">
           <button
             onClick={closeOverlay}
-            className={
-              forceDark
-                ? "text-white p-2 hover:bg-gray-700 rounded-full transition-colors cursor-pointer"
-                : isLight
-                ? "text-[#07160c] p-2 hover:bg-green-50 rounded-full transition-colors cursor-pointer"
-                : "text-white p-2 hover:bg-gray-700 rounded-full transition-colors cursor-pointer"
-            }
+            className="p-2 rounded-full transition-colors cursor-pointer text-[#083002] dark:text-white hover:bg-[#f2fbf1] dark:hover:bg-[#083002]"
             aria-label="Close resources menu"
           >
             <AiOutlineClose size={24} />
@@ -110,22 +87,10 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
           {Object.entries(resources).map(([category, items]) => (
             <div
               key={category}
-              className={
-                forceDark
-                  ? "bg-gray-700 dark:bg-gray-800 p-3 rounded-lg shadow-lg"
-                  : isLight
-                  ? "bg-white p-5 rounded-xl shadow-md border border-gray-100"
-                  : "bg-gray-700 dark:bg-gray-800 p-3 rounded-lg shadow-lg"
-              }
+              className="p-5 rounded-2xl shadow-lg border bg-[#f2fbf1] dark:bg-[#083002] border-[#138601]/20 dark:border-[#138601]/30 transition-all"
             >
               <h3
-                className={
-                  forceDark
-                    ? "text-base font-bold text-green-400 mb-2 border-b border-gray-600 pb-1"
-                    : isLight
-                    ? "text-lg font-bold text-[#07160c] mb-3 border-b border-gray-200 pb-2"
-                    : "text-base font-bold text-green-900 dark:text-green-400 mb-2 border-b border-gray-600 pb-1"
-                }
+                className="text-base font-extrabold mb-3 border-b pb-2 uppercase tracking-wider text-[#138601] dark:text-[#4bd043] border-[#138601]/20 dark:border-[#138601]/30"
               >
                 {category}
               </h3>
@@ -137,13 +102,7 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
                         href={item.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`block py-2 px-3 rounded transition-colors text-base font-medium ${
-                          forceDark
-                            ? "text-white hover:bg-gray-600"
-                            : isLight
-                            ? "text-[#07160c] hover:bg-green-50"
-                            : "text-white hover:bg-gray-600"
-                        }`}
+                        className="block py-2 px-3 rounded-lg transition-colors text-sm font-medium text-[#083002]/90 dark:text-green-100 hover:bg-[#138601] hover:text-white"
                         onClick={closeOverlay}
                       >
                         {item.name}
@@ -151,14 +110,10 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
                     ) : (
                       <ScrollToTopLink
                         to={item.link}
-                        className={`block py-2 px-3 rounded transition-colors text-base font-medium ${
+                        className={`block py-2 px-3 rounded-lg transition-colors text-sm font-medium ${
                           location.pathname === item.link
-                            ? "bg-green-700 text-white"
-                            : forceDark
-                            ? "text-white hover:bg-gray-600"
-                            : isLight
-                            ? "text-[#07160c] hover:bg-green-50"
-                            : "text-white hover:bg-gray-600"
+                            ? "bg-[#138601] text-white"
+                            : "text-[#083002]/90 dark:text-green-100 hover:bg-[#138601] hover:text-white"
                         }`}
                         onClick={closeOverlay}
                       >
