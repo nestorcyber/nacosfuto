@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { FaGraduationCap, FaUsers, FaChalkboardTeacher, FaAward } from 'react-icons/fa';
-import { MdScience } from 'react-icons/md';
 
 const stats = [
     {
@@ -16,21 +15,14 @@ const stats = [
         value: 5000,
         suffix: '+',
         label: 'Students Enrolled',
-        description: 'Across all levels of study'
+        description: 'Across undergraduate and postgraduate study'
     },
     {
         icon: <FaChalkboardTeacher />,
         value: 50,
         suffix: '+',
         label: 'Academic Staff',
-        description: 'Experienced lecturers & researchers'
-    },
-    {
-        icon: <MdScience />,
-        value: 4,
-        suffix: '',
-        label: 'Departments in SICT',
-        description: 'School of Information & Communication Technology'
+        description: 'Experienced professors, lecturers & researchers'
     }
 ];
 
@@ -68,28 +60,28 @@ const StatCard = ({ icon, value, suffix, label, description, delay, isVisible })
 
     return (
         <div
-            className="group relative flex flex-col items-center text-center p-8 rounded-2xl transition-all duration-500"
+            className="group relative flex flex-col items-center text-center p-8 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             style={{ transitionDelay: `${delay}ms` }}
         >
             {/* Glowing icon circle */}
-            <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-500 text-2xl mb-5 group-hover:scale-110 group-hover:bg-green-500/20 transition-all duration-300">
+            <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-600 dark:text-green-400 text-2xl mb-5 group-hover:scale-110 group-hover:bg-green-500/20 transition-all duration-300">
                 {icon}
             </div>
 
             {/* Counter */}
             <div className="text-4xl md:text-5xl font-black tracking-tight mb-2">
-                <span className="bg-gradient-to-br from-green-400 to-emerald-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-br from-green-500 to-emerald-600 bg-clip-text text-transparent">
                     {count.toLocaleString()}{suffix}
                 </span>
             </div>
 
             {/* Label */}
-            <h3 className="text-base font-bold uppercase tracking-wider mb-1.5 text-gray-900 dark:text-white">
+            <h3 className="text-base font-bold uppercase tracking-wider mb-2 text-gray-900 dark:text-white">
                 {label}
             </h3>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-[200px]">
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-[240px]">
                 {description}
             </p>
         </div>
@@ -135,8 +127,8 @@ const DepartmentStats = () => {
                     </p>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Stats Grid - Balanced 3 Columns */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                     {stats.map((stat, index) => (
                         <StatCard
                             key={stat.label}
