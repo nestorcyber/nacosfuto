@@ -1,0 +1,10 @@
+{
+  "name": "@nacos/supabase",
+  "version": "1.0.0",
+  "main": "src/client.js",
+  "module": "src/client.js",
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  }
+}

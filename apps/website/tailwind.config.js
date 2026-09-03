@@ -1,0 +1,86 @@
+module.exports = {
+  darkMode: ['variant', {
+    dark: ['&:where([data-theme="dark"]', '&:where([data-theme="dark"] *)', '&:where(.dark, .dark *)']
+  }],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Avenir Next"', '"Avenir"', '"AvenirNext"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        heading: ['"Circular"', '"Circular Std"', '"CircularStd"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        display: ['"Circular"', '"Circular Std"', '"CircularStd"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+      },
+      colors: {
+        nacos: {
+          green: '#138601',
+          dark: '#083002',
+          black: '#041801',
+          light: '#f2fbf1',
+          white: '#ffffff',
+        },
+        primary: {
+          50: '#f7fdf6',
+          100: '#eefbee',
+          200: '#d7f8d6',
+          300: '#b2f0b0',
+          400: '#7de479',
+          500: '#42d13b',
+          DEFAULT: '#138601',
+          600: '#138601',
+          700: '#0f6c01',
+          800: '#0d5602',
+          dark: '#083002',
+          900: '#083002',
+          950: '#041801',
+        },
+        green: {
+          50: '#f2fbf1',
+          100: '#dcf6da',
+          200: '#bbf0b7',
+          300: '#88e482',
+          400: '#4bd043',
+          500: '#1fb416',
+          600: '#138601',
+          700: '#0f6c01',
+          800: '#0d5602',
+          900: '#083002',
+          950: '#041801',
+        },
+        gray: {
+          50: '#f7fdf6',
+          100: '#eefbee',
+          200: '#d7f8d6',
+          300: '#b2f0b0',
+          400: '#7de479',
+          500: '#42d13b',
+          600: '#1b680d',
+          700: '#0d4603',
+          800: '#083002',
+          900: '#041801',
+          950: '#021000',
+        },
+        slate: {
+          50: '#f7fdf6',
+          100: '#eefbee',
+          200: '#d7f8d6',
+          300: '#b2f0b0',
+          400: '#7de479',
+          500: '#42d13b',
+          600: '#1b680d',
+          700: '#0d4603',
+          800: '#083002',
+          900: '#041801',
+          950: '#021000',
+        },
+      },
+      boxShadow: {
+        'nacos-glow': '0 0 25px -5px rgba(19, 134, 1, 0.4)',
+        'nacos-dark': '0 20px 25px -5px rgba(8, 48, 2, 0.5)',
+      }
+    },
+  },
+  plugins: [],
+}

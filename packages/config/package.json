@@ -1,0 +1,11 @@
+{
+  "name": "@nacos/config",
+  "version": "1.0.0",
+  "main": "tailwind.preset.js",
+  "type": "module",
+  "exports": {
+    ".": "./tailwind.preset.js",
+    "./academic": "./academic.js",
+    "./idCardTemplate": "./idCardTemplate.js"
+  }
+}
