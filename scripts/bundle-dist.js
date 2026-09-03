@@ -10,6 +10,8 @@ const websiteDist = path.join(rootDir, 'apps', 'website', 'dist');
 const portalDist = path.join(rootDir, 'apps', 'portal', 'dist');
 const targetDist = path.join(rootDir, 'dist');
 const targetPortalDist = path.join(targetDist, 'portal');
+const targetAssetsDist = path.join(targetDist, 'assets');
+const portalAssetsDist = path.join(portalDist, 'assets');
 
 console.log('[bundle-dist] Preparing unified root dist directory for production deployment...');
 
@@ -33,6 +35,19 @@ if (fs.existsSync(portalDist)) {
   console.log('[bundle-dist] Copying apps/portal/dist -> dist/portal...');
   fs.mkdirSync(targetPortalDist, { recursive: true });
   fs.cpSync(portalDist, targetPortalDist, { recursive: true });
+
+  // 3. Also copy portal assets into dist/assets as safeguard against root asset requests
+  if (fs.existsSync(portalAssetsDist)) {
+    console.log('[bundle-dist] Mirroring portal assets into dist/assets...');
+    fs.mkdirSync(targetAssetsDist, { recursive: true });
+    fs.cpSync(portalAssetsDist, targetAssetsDist, { recursive: true });
+  }
+
+  // 4. Copy portal/index.html to dist/portal.html for cleanUrls / fallback routing
+  const portalIndex = path.join(portalDist, 'index.html');
+  if (fs.existsSync(portalIndex)) {
+    fs.copyFileSync(portalIndex, path.join(targetDist, 'portal.html'));
+  }
 } else {
   console.warn('[bundle-dist] Warning: apps/portal/dist was not found.');
 }
