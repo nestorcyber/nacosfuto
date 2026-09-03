@@ -12,7 +12,7 @@
     "dev:all": "concurrently \"npm run dev:website\" \"npm run dev:portal\"",
     "dev:website": "npm --prefix apps/website run dev",
     "dev:portal": "npm --prefix apps/portal run dev",
-    "build": "npm run build:website && npm run build:portal",
+    "build": "npm run build:website && npm run build:portal && node scripts/bundle-dist.js",
     "build:website": "npm --prefix apps/website run build",
     "build:portal": "npm --prefix apps/portal run build",
     "lint": "npm --prefix apps/website run lint"

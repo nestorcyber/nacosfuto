@@ -1,5 +1,10 @@
 {
+  "outputDirectory": "dist",
   "rewrites": [
+    {
+      "source": "/portal/:path*",
+      "destination": "/portal/index.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

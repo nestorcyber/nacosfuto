@@ -15,9 +15,11 @@ import HackathonDetail from './pages/HackathonDetail';
 import HackathonApply from './pages/HackathonApply';
 
 function App() {
+  const isNestedUnderPortal = typeof window !== 'undefined' && window.location.pathname.startsWith('/portal');
+
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={isNestedUnderPortal ? '/portal' : '/'}>
         <Routes>
           {/* Authentication & Student Entry */}
           <Route path="/" element={<Login />} />

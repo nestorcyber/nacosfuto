@@ -89,7 +89,7 @@ const Resources = () => {
 
                 <div className="mt-5 pt-3 border-t border-[#138601]/15 dark:border-white/10">
                   <a
-                    href={import.meta.env.VITE_PORTAL_URL || "http://localhost:5174/courses"}
+                    href={import.meta.env.VITE_PORTAL_URL ? `${import.meta.env.VITE_PORTAL_URL}/courses` : (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? "http://localhost:5174/courses" : "/portal/courses")}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-center gap-2 px-7 py-2.5 bg-[#138601] hover:bg-[#0f6c01] text-white font-semibold rounded text-sm transition-colors shadow-sm min-h-[42px]"

@@ -186,7 +186,7 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode }) => {
         <div className="mt-auto pt-6 border-t border-[#138601]/20">
           <div className="grid grid-cols-1 w-full gap-3">
             <a
-              href={import.meta.env.VITE_PORTAL_URL || "http://localhost:5174/login"}
+              href={import.meta.env.VITE_PORTAL_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? "http://localhost:5174/login" : "/portal")}
               target="_blank"
               rel="noopener noreferrer"
               onClick={closeMenu}
