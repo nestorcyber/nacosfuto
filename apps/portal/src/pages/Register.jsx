@@ -5,9 +5,7 @@ import studentPhoto from '../assets/gallery_student_group.jpg';
 import logoDark from '../assets/full-logo-dark.png';
 import { 
   CheckCircle2, 
-  ArrowRight, 
   ArrowLeft, 
-  ShieldCheck, 
   Lock, 
   Mail, 
   KeyRound, 
@@ -15,9 +13,8 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  UserCheck,
-  Building2,
-  GraduationCap
+  Phone,
+  Shield
 } from 'lucide-react';
 import { 
   lookupVerifiedStudentRecord, 
@@ -29,19 +26,22 @@ import { parseAdmissionYear, calculateCurrentLevel, calculateExpectedGraduation,
 
 const Register = () => {
   const navigate = useNavigate();
-  // Step 1: Matric Lookup, Step 2: Details Confirmation & OTP, Step 3: Password Creation
+  // Step 1: Matric Lookup, Step 2: Personal Details & OTP, Step 3: Password Creation
   const [step, setStep] = useState(1);
 
   // Form states
   const [matricNumber, setMatricNumber] = useState('');
   const [verifiedRecord, setVerifiedRecord] = useState(null);
+  const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [devTestCode, setDevTestCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -112,14 +112,7 @@ const Register = () => {
       }
 
       setVerifiedRecord(lookup.data);
-      if (lookup.data.phone_number) {
-        setPhone(lookup.data.phone_number);
-      }
-      if (lookup.data.email) {
-        setStudentEmail(lookup.data.email);
-      }
-
-      // Move directly to Step 2 so user can type their school email
+      // Move to Step 2 for personal details & email verification
       setStep(2);
     } catch (err) {
       setError('An error occurred during verification lookup. Please try again.');
@@ -129,7 +122,7 @@ const Register = () => {
   };
 
   // =========================================================================
-  // STEP 2: Send OTP Code to student's typed school email
+  // STEP 2: Send OTP Code to student's typed email
   // =========================================================================
   const handleSendCode = async (e) => {
     if (e) e.preventDefault();
@@ -137,7 +130,13 @@ const Register = () => {
 
     const cleanEmail = studentEmail.trim().toLowerCase();
     if (!cleanEmail) {
-      setError('Please enter your school email address.');
+      setError('Please enter your email address.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -164,11 +163,44 @@ const Register = () => {
   };
 
   // =========================================================================
-  // STEP 2: Validate 6-digit OTP Code
+  // STEP 2: Validate Student Names, Mandatory Phone (for 2FA) & 6-digit OTP
   // =========================================================================
   const handleConfirmCode = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!firstName.trim()) {
+      setError('Please enter your first name.');
+      return;
+    }
+
+    if (!lastName.trim()) {
+      setError('Please enter your last name / surname.');
+      return;
+    }
+
+    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+    if (!cleanPhone) {
+      setError('Contact phone number is compulsory for two-factor authentication (2FA).');
+      return;
+    }
+
+    if (cleanPhone.length < 10) {
+      setError('Please enter a valid contact phone number (at least 10 digits). Required for 2FA.');
+      return;
+    }
+
+    const cleanEmail = studentEmail.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
 
     if (!verificationCode.trim() || verificationCode.trim().length !== 6) {
       setError('Please enter the 6-digit verification code sent to your email.');
@@ -219,12 +251,14 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
+      const fullName = [firstName.trim(), middleName.trim(), lastName.trim()].filter(Boolean).join(' ');
       const res = await completeVerifiedStudentRegistration(
         matricNumber.trim(),
         verificationCode.trim(),
         password,
-        phone,
-        studentEmail.trim()
+        phone.trim(),
+        studentEmail.trim(),
+        fullName
       );
 
       if (res.error) {
@@ -284,7 +318,8 @@ const Register = () => {
                 Step {step} of 3
               </span>
               <span className="text-xs text-gray-500">
-                {step === 2 && 'Email Confirmation & Code'}
+                {step === 1 && 'Registration Check'}
+                {step === 2 && 'Personal Details & Code'}
                 {step === 3 && 'Account Password'}
               </span>
             </div>
@@ -299,7 +334,7 @@ const Register = () => {
 
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
               {step === 1 && 'Student Registration'}
-              {step === 2 && 'Confirm Identity & Verification Code'}
+              {step === 2 && 'Personal Details & Verification'}
               {step === 3 && 'Create Account Password'}
             </h1>
             <p className="mt-1 text-xs text-gray-600">
@@ -326,7 +361,7 @@ const Register = () => {
               </div>
               <h2 className="text-xl font-bold text-gray-900">Registration Complete!</h2>
               <p className="text-xs text-gray-600 max-w-sm mx-auto">
-                Welcome to NACOS FUTO, <strong>{verifiedRecord?.full_name}</strong>. Redirecting you to your student dashboard...
+                Welcome to NACOS FUTO, <strong>{[firstName, lastName].filter(Boolean).join(' ') || 'Student'}</strong>. Redirecting you to your student dashboard...
               </p>
             </div>
           ) : (
@@ -400,62 +435,101 @@ const Register = () => {
               )}
 
               {/* ========================================================
-                  STEP 2: CONFIRM IDENTITY & ENTER SCHOOL EMAIL FOR CODE
+                  STEP 2: STUDENT DETAILS, MANDATORY 2FA PHONE & OTP
                   ======================================================== */}
               {step === 2 && verifiedRecord && (
-                <div className="space-y-4">
-                  {/* Verified Student Information Card */}
-                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2.5">
-                    <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-green-100 text-[#138601] flex items-center justify-center">
-                          <UserCheck className="w-4 h-4" />
-                        </div>
-                        <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">
-                          Verified Student Record
-                        </span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800">
-                        {verifiedRecord.level}
-                      </span>
+                <form onSubmit={handleConfirmCode} className="space-y-4">
+                  {/* First Name & Middle Name */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                        First Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Chukwuemeka"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                      />
                     </div>
-
-                    <div className="space-y-1.5 text-xs">
-                      <div>
-                        <span className="text-gray-500 block text-[11px]">Full Student Name:</span>
-                        <strong className="text-gray-900 text-sm">{verifiedRecord.full_name}</strong>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
-                        <div>
-                          <span className="text-gray-500 block">Registration Number:</span>
-                          <span className="font-mono font-bold text-gray-800">{verifiedRecord.registration_number}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 block">Department:</span>
-                          <span className="font-medium text-gray-800">{verifiedRecord.department}</span>
-                        </div>
-                      </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                        Middle Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Emmanuel"
+                        value={middleName}
+                        onChange={(e) => setMiddleName(e.target.value)}
+                        className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                      />
                     </div>
                   </div>
 
-                  {/* School Email Input */}
+                  {/* Last Name / Surname */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Your School Email Address *
+                      Last Name / Surname *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Okonkwo"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                    />
+                  </div>
+
+                  {/* Contact Phone Number - Compulsory for 2FA */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-gray-700">
+                        Contact Phone Number *
+                      </label>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#138601] bg-green-50 px-2 py-0.5 rounded border border-green-200">
+                        <Shield className="w-3 h-3 text-[#138601]" />
+                        Compulsory for 2FA
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        required
+                        placeholder="e.g. 08012345678"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                      />
+                      <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Required for two-factor authentication (2FA) and account security verification.
+                    </p>
+                  </div>
+
+                  {/* Email Address */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Email Address *
                     </label>
                     <div className="flex gap-2">
-                      <input
-                        type="email"
-                        required
-                        placeholder="e.g. firstname.lastname@futo.edu.ng"
-                        value={studentEmail}
-                        onChange={(e) => {
-                          setStudentEmail(e.target.value);
-                          if (codeSent) setCodeSent(false);
-                        }}
-                        className="flex-1 px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
-                      />
+                      <div className="relative flex-1">
+                        <input
+                          type="email"
+                          required
+                          placeholder="e.g. yourname@gmail.com"
+                          value={studentEmail}
+                          onChange={(e) => {
+                            setStudentEmail(e.target.value);
+                            if (codeSent) setCodeSent(false);
+                          }}
+                          className="w-full pl-10 pr-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                        />
+                        <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
+                      </div>
                       <button
                         type="button"
                         onClick={handleSendCode}
@@ -471,7 +545,7 @@ const Register = () => {
                       </button>
                     </div>
                     <p className="text-[11px] text-gray-500 mt-1">
-                      Enter your official school email to receive your 6-digit verification code.
+                      Enter your active personal or school email to receive your 6-digit verification code.
                     </p>
                   </div>
 
@@ -502,55 +576,51 @@ const Register = () => {
                     </div>
                   )}
 
-                  {/* 6-Digit Code Input & Proceed Form */}
-                  <form onSubmit={handleConfirmCode} className="space-y-4 pt-1">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Enter 6-Digit Verification Code *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        maxLength={6}
-                        placeholder="e.g. 123456"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-                        className="w-full px-4 py-3 text-base text-center tracking-widest font-mono font-bold rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-black transition-all"
-                      />
-                    </div>
+                  {/* 6-Digit Code Input */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Enter 6-Digit Verification Code *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      placeholder="e.g. 123456"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full px-4 py-3 text-base text-center tracking-widest font-mono font-bold rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-black transition-all"
+                    />
+                  </div>
 
-                    <div className="pt-2 flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStep(1);
-                          setError('');
-                        }}
-                        className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
-                      >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Back</span>
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isVerifyingCode || verificationCode.trim().length !== 6}
-                        className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        {isVerifyingCode ? (
-                          <>
-                            <RotateCw className="w-4 h-4 animate-spin" />
-                            <span>Verifying Code...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Verify & Proceed</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                  {/* Buttons */}
+                  <div className="pt-2 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep(1);
+                        setError('');
+                      }}
+                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Back</span>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isVerifyingCode || verificationCode.trim().length !== 6}
+                      className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isVerifyingCode ? (
+                        <>
+                          <RotateCw className="w-4 h-4 animate-spin" />
+                          <span>Verifying Code...</span>
+                        </>
+                      ) : (
+                        <span>Continue</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
               )}
 
               {/* ========================================================
@@ -558,24 +628,6 @@ const Register = () => {
                   ======================================================== */}
               {step === 3 && verifiedRecord && (
                 <form onSubmit={handleCompleteRegistration} className="space-y-4">
-                  <div className="p-3 rounded bg-green-50 border border-green-200 text-xs text-green-900">
-                    Identity verified for <strong>{verifiedRecord.full_name}</strong>. Create a secure password to finalize your student portal account.
-                  </div>
-
-                  {/* Optional phone number */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Contact Phone Number (Optional)
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="e.g. 08012345678"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-2.5 text-xs rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
-                    />
-                  </div>
-
                   {/* Password */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">

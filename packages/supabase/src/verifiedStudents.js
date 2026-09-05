@@ -279,19 +279,13 @@ export async function sendStudentVerificationCode(regNo, studentEmail = '') {
   const cleanEmail = (studentEmail || student.email || '').trim().toLowerCase();
 
   if (!cleanEmail) {
-    return { success: false, error: { message: 'Please enter your school email address.' } };
+    return { success: false, error: { message: 'Please enter your email address.' } };
   }
 
-  // Validate email format
+  // Validate standard email format (e.g. gmail, yahoo, outlook, futo, etc.)
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(cleanEmail)) {
     return { success: false, error: { message: 'Please enter a valid email address.' } };
-  }
-
-  // Check if school email format (encourage/accept institutional email)
-  const isSchoolDomain = cleanEmail.endsWith('futo.edu.ng') || cleanEmail.includes('edu.ng') || cleanEmail.includes('futo');
-  if (!isSchoolDomain && !cleanEmail.endsWith('@gmail.com')) {
-    // gentle warning or acceptance
   }
 
   // Check if email already belongs to another registered student account
@@ -396,7 +390,7 @@ export async function verifyStudentRegistrationCode(regNo, code) {
 /**
  * Step 3: Complete registration - create auth profile, set has_registered=true, auto-fill profile fields
  */
-export async function completeVerifiedStudentRegistration(regNo, code, password, phone = '', customEmail = '') {
+export async function completeVerifiedStudentRegistration(regNo, code, password, phone = '', customEmail = '', customFullName = '') {
   // 1. Verify code again
   const verifyRes = await verifyStudentRegistrationCode(regNo, code);
   if (!verifyRes.success) {
@@ -423,8 +417,10 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
 
   const studentEmail = (customEmail || verifiedRecord.email || '').trim().toLowerCase();
   if (!studentEmail) {
-    return { data: null, error: { message: 'Please provide a valid school email address.' } };
+    return { data: null, error: { message: 'Please provide a valid email address.' } };
   }
+
+  const resolvedFullName = (customFullName || verifiedRecord.full_name || '').trim();
 
   // 3. Mark code as used
   try {
@@ -447,7 +443,7 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
   const newProfile = {
     id: userId,
     registration_number: verifiedRecord.registration_number,
-    full_name: verifiedRecord.full_name,
+    full_name: resolvedFullName,
     email: studentEmail,
     phone_number: phone.trim() || verifiedRecord.phone_number || '',
     admission_year: verifiedRecord.admission_year,
@@ -470,10 +466,12 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
   filteredAccounts.push(newProfile);
   localStorage.setItem('nacos_students_db', JSON.stringify(filteredAccounts));
 
-  // 6. Update verified_students table (mark has_registered = true and save email)
+  // 6. Update verified_students table (mark has_registered = true and save email, full name & phone)
   roster[index] = {
     ...verifiedRecord,
+    full_name: resolvedFullName,
     email: studentEmail,
+    phone_number: newProfile.phone_number,
     has_registered: true,
     registered_at: new Date().toISOString(),
     auth_user_id: userId,
@@ -484,7 +482,9 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
   // Sync to Supabase if available
   try {
     await supabase.from('verified_students').update({
+      full_name: resolvedFullName,
       email: studentEmail,
+      phone_number: newProfile.phone_number,
       has_registered: true,
       registered_at: new Date().toISOString(),
       auth_user_id: userId
@@ -493,7 +493,7 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
     await supabase.from('profiles').upsert([{
       id: userId,
       registration_number: verifiedRecord.registration_number,
-      full_name: verifiedRecord.full_name,
+      full_name: resolvedFullName,
       email: studentEmail,
       phone_number: newProfile.phone_number,
       admission_year: verifiedRecord.admission_year,
