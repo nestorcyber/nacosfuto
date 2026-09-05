@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.verified_students (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   registration_number VARCHAR(30) UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
-  email TEXT NOT NULL,
+  email TEXT,
   phone_number TEXT,
   department TEXT NOT NULL DEFAULT 'Computer Science',
   faculty TEXT NOT NULL DEFAULT 'School of Information & Communication Tech (SICT)',
@@ -96,7 +96,7 @@ BEGIN
       NULL::TEXT, 
       NULL::TEXT, 
       false, 
-      'Registration number not found in the verified student roster. Please contact the department.'::TEXT;
+      'User not found, contact admin.'::TEXT;
     RETURN;
   END IF;
 

@@ -35,6 +35,8 @@ const Register = () => {
   // Form states
   const [matricNumber, setMatricNumber] = useState('');
   const [verifiedRecord, setVerifiedRecord] = useState(null);
+  const [studentEmail, setStudentEmail] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [devTestCode, setDevTestCode] = useState('');
   const [password, setPassword] = useState('');
@@ -45,6 +47,7 @@ const Register = () => {
 
   // UI status states
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -103,7 +106,7 @@ const Register = () => {
     try {
       const lookup = await lookupVerifiedStudentRecord(cleanMatric);
       if (!lookup.found) {
-        setError(lookup.error?.message || 'Registration number not found in verified roster.');
+        setError(lookup.error?.message || 'User not found, contact admin.');
         setIsLookingUp(false);
         return;
       }
@@ -112,16 +115,12 @@ const Register = () => {
       if (lookup.data.phone_number) {
         setPhone(lookup.data.phone_number);
       }
-
-      // Dispatch 6-digit verification code to stored email
-      const dispatch = await sendStudentVerificationCode(cleanMatric);
-      if (dispatch.success) {
-        setDevTestCode(dispatch.code || '');
-        setResendCooldown(60);
-        setStep(2);
-      } else {
-        setError(dispatch.error?.message || 'Failed to dispatch verification code. Please try again.');
+      if (lookup.data.email) {
+        setStudentEmail(lookup.data.email);
       }
+
+      // Move directly to Step 2 so user can type their school email
+      setStep(2);
     } catch (err) {
       setError('An error occurred during verification lookup. Please try again.');
     } finally {
@@ -130,18 +129,38 @@ const Register = () => {
   };
 
   // =========================================================================
-  // STEP 2: Resend Verification Code
+  // STEP 2: Send OTP Code to student's typed school email
   // =========================================================================
-  const handleResendCode = async () => {
-    if (resendCooldown > 0 || !matricNumber) return;
+  const handleSendCode = async (e) => {
+    if (e) e.preventDefault();
     setError('');
-    const dispatch = await sendStudentVerificationCode(matricNumber.trim());
-    if (dispatch.success) {
-      setDevTestCode(dispatch.code || '');
-      setResendCooldown(60);
-    } else {
-      setError(dispatch.error?.message || 'Failed to resend code.');
+
+    const cleanEmail = studentEmail.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Please enter your school email address.');
+      return;
     }
+
+    setIsSendingCode(true);
+    try {
+      const dispatch = await sendStudentVerificationCode(matricNumber.trim(), cleanEmail);
+      if (dispatch.success) {
+        setDevTestCode(dispatch.code || '');
+        setResendCooldown(60);
+        setCodeSent(true);
+      } else {
+        setError(dispatch.error?.message || 'Failed to dispatch verification code. Please check your email and try again.');
+      }
+    } catch (err) {
+      setError('Failed to send verification code. Please try again.');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0 || !matricNumber || !studentEmail) return;
+    await handleSendCode();
   };
 
   // =========================================================================
@@ -204,7 +223,8 @@ const Register = () => {
         matricNumber.trim(),
         verificationCode.trim(),
         password,
-        phone
+        phone,
+        studentEmail.trim()
       );
 
       if (res.error) {
@@ -242,17 +262,13 @@ const Register = () => {
           />
         </div>
 
-        {/* Controlled Registration Info Notice */}
-        <div className="relative z-10 max-w-lg space-y-3 mt-auto pt-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#4bd043]" />
-            <span>Official Student Onboarding</span>
-          </div>
+        {/* Authentic NACOS Brand Text */}
+        <div className="relative z-10 max-w-lg space-y-2 mt-auto pt-16">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-snug tracking-tight">
-            Verified Departmental Roster Authentication
+            Your NACOS account unlocks a world of computing excellence
           </h2>
-          <p className="text-xs sm:text-sm text-gray-200 font-normal leading-relaxed">
-            Portal registration is strictly controlled and pre-authorized against the official Computer Science student database.
+          <p className="text-xs sm:text-sm text-gray-200 font-normal">
+            Department of Computer Science • Federal University of Technology, Owerri
           </p>
         </div>
       </div>
@@ -268,7 +284,6 @@ const Register = () => {
                 Step {step} of 3
               </span>
               <span className="text-xs text-gray-500">
-                {step === 1 && 'Matric Lookup'}
                 {step === 2 && 'Email Confirmation & Code'}
                 {step === 3 && 'Account Password'}
               </span>
@@ -322,16 +337,6 @@ const Register = () => {
                   ======================================================== */}
               {step === 1 && (
                 <form onSubmit={handleVerifyRegistrationNumber} className="space-y-4">
-                  <div className="p-3.5 rounded bg-[#ebf3ff]/70 border border-[#cbe1ff] text-xs text-gray-700 leading-relaxed space-y-1">
-                    <div className="font-semibold text-gray-900 flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-[#138601]" />
-                      <span>Roster-Controlled Registration</span>
-                    </div>
-                    <p>
-                      Enter your official FUTO Registration Number (digits only, e.g. <code>20241029481</code>). The portal will query the verified database to confirm your admission status.
-                    </p>
-                  </div>
-
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       FUTO Registration Number *
@@ -398,10 +403,10 @@ const Register = () => {
               )}
 
               {/* ========================================================
-                  STEP 2: CONFIRM IDENTITY & ENTER VERIFICATION CODE
+                  STEP 2: CONFIRM IDENTITY & ENTER SCHOOL EMAIL FOR CODE
                   ======================================================== */}
               {step === 2 && verifiedRecord && (
-                <form onSubmit={handleConfirmCode} className="space-y-4">
+                <div className="space-y-4">
                   {/* Verified Student Information Card */}
                   <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2.5">
                     <div className="flex items-center justify-between pb-2 border-b border-gray-200">
@@ -430,25 +435,58 @@ const Register = () => {
                           <span className="font-mono font-bold text-gray-800">{verifiedRecord.registration_number}</span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block">Session:</span>
-                          <span className="font-semibold text-gray-800">{verifiedRecord.academic_session}</span>
+                          <span className="text-gray-500 block">Department:</span>
+                          <span className="font-medium text-gray-800">{verifiedRecord.department}</span>
                         </div>
                       </div>
+                    </div>
+                  </div>
 
-                      <div className="text-[11px] pt-1">
-                        <span className="text-gray-500 block">Department & Faculty:</span>
-                        <span className="font-medium text-gray-800">{verifiedRecord.department} • {verifiedRecord.faculty}</span>
+                  {/* School Email Input */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Your School Email Address *
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        required
+                        placeholder="e.g. firstname.lastname@futo.edu.ng"
+                        value={studentEmail}
+                        onChange={(e) => {
+                          setStudentEmail(e.target.value);
+                          if (codeSent) setCodeSent(false);
+                        }}
+                        className="flex-1 px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSendCode}
+                        disabled={isSendingCode || !studentEmail.trim()}
+                        className="px-4 py-2.5 text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5 whitespace-nowrap"
+                      >
+                        {isSendingCode ? (
+                          <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Mail className="w-3.5 h-3.5" />
+                        )}
+                        <span>{codeSent ? (resendCooldown > 0 ? `${resendCooldown}s` : 'Resend') : 'Send Code'}</span>
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Enter your official school email to receive your 6-digit verification code.
+                    </p>
+                  </div>
+
+                  {/* Code Sent Notice */}
+                  {codeSent && (
+                    <div className="p-3 rounded bg-green-50 border border-green-200 text-xs text-green-900 flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#138601] mt-0.5 shrink-0" />
+                      <div>
+                        A 6-digit verification code has been dispatched to <strong>{studentEmail}</strong>. Enter it below to proceed.
                       </div>
                     </div>
-                  </div>
-
-                  {/* Email Notice (Uneditable) */}
-                  <div className="p-3 rounded bg-blue-50/70 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5">
-                    <Mail className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                    <div className="leading-relaxed">
-                      We sent a 6-digit verification code to your official registered email: <strong className="font-mono">{verifiedRecord.masked_email}</strong>. (This email is pulled from university records and cannot be altered).
-                    </div>
-                  </div>
+                  )}
 
                   {/* Development Mode Helper Banner */}
                   {devTestCode && (
@@ -460,75 +498,62 @@ const Register = () => {
                       <button
                         type="button"
                         onClick={() => setVerificationCode(devTestCode)}
-                        className="text-[11px] text-emerald-700 underline font-semibold hover:text-emerald-900"
+                        className="text-[11px] text-emerald-700 underline font-semibold hover:text-emerald-900 cursor-pointer"
                       >
                         Auto-fill
                       </button>
                     </div>
                   )}
 
-                  {/* 6-Digit Code Input */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Enter 6-Digit Verification Code *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={6}
-                      autoFocus
-                      placeholder="e.g. 123456"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-                      className="w-full px-4 py-3 text-base text-center tracking-widest font-mono font-bold rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-black transition-all"
-                    />
-                  </div>
+                  {/* 6-Digit Code Input & Proceed Form */}
+                  <form onSubmit={handleConfirmCode} className="space-y-4 pt-1">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                        Enter 6-Digit Verification Code *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        maxLength={6}
+                        placeholder="e.g. 123456"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                        className="w-full px-4 py-3 text-base text-center tracking-widest font-mono font-bold rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-black transition-all"
+                      />
+                    </div>
 
-                  {/* Resend Code Link */}
-                  <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
-                    <span>Didn't receive the code?</span>
-                    <button
-                      type="button"
-                      disabled={resendCooldown > 0}
-                      onClick={handleResendCode}
-                      className="text-[#138601] font-semibold hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
-                    >
-                      {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend code'}
-                    </button>
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="pt-2 flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep(1);
-                        setError('');
-                      }}
-                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>Back</span>
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isVerifyingCode || verificationCode.trim().length !== 6}
-                      className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {isVerifyingCode ? (
-                        <>
-                          <RotateCw className="w-4 h-4 animate-spin" />
-                          <span>Verifying Code...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Verify & Proceed</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
+                    <div className="pt-2 flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStep(1);
+                          setError('');
+                        }}
+                        className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span>Back</span>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isVerifyingCode || verificationCode.trim().length !== 6}
+                        className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isVerifyingCode ? (
+                          <>
+                            <RotateCw className="w-4 h-4 animate-spin" />
+                            <span>Verifying Code...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Verify & Proceed</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               )}
 
               {/* ========================================================
@@ -640,8 +665,7 @@ const Register = () => {
           )}
 
           {/* Footnote Link to Main Website */}
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-            <span className="text-[11px] text-gray-400">NACOS FUTO Portal v2.4</span>
+          <div className="pt-4 border-t border-gray-100 flex items-center justify-end text-xs text-gray-500">
             <a 
               href="http://localhost:5173" 
               className="hover:text-black transition-colors"

@@ -238,7 +238,7 @@ export async function lookupVerifiedStudentRecord(regNo) {
   if (!record) {
     return {
       found: false,
-      error: { message: `Registration number "${cleanReg}" was not found in the verified departmental roster. Please contact the department administration.` }
+      error: { message: 'User not found, contact admin.' }
     };
   }
 
@@ -267,15 +267,44 @@ export async function lookupVerifiedStudentRecord(regNo) {
 }
 
 /**
- * Step 2: Send a 6-digit verification code (OTP) to the stored uneditable student email
+ * Step 2: Send a 6-digit verification code (OTP) to the student-provided school email
  */
-export async function sendStudentVerificationCode(regNo) {
+export async function sendStudentVerificationCode(regNo, studentEmail = '') {
   const lookup = await lookupVerifiedStudentRecord(regNo);
   if (!lookup.found) {
     return { success: false, error: lookup.error };
   }
 
   const student = lookup.data;
+  const cleanEmail = (studentEmail || student.email || '').trim().toLowerCase();
+
+  if (!cleanEmail) {
+    return { success: false, error: { message: 'Please enter your school email address.' } };
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(cleanEmail)) {
+    return { success: false, error: { message: 'Please enter a valid email address.' } };
+  }
+
+  // Check if school email format (encourage/accept institutional email)
+  const isSchoolDomain = cleanEmail.endsWith('futo.edu.ng') || cleanEmail.includes('edu.ng') || cleanEmail.includes('futo');
+  if (!isSchoolDomain && !cleanEmail.endsWith('@gmail.com')) {
+    // gentle warning or acceptance
+  }
+
+  // Check if email already belongs to another registered student account
+  const accounts = getLocalStudentsDatabase();
+  const cleanReg = regNo.trim().toUpperCase();
+  const emailInUse = accounts.some(a => 
+    a.email?.toLowerCase() === cleanEmail && 
+    a.registration_number?.toUpperCase() !== cleanReg
+  );
+  if (emailInUse) {
+    return { success: false, error: { message: 'This email is already in use by another student account.' } };
+  }
+
   // Generate a random 6-digit OTP code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 mins expiry
@@ -284,13 +313,13 @@ export async function sendStudentVerificationCode(regNo) {
   try {
     await supabase.from('student_verification_codes').insert([{
       registration_number: student.registration_number,
-      email: student.email,
+      email: cleanEmail,
       code,
       expires_at: expiresAt,
       is_used: false
     }]);
   } catch (e) {
-    // Supabase table not created yet or offline
+    // Supabase offline/fallback
   }
 
   // Save to local storage for instant verification and demo support
@@ -303,7 +332,7 @@ export async function sendStudentVerificationCode(regNo) {
   storedCodes = storedCodes.filter(c => c.registration_number !== student.registration_number);
   storedCodes.push({
     registration_number: student.registration_number,
-    email: student.email,
+    email: cleanEmail,
     code,
     expires_at: expiresAt,
     is_used: false,
@@ -311,15 +340,15 @@ export async function sendStudentVerificationCode(regNo) {
   });
   localStorage.setItem(CODES_STORAGE_KEY, JSON.stringify(storedCodes));
 
-  console.info(`[NACOS Auth] Verification code for ${student.registration_number} (${student.email}): ${code}`);
+  console.info(`[NACOS Auth] Verification code for ${student.registration_number} (${cleanEmail}): ${code}`);
 
   return {
     success: true,
     code, // Returned for dev preview banner
-    email: student.email,
-    maskedEmail: student.masked_email,
+    email: cleanEmail,
+    maskedEmail: maskEmail(cleanEmail),
     expiresAt,
-    message: `A 6-digit verification code has been dispatched to ${student.masked_email}.`
+    message: `A 6-digit verification code has been dispatched to ${cleanEmail}.`
   };
 }
 
@@ -367,7 +396,7 @@ export async function verifyStudentRegistrationCode(regNo, code) {
 /**
  * Step 3: Complete registration - create auth profile, set has_registered=true, auto-fill profile fields
  */
-export async function completeVerifiedStudentRegistration(regNo, code, password, phone = '') {
+export async function completeVerifiedStudentRegistration(regNo, code, password, phone = '', customEmail = '') {
   // 1. Verify code again
   const verifyRes = await verifyStudentRegistrationCode(regNo, code);
   if (!verifyRes.success) {
@@ -392,6 +421,11 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
     return { data: null, error: { message: 'An account has already been registered for this student.' } };
   }
 
+  const studentEmail = (customEmail || verifiedRecord.email || '').trim().toLowerCase();
+  if (!studentEmail) {
+    return { data: null, error: { message: 'Please provide a valid school email address.' } };
+  }
+
   // 3. Mark code as used
   try {
     const raw = localStorage.getItem(CODES_STORAGE_KEY);
@@ -414,7 +448,7 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
     id: userId,
     registration_number: verifiedRecord.registration_number,
     full_name: verifiedRecord.full_name,
-    email: verifiedRecord.email,
+    email: studentEmail,
     phone_number: phone.trim() || verifiedRecord.phone_number || '',
     admission_year: verifiedRecord.admission_year,
     programme: verifiedRecord.programme,
@@ -436,9 +470,10 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
   filteredAccounts.push(newProfile);
   localStorage.setItem('nacos_students_db', JSON.stringify(filteredAccounts));
 
-  // 6. Update verified_students table (mark has_registered = true)
+  // 6. Update verified_students table (mark has_registered = true and save email)
   roster[index] = {
     ...verifiedRecord,
+    email: studentEmail,
     has_registered: true,
     registered_at: new Date().toISOString(),
     auth_user_id: userId,
@@ -449,6 +484,7 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
   // Sync to Supabase if available
   try {
     await supabase.from('verified_students').update({
+      email: studentEmail,
       has_registered: true,
       registered_at: new Date().toISOString(),
       auth_user_id: userId
@@ -458,7 +494,7 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
       id: userId,
       registration_number: verifiedRecord.registration_number,
       full_name: verifiedRecord.full_name,
-      email: verifiedRecord.email,
+      email: studentEmail,
       phone_number: newProfile.phone_number,
       admission_year: verifiedRecord.admission_year,
       programme: verifiedRecord.programme,
@@ -527,22 +563,33 @@ export async function adminImportVerifiedStudents(rawRecords) {
     const fullName = (row.full_name || row.fullName || row['Full Name'] || row['Name'] || '').toString().trim();
     const email = (row.email || row['Email'] || row['Student Email'] || '').toString().trim().toLowerCase();
 
-    if (!regNo || !fullName || !email) {
-      errors.push({ row: i + 1, message: `Row ${i + 1}: Missing required fields (Reg No, Full Name, or Email)` });
+    if (!regNo || !fullName) {
+      errors.push({ row: i + 1, message: `Row ${i + 1}: Missing required fields (Registration Number or Full Name)` });
       continue;
     }
 
-    // Check duplicate within batch
-    if (seenInBatchMatrics.has(regNo) || seenInBatchEmails.has(email)) {
-      duplicates.push({ regNo, email, reason: 'Duplicate inside uploaded file' });
+    // Check duplicate matric within batch
+    if (seenInBatchMatrics.has(regNo)) {
+      duplicates.push({ regNo, email, reason: 'Duplicate registration number inside uploaded file' });
       continue;
     }
     seenInBatchMatrics.add(regNo);
-    seenInBatchEmails.add(email);
+
+    if (email) {
+      if (seenInBatchEmails.has(email)) {
+        duplicates.push({ regNo, email, reason: 'Duplicate email inside uploaded file' });
+        continue;
+      }
+      seenInBatchEmails.add(email);
+    }
 
     // Check duplicate in database
-    if (existingMatricSet.has(regNo) || existingEmailSet.has(email)) {
+    if (existingMatricSet.has(regNo)) {
       duplicates.push({ regNo, email, reason: 'Already exists in departmental roster' });
+      continue;
+    }
+    if (email && existingEmailSet.has(email)) {
+      duplicates.push({ regNo, email, reason: 'Email already exists in departmental roster' });
       continue;
     }
 
