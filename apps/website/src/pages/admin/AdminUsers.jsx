@@ -19,7 +19,7 @@ const AdminUsers = () => {
 
   const availablePermissions = [
     { key: 'main_website.view', label: 'View Dashboard & Content' },
-    { key: 'main_website.media', label: 'Manage Media & Cloudinary' },
+    { key: 'main_website.media', label: 'Manage Media & Assets' },
     { key: 'main_website.gallery', label: 'Campus Gallery Editor' },
     { key: 'main_website.news', label: 'News & Journal Publishing' },
     { key: 'main_website.events', label: 'Events & Flyer Management' },

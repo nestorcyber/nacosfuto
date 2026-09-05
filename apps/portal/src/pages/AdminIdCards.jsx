@@ -26,8 +26,12 @@ import {
   portalAdminRevokeIdCard, 
   portalAdminRegenerateIdCard,
   getIdCardSettings,
-  updateIdCardFee
+  updateIdCardFee,
+  drawIdCardOnCanvas,
+  downloadIdCardAsImage,
+  downloadIdCardAsPdf
 } from '@nacos/supabase/idCard';
+import { ID_CARD_TEMPLATE } from '@nacos/config/idCardTemplate';
 
 const AdminIdCards = () => {
   const [applications, setApplications] = useState([]);
@@ -45,6 +49,8 @@ const AdminIdCards = () => {
   const [revokeReasonInput, setRevokeReasonInput] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
+  const [adminViewSide, setAdminViewSide] = useState('front'); // 'front' | 'back'
+  const adminCanvasRef = React.useRef(null);
 
   // Notification
   const [feedback, setFeedback] = useState({ message: '', type: '' });
@@ -85,6 +91,50 @@ const AdminIdCards = () => {
   const showNotification = (message, type = 'success') => {
     setFeedback({ message, type });
     setTimeout(() => setFeedback({ message: '', type: '' }), 4000);
+  };
+
+  // Canvas render hook for Admin Review modal
+  useEffect(() => {
+    if (isReviewModalOpen && selectedApp && selectedApp.status === 'generated' && adminCanvasRef.current) {
+      const studentObj = {
+        name: selectedApp.student_name,
+        full_name: selectedApp.student_name,
+        registration_number: selectedApp.matric_number,
+        matric: selectedApp.matric_number,
+        department: selectedApp.department,
+        programme: selectedApp.programme,
+        level: selectedApp.level
+      };
+      if (selectedApp.passport_url) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          drawIdCardOnCanvas(adminCanvasRef.current, studentObj, img, selectedApp);
+        };
+        img.onerror = () => {
+          drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp);
+        };
+        img.src = selectedApp.passport_url;
+      } else {
+        drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp);
+      }
+    }
+  }, [isReviewModalOpen, selectedApp?.id, selectedApp?.status, selectedApp?.generated_at]);
+
+  const handleAdminDownloadImage = (side = 'both') => {
+    if (!selectedApp) return;
+    const rawName = (selectedApp.student_name || 'Student').replace(/[^a-zA-Z0-9]/g, '-');
+    const rawId = (selectedApp.id_card_number || 'NACOS-ID').replace(/[^a-zA-Z0-9]/g, '-');
+    const source = selectedApp.id_card_image_url || adminCanvasRef.current;
+    downloadIdCardAsImage(source, `${rawName}-${rawId}`, side);
+  };
+
+  const handleAdminDownloadPdf = () => {
+    if (!selectedApp) return;
+    const rawName = (selectedApp.student_name || 'Student').replace(/[^a-zA-Z0-9]/g, '-');
+    const rawId = (selectedApp.id_card_number || 'NACOS-ID').replace(/[^a-zA-Z0-9]/g, '-');
+    const source = selectedApp.id_card_image_url || adminCanvasRef.current;
+    downloadIdCardAsPdf(source, `${rawName}-${rawId}`, selectedApp.id_card_back_url);
   };
 
   // ---------------------------------------------------------------------------
@@ -419,6 +469,102 @@ const AdminIdCards = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Generated Two-Sided ID Card Preview */}
+              {selectedApp.status === 'generated' && (
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-gray-900 dark:text-white">Generated ID Card</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300">
+                        Official CR-80
+                      </span>
+                    </div>
+
+                    {/* Front / Back Toggle */}
+                    <div className="inline-flex p-0.5 rounded-lg bg-gray-200 dark:bg-[#083002] text-xs font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => setAdminViewSide('front')}
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                          adminViewSide === 'front'
+                            ? 'bg-[#138601] text-white'
+                            : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
+                        }`}
+                      >
+                        Front
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdminViewSide('back')}
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                          adminViewSide === 'back'
+                            ? 'bg-[#138601] text-white'
+                            : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
+                        }`}
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card Display */}
+                  <div className="flex justify-center py-1">
+                    <div className="max-w-[240px] w-full rounded-xl overflow-hidden shadow-md border border-[#138601]/40 bg-[#083002]">
+                      <div className={`${adminViewSide === 'front' ? 'block' : 'hidden'}`}>
+                        <canvas
+                          ref={adminCanvasRef}
+                          className="w-full h-auto block"
+                          style={{ aspectRatio: `${ID_CARD_TEMPLATE.dimensions.aspectRatio}` }}
+                        />
+                      </div>
+                      <div className={`${adminViewSide === 'back' ? 'block' : 'hidden'}`}>
+                        <img
+                          src={selectedApp.id_card_back_url || ID_CARD_TEMPLATE.masterBackUrl || '/nacos_id_template_back.jpg'}
+                          alt="ID Card Back"
+                          className="w-full h-auto block object-cover"
+                          style={{ aspectRatio: `${ID_CARD_TEMPLATE.dimensions.aspectRatio}` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Admin Download Bar */}
+                  <div className="flex flex-wrap items-center justify-end gap-1.5 pt-2 border-t border-gray-200 dark:border-[#138601]/20">
+                    <button
+                      type="button"
+                      onClick={() => handleAdminDownloadImage('front')}
+                      className="px-2.5 py-1 text-[11px] font-semibold text-gray-700 dark:text-white bg-gray-200/70 dark:bg-[#083002] hover:bg-gray-300 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <Download className="w-3 h-3 text-[#138601] dark:text-[#4bd043]" />
+                      <span>Front</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAdminDownloadImage('back')}
+                      className="px-2.5 py-1 text-[11px] font-semibold text-gray-700 dark:text-white bg-gray-200/70 dark:bg-[#083002] hover:bg-gray-300 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <Download className="w-3 h-3 text-[#138601] dark:text-[#4bd043]" />
+                      <span>Back</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAdminDownloadImage('both')}
+                      className="px-2.5 py-1 text-[11px] font-semibold text-gray-700 dark:text-white bg-gray-200/70 dark:bg-[#083002] hover:bg-gray-300 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <Download className="w-3 h-3 text-[#138601] dark:text-[#4bd043]" />
+                      <span>Both PNG</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAdminDownloadPdf}
+                      className="px-3 py-1 text-[11px] font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-lg shadow-sm transition-colors cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <span>Print PDF</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Existing ID Number if generated */}
               {selectedApp.id_card_number && (

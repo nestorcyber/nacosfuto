@@ -329,7 +329,7 @@ const AdminNews = () => {
                 <div className="pt-2">
                   <MediaUpload
                     folder={CLOUDINARY_FOLDERS.NEWS}
-                    label="Article Featured Cover Image (Cloudinary CDN)"
+                    label="Article Featured Cover Image"
                     aspectRatio="landscape"
                     onUploadSuccess={({ url, publicId }) => {
                       setCoverUrl(url);

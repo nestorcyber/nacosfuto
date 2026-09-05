@@ -169,7 +169,7 @@ const Gallery = () => {
             <div className="flex-grow max-w-7xl mx-auto px-6 py-16 w-full">
                 <header className="text-center mb-12">
                     <span className="inline-block px-4 py-1.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider mb-4 border border-green-500/20">
-                        Cloudinary CDN Powered • {images.length} Campus Moments
+                        Campus Life & Events • {images.length} Moments
                     </span>
                     <h1 className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-500">
                         Campus Life Gallery
@@ -219,7 +219,7 @@ const Gallery = () => {
                                 </span>
                                 <span className="text-[10px] uppercase font-bold tracking-wider text-green-400 mb-1">{img.category}</span>
                                 <p className="font-semibold text-xs leading-snug drop-shadow">{img.caption}</p>
-                                <span className="text-[9px] text-green-300 mt-1 font-mono">f_auto, q_auto Cloudinary Delivery</span>
+                                <span className="text-[9px] text-green-300 mt-1 font-mono">High-Resolution Photo</span>
                             </div>
                         </div>
                     ))}
@@ -254,7 +254,7 @@ const Gallery = () => {
                         </div>
                         <div className="p-4 text-center text-white">
                             <p className="text-sm font-semibold">{activeModalImage.caption}</p>
-                            <span className="text-xs text-green-400 font-mono mt-1 block">Delivered live via Cloudinary CDN</span>
+                            <span className="text-xs text-green-400 font-mono mt-1 block">Official Department Archive</span>
                         </div>
                     </div>
                 </div>

@@ -187,7 +187,7 @@ const AdminMedia = () => {
       if (res.success) {
         showFeedback(
           res.mode === 'live_cloudinary'
-            ? `All ${res.totalFolders || 12} canonical folders verified & provisioned live in Cloudinary!`
+            ? `All ${res.totalFolders || 12} canonical folders verified & provisioned live!`
             : `All ${res.results?.length || 12} canonical folders cataloged and ready for upload!`
         );
         const updated = await getCloudinaryFoldersStatus();
@@ -220,12 +220,12 @@ const AdminMedia = () => {
   const handleCopyUrl = (url, id) => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
-    showFeedback('Cloudinary CDN URL copied to clipboard!');
+    showFeedback('Media URL copied to clipboard!');
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleDelete = async (item) => {
-    if (!window.confirm(`Delete "${item.cloudinary_public_id}" from Cloudinary and database?`)) return;
+    if (!window.confirm(`Delete "${item.cloudinary_public_id}" from storage and database?`)) return;
 
     await deleteMediaAsset(item.cloudinary_public_id);
     const updated = mediaList.filter(m => m.cloudinary_public_id !== item.cloudinary_public_id);
@@ -235,7 +235,7 @@ const AdminMedia = () => {
       category: item.category
     });
 
-    showFeedback('Media asset removed from Cloudinary and database.');
+    showFeedback('Media asset removed from storage and database.');
   };
 
   const handleUploadSuccess = async ({ url, publicId, format, bytes, width, height }) => {
@@ -276,7 +276,7 @@ const AdminMedia = () => {
 
     setIsUploadOpen(false);
     setUploadAlt('');
-    showFeedback('Image successfully uploaded to Cloudinary CDN & synced with database!');
+    showFeedback('Image successfully uploaded & synced with database!');
   };
 
   const categories = [
@@ -313,12 +313,12 @@ const AdminMedia = () => {
   return (
     <WebsiteAdminLayout
       title="Website Media Management"
-      subtitle="Dedicated Cloudinary infrastructure for public website images, Yellow Pages flyers, alumni spotlight, and hero banners."
+      subtitle="Media asset management for public website images, Yellow Pages flyers, alumni spotlight, and hero banners."
     >
       <div className="space-y-6">
         
         {/* =========================================================================
-            CLOUDINARY FOLDER ARCHITECTURE TRACKER & SYNC PANEL
+            FOLDER ARCHITECTURE TRACKER & SYNC PANEL
             ========================================================================= */}
         <div className="p-5 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-[#138601]/20">
@@ -326,10 +326,10 @@ const AdminMedia = () => {
               <div className="flex items-center gap-2">
                 <FolderTree className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
                 <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                  Cloudinary Folder Architecture & Auto-Provisioning
+                  Folder Architecture & Auto-Provisioning
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800 dark:bg-green-950/60 dark:text-green-300">
-                  {folderSyncStatus.cloudName || 'nacos-futo'}
+                  Active Storage
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-green-200/70 mt-0.5">
@@ -345,7 +345,7 @@ const AdminMedia = () => {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
               >
                 <FolderSync className={`w-3.5 h-3.5 ${isSyncingFolders ? 'animate-spin' : ''}`} />
-                <span>{isSyncingFolders ? 'Syncing...' : 'Sync Cloudinary Folders'}</span>
+                <span>{isSyncingFolders ? 'Syncing...' : 'Sync Asset Folders'}</span>
               </button>
 
               <button
@@ -565,7 +565,7 @@ const AdminMedia = () => {
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-semibold mb-1">Target Cloudinary Folder</label>
+                  <label className="block font-semibold mb-1">Target Asset Folder</label>
                   <select
                     value={uploadCategory}
                     onChange={(e) => setUploadCategory(e.target.value)}
@@ -617,7 +617,7 @@ const AdminMedia = () => {
             <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
               <div className="flex items-center justify-between border-b border-gray-100 dark:border-[#138601]/20 pb-3">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Cloudinary Delivery Inspector
+                  Media Delivery Inspector
                 </h3>
                 <button onClick={() => setPreviewMedia(null)} className="text-gray-400 cursor-pointer">✕</button>
               </div>

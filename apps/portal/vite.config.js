@@ -59,7 +59,7 @@ function cloudinaryDevPlugin() {
           const apiSecret = env.CLOUDINARY_API_SECRET;
 
           const canonicalFolders = [
-            { path: 'nacos', name: 'Root Organization', surface: 'shared', description: 'Root NACOS Cloudinary container' },
+            { path: 'nacos', name: 'Root Organization', surface: 'shared', description: 'Root NACOS media storage container' },
             { path: 'nacos/students', name: 'Student Passports & Photos', surface: 'portal', description: 'Student passport photographs for clearance and profiles' },
             { path: 'nacos/ids', name: 'Student ID Cards', surface: 'portal', description: 'Generated digital student ID card assets and archives' },
             { path: 'nacos/certificates', name: 'Certificates & Awards', surface: 'shared', description: 'Digital certificates, hackathon badges, and honors' },

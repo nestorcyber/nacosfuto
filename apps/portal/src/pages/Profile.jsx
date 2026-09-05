@@ -171,7 +171,7 @@ const Profile = () => {
               <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center justify-between">
                 <span>Official Passport Photo</span>
                 <span className="text-[10px] font-normal text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/40 px-2 py-0.5 rounded">
-                  Cloudinary CDN
+                  Official Photo
                 </span>
               </h3>
               <p className="text-[11px] text-gray-500 dark:text-green-200/70 leading-relaxed">

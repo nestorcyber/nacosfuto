@@ -1,88 +1,81 @@
 /**
- * NACOS FUTO Student ID Card Template Configuration
- * Centralized coordinates and styling tokens for dynamic card rendering
+ * NACOS FUTO Student ID Card Master Template Configuration
+ * Centralized coordinates, dimensions, and typography tokens for programmatic ID card generation
+ * Based strictly on the authoritative master template (662 × 1075 px).
+ * 
+ * DOUBLE-SIDED CARD:
+ * 1. FRONT: Dynamic compositing (Master Front + Passport Photo + Full Name + Reg Number)
+ * 2. BACK: Static completed template (Untouched official NACOS FUTO certification & QR back)
+ * 
+ * FONT:
+ * - Font used for Name and Registration Number is Aeonik Black ('Aeonik Black', 'Aeonik').
  */
 
 export const ID_CARD_TEMPLATE = {
-  version: '2026.1',
+  version: '2026.2',
+  isDoubleSided: true,
+  masterTemplateUrl: 'https://res.cloudinary.com/z3wgqisj/image/upload/v1788570571/B_cld0wm.jpg',
+  masterBackUrl: 'https://res.cloudinary.com/z3wgqisj/image/upload/v1788571061/NACOS_ID_CARD_PHASE_1_zodyod.jpg',
   dimensions: {
-    width: 1012,  // 3.375 inches @ 300 DPI (CR80 Standard ID)
-    height: 638,  // 2.125 inches @ 300 DPI
-    aspectRatio: 1012 / 638
-  },
-  background: {
-    primaryColor: '#083002',
-    accentColor: '#138601',
-    borderColor: '#138601',
-    borderWidth: 4,
-    borderRadius: 24
-  },
-  header: {
-    title: 'NIGERIA ASSOCIATION OF COMPUTING STUDENTS',
-    chapter: 'FEDERAL UNIVERSITY OF TECHNOLOGY, OWERRI (FUTO CHAPTER)',
-    department: 'DEPARTMENT OF COMPUTER SCIENCE',
-    tag: 'OFFICIAL STUDENT IDENTITY CARD',
-    height: 120
+    width: 662,
+    height: 1075,
+    aspectRatio: 662 / 1075
   },
   photo: {
-    x: 65,
-    y: 165,
-    width: 240,
-    height: 300,
-    borderRadius: 16,
-    borderWidth: 4,
-    borderColor: '#138601',
-    placeholderColor: '#041801'
+    // Regular hexagon with rounded corners centered inside the green/white border
+    centerX: 331,
+    centerY: 358,
+    radius: 164,          // Distance from center to each vertex
+    cornerRadius: 18,     // Corner rounding radius
+    boundingBox: {
+      x: 184,
+      y: 194,
+      width: 294,
+      height: 328
+    },
+    vertices: [
+      { x: 331, y: 194 }, // Top (270°)
+      { x: 473, y: 276 }, // Top Right (330°)
+      { x: 473, y: 440 }, // Bottom Right (30°)
+      { x: 331, y: 522 }, // Bottom (90°)
+      { x: 189, y: 440 }, // Bottom Left (150°)
+      { x: 189, y: 276 }  // Top Left (210°)
+    ]
   },
   name: {
-    x: 345,
-    y: 220,
-    maxWidth: 600,
-    maxFontSize: 30,
-    minFontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
+    // Positioned directly below the static green 'NAME' badge (y: 635 to 682)
+    badge: {
+      x: 255,
+      y: 635,
+      width: 141,
+      height: 48
+    },
+    centerX: 331,
+    centerY: 750,         // Target optical vertical center between NAME and REG NO. badges
+    line1Y: 726,          // Baseline for 2-line name (Line 1)
+    line2Y: 776,          // Baseline for 2-line name (Line 2)
+    singleLineY: 750,     // Baseline for 1-line name
+    maxWidth: 490,        // Max horizontal text span before wrapping to next line
+    fontSize: 38,         // Fixed 38px across all cards - never shrink
+    fontWeight: '900',
+    color: '#000000',
+    fontFamily: '"Aeonik Black", "Aeonik", "Montserrat", "Plus Jakarta Sans", Inter, -apple-system, "Segoe UI", Arial, sans-serif'
   },
   registrationNumber: {
-    x: 345,
-    y: 275,
-    fontSize: 22,
-    color: '#4bd043',
-    fontWeight: 'bold',
-    fontFamily: 'Courier New, monospace'
-  },
-  programme: {
-    x: 345,
-    y: 330,
-    label: 'PROGRAMME:',
-    fontSize: 16,
-    color: '#cbe1ff'
-  },
-  academicLevel: {
-    x: 345,
-    y: 380,
-    label: 'LEVEL & SESSION:',
-    fontSize: 16,
-    color: '#cbe1ff'
-  },
-  faculty: {
-    x: 345,
-    y: 430,
-    label: 'FACULTY:',
-    fontSize: 15,
-    color: '#a3cfbb'
-  },
-  footer: {
-    y: 530,
-    height: 80,
-    authorizedText: 'AUTHORIZED BY NACOS FUTO EXECUTIVE COUNCIL',
-    securityHashPrefix: 'VERIFIED-MEMBER-FUTO-CSC'
-  },
-  qrCode: {
-    x: 840,
-    y: 350,
-    size: 110
+    // Positioned directly below the static green 'REG NO.' badge (y: 865 to 913)
+    badge: {
+      x: 260,
+      y: 865,
+      width: 142,
+      height: 49
+    },
+    centerX: 331,
+    y: 956,               // Middle baseline for registration number
+    maxWidth: 480,
+    fontSize: 38,
+    fontWeight: '900',
+    color: '#000000',
+    fontFamily: '"Aeonik Black", "Aeonik", "Montserrat", "Plus Jakarta Sans", Inter, -apple-system, "Segoe UI", Arial, sans-serif'
   }
 };
 

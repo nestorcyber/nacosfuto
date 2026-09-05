@@ -10,7 +10,8 @@
     "./auth": "./src/auth.js",
     "./adminAuth": "./src/adminAuth.js",
     "./idCard": "./src/idCard.js",
-    "./media": "./src/media.js"
+    "./media": "./src/media.js",
+    "./verifiedStudents": "./src/verifiedStudents.js"
   },
   "dependencies": {
     "@nacos/media": "*",

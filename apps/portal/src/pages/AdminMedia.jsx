@@ -239,7 +239,7 @@ const AdminMedia = () => {
       if (res.success) {
         showNotification(
           res.mode === 'live_cloudinary'
-            ? `All ${res.totalFolders || 12} canonical folders verified & provisioned live in Cloudinary!`
+            ? `All ${res.totalFolders || 12} canonical folders verified & provisioned live!`
             : `All ${res.results?.length || 12} canonical folders cataloged and ready for upload!`
         );
         const updated = await getCloudinaryFoldersStatus();
@@ -275,12 +275,12 @@ const AdminMedia = () => {
   const handleCopyUrl = (url, id) => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
-    showNotification('Cloudinary CDN URL copied to clipboard!');
+    showNotification('Media URL copied to clipboard!');
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleDeleteAsset = async (item) => {
-    if (!window.confirm(`Are you sure you want to delete "${item.cloudinary_public_id}" from Cloudinary and database?`)) {
+    if (!window.confirm(`Are you sure you want to delete "${item.cloudinary_public_id}" from storage and database?`)) {
       return;
     }
 
@@ -288,7 +288,7 @@ const AdminMedia = () => {
 
     const updated = mediaList.filter(m => m.cloudinary_public_id !== item.cloudinary_public_id);
     setMediaList(updated);
-    showNotification(`Asset ${item.cloudinary_public_id} deleted successfully from Cloudinary and database.`);
+    showNotification(`Asset ${item.cloudinary_public_id} deleted successfully.`);
   };
 
   const handleUploadSuccess = async ({ url, publicId, format, bytes, width, height }) => {
@@ -326,7 +326,7 @@ const AdminMedia = () => {
     setIsUploadModalOpen(false);
     setNewAssetAlt('');
     setNewAssetEntity('');
-    showNotification('New asset saved to Cloudinary & synced with database!');
+    showNotification('New asset saved & synced with database!');
   };
 
   if (!isAuthorized) {
@@ -338,7 +338,7 @@ const AdminMedia = () => {
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Access Restricted</h2>
           <p className="text-xs text-gray-500 dark:text-green-200/80 leading-relaxed">
-            The Dedicated Cloudinary Media Management Dashboard is restricted to Chapter Presidents and Administrators.
+            The Media Management Dashboard is restricted to Chapter Presidents and Administrators.
           </p>
         </div>
       </PortalLayout>
@@ -386,11 +386,11 @@ const AdminMedia = () => {
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-                Cloudinary Media Infrastructure
+                Media Asset Management
               </h1>
             </div>
             <p className="text-xs text-gray-500 dark:text-green-100/70">
-              Dedicated media management, transformations, facial-centering, and global CDN delivery for NACOS.
+              High-performance media management, automated facial-centering, and optimized cloud delivery for NACOS.
             </p>
           </div>
 
@@ -415,7 +415,7 @@ const AdminMedia = () => {
         )}
 
         {/* =========================================================================
-            CLOUDINARY FOLDER ARCHITECTURE TRACKER & SYNC PANEL
+            FOLDER ARCHITECTURE TRACKER & SYNC PANEL
             ========================================================================= */}
         <div className="p-5 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-[#138601]/20">
@@ -423,10 +423,10 @@ const AdminMedia = () => {
               <div className="flex items-center gap-2">
                 <FolderTree className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
                 <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                  Cloudinary Folder Architecture & Auto-Provisioning
+                  Folder Architecture & Auto-Provisioning
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800 dark:bg-green-950/60 dark:text-green-300">
-                  {folderSyncStatus.cloudName || 'nacos-futo'}
+                  Active Storage
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-green-200/70 mt-0.5">
@@ -442,7 +442,7 @@ const AdminMedia = () => {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
               >
                 <FolderSync className={`w-3.5 h-3.5 ${isSyncingFolders ? 'animate-spin' : ''}`} />
-                <span>{isSyncingFolders ? 'Syncing...' : 'Sync Cloudinary Folders'}</span>
+                <span>{isSyncingFolders ? 'Syncing...' : 'Sync Asset Folders'}</span>
               </button>
 
               <button
@@ -521,14 +521,14 @@ const AdminMedia = () => {
         {/* Storage & Optimization Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
-            <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Total Cloudinary Assets</span>
+            <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Total Media Assets</span>
             <div className="text-2xl font-bold text-gray-900 dark:text-white">{mediaList.length}</div>
             <span className="text-[10px] text-green-600 dark:text-green-300 font-medium">Auto WebP/AVIF Enabled</span>
           </div>
           <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
             <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Database Binary Storage</span>
             <div className="text-2xl font-bold text-[#138601] dark:text-[#4bd043]">0 MB</div>
-            <span className="text-[10px] text-gray-500 dark:text-green-200/70 font-medium">100% offloaded to Cloudinary</span>
+            <span className="text-[10px] text-gray-500 dark:text-green-200/70 font-medium">100% cloud-hosted storage</span>
           </div>
           <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
             <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Dynamic Crop Engine</span>
@@ -666,7 +666,7 @@ const AdminMedia = () => {
               <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#138601]/20 pb-3">
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Upload className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
-                  <span>Upload Asset to Cloudinary</span>
+                  <span>Upload Media Asset</span>
                 </h3>
                 <button
                   type="button"
@@ -680,7 +680,7 @@ const AdminMedia = () => {
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">
-                    Target Cloudinary Folder
+                    Target Asset Folder
                   </label>
                   <select
                     value={newAssetCategory}
@@ -750,7 +750,7 @@ const AdminMedia = () => {
               <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#138601]/20 pb-3">
                 <div>
                   <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                    Cloudinary Transformation Inspector
+                    Media Asset Inspector
                   </h3>
                   <p className="text-[11px] font-mono text-gray-500 dark:text-green-200/70">
                     {previewMedia.cloudinary_public_id}

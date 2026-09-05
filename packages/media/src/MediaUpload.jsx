@@ -247,7 +247,7 @@ export const MediaUpload = ({
         {isUploading && (
           <div className="w-full mt-3 space-y-1">
             <div className="flex justify-between text-[10px] font-medium text-gray-600 dark:text-green-200">
-              <span>Uploading to Cloudinary...</span>
+              <span>Uploading image...</span>
               <span>{progress}%</span>
             </div>
             <div className="w-full h-1.5 bg-gray-200 dark:bg-[#083002] rounded-full overflow-hidden">

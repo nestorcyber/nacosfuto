@@ -671,10 +671,12 @@ export async function portalAdminApproveApplication(applicationId, adminUser) {
     return { error: 'Cannot approve application: passport photograph is missing.' };
   }
 
-  // Student registration number is the only number used to track students (no artificial numbers generated)
-  const idCardNumber = app.matric_number || app.id_card_number;
+  // Student registration number is the only number used to track students (digits only)
+  const rawNum = app.matric_number || app.id_card_number;
+  const idCardNumber = String(rawNum).replace(/\D/g, '') || String(rawNum).trim();
 
   app.id_card_number = idCardNumber;
+  app.id_card_back_url = ID_CARD_TEMPLATE.masterBackUrl;
   app.status = 'generated'; // Ready for student view and download
   app.approved_at = new Date().toISOString();
   app.generated_at = new Date().toISOString();
@@ -686,6 +688,7 @@ export async function portalAdminApproveApplication(applicationId, adminUser) {
   try {
     await supabase.from('id_card_applications').update({
       id_card_number: app.id_card_number,
+      id_card_back_url: app.id_card_back_url,
       status: 'generated',
       approved_at: app.approved_at,
       generated_at: app.generated_at,
@@ -780,21 +783,54 @@ export async function portalAdminRegenerateIdCard(applicationId, adminUser) {
   }
 
   const app = apps[index];
+  const rawNum = app.matric_number || app.id_card_number;
+  app.id_card_number = String(rawNum).replace(/\D/g, '') || String(rawNum).trim();
+  app.id_card_back_url = ID_CARD_TEMPLATE.masterBackUrl;
   app.status = 'generated';
   app.generated_at = new Date().toISOString();
+  app.reviewed_by = adminUser?.id || adminUser?.user_id || 'admin-portal';
   app.updated_at = new Date().toISOString();
 
   saveLocalIdApplications(apps);
 
   try {
     await supabase.from('id_card_applications').update({
+      id_card_number: app.id_card_number,
+      id_card_back_url: app.id_card_back_url,
       status: 'generated',
       generated_at: app.generated_at,
+      reviewed_by: app.reviewed_by,
       updated_at: app.updated_at
     }).eq('id', app.id);
   } catch (e) {}
 
   return { success: true, application: app };
+}
+
+/**
+ * Persist generated ID Card Image URL to the database
+ */
+export async function saveGeneratedIdCardAsset(applicationId, imageUrl) {
+  if (!applicationId || !imageUrl) return { error: 'Missing parameters' };
+
+  const apps = getLocalIdApplicationsDatabase();
+  const index = apps.findIndex(a => a.id === applicationId);
+  if (index !== -1) {
+    apps[index].id_card_image_url = imageUrl;
+    apps[index].id_card_back_url = ID_CARD_TEMPLATE.masterBackUrl;
+    apps[index].updated_at = new Date().toISOString();
+    saveLocalIdApplications(apps);
+  }
+
+  try {
+    await supabase.from('id_card_applications').update({
+      id_card_image_url: imageUrl,
+      id_card_back_url: ID_CARD_TEMPLATE.masterBackUrl,
+      updated_at: new Date().toISOString()
+    }).eq('id', applicationId);
+  } catch (e) {}
+
+  return { success: true, imageUrl };
 }
 
 /**
@@ -912,279 +948,301 @@ export async function verifyIdCardPublic(idCardNumber) {
 }
 
 /**
- * High-Resolution Canvas Rendering Engine for ID Card
- * Strictly renders the permanent NACOS visual template and dynamically positions:
- * - PHOTO
- * - FULL NAME (with dynamic auto-shrinking text fitting)
- * - REGISTRATION NUMBER
- * - OFFICIAL NACOS ID NUMBER (e.g. NACOS-FUTO-2026-000001)
- * - ACADEMIC DETAILS & DYNAMIC SCANNABLE QR CODE
+ * Helper to trace the exact rounded regular hexagon geometry on HTML5 Canvas
  */
-export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = null) {
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const t = ID_CARD_TEMPLATE;
-
-  // Set high-res canvas dimensions
-  canvas.width = t.dimensions.width;
-  canvas.height = t.dimensions.height;
-
-  // 1. Card Base Background (Brand Deep Forest Green Gradient)
-  const bgGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  bgGradient.addColorStop(0, '#041801');
-  bgGradient.addColorStop(0.5, '#083002');
-  bgGradient.addColorStop(1, '#020f01');
-  ctx.fillStyle = bgGradient;
-  
-  // Rounded card rectangle
-  roundRect(ctx, 0, 0, canvas.width, canvas.height, t.background.borderRadius);
-  ctx.fill();
-
-  // Outer Border
-  ctx.strokeStyle = t.background.borderColor;
-  ctx.lineWidth = t.background.borderWidth;
-  ctx.stroke();
-
-  // Subtle Geometric Background Pattern / Watermark
-  ctx.save();
-  ctx.strokeStyle = 'rgba(19, 134, 1, 0.15)';
-  ctx.lineWidth = 1.5;
-  for (let i = -canvas.height; i < canvas.width; i += 40) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i + canvas.height, canvas.height);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // 2. Card Header Banner
-  const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  headerGradient.addColorStop(0, '#0a3d03');
-  headerGradient.addColorStop(1, '#052202');
-  ctx.fillStyle = headerGradient;
-  roundRect(ctx, 4, 4, canvas.width - 8, t.header.height, [20, 20, 0, 0]);
-  ctx.fill();
-
-  // Header Divider Accent Line
-  ctx.fillStyle = '#138601';
-  ctx.fillRect(0, t.header.height + 4, canvas.width, 4);
-
-  // Header Typography
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 22px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText(t.header.title, 65, 45);
-
-  ctx.fillStyle = '#cbe1ff';
-  ctx.font = '600 15px system-ui, sans-serif';
-  ctx.fillText(t.header.chapter, 65, 75);
-
-  ctx.fillStyle = '#a3cfbb';
-  ctx.font = 'bold 13px system-ui, sans-serif';
-  ctx.fillText(t.header.department, 65, 102);
-
-  // Top-Right Header Badge
-  ctx.fillStyle = 'rgba(19, 134, 1, 0.4)';
-  roundRect(ctx, canvas.width - 240, 35, 180, 42, 8);
-  ctx.fill();
-  ctx.strokeStyle = '#4bd043';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  ctx.fillStyle = '#4bd043';
-  ctx.font = 'bold 12px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('OFFICIAL STUDENT ID', canvas.width - 150, 61);
-
-  // 3. Student Photo Placement
-  const p = t.photo;
-  ctx.save();
-  roundRect(ctx, p.x, p.y, p.width, p.height, p.borderRadius);
-  ctx.clip(); // Clip photo into smooth rounded rectangle
-
-  if (photoImg && photoImg.complete && photoImg.naturalWidth > 0) {
-    const imgRatio = photoImg.naturalWidth / photoImg.naturalHeight;
-    const boxRatio = p.width / p.height;
-    let renderW, renderH, renderX, renderY;
-
-    if (imgRatio > boxRatio) {
-      renderH = p.height;
-      renderW = p.height * imgRatio;
-      renderX = p.x - (renderW - p.width) / 2;
-      renderY = p.y;
-    } else {
-      renderW = p.width;
-      renderH = p.width / imgRatio;
-      renderX = p.x;
-      renderY = p.y - (renderH - p.height) / 2;
-    }
-    ctx.drawImage(photoImg, renderX, renderY, renderW, renderH);
-  } else {
-    // Photo Placeholder
-    ctx.fillStyle = '#0a3504';
-    ctx.fillRect(p.x, p.y, p.width, p.height);
-    ctx.fillStyle = '#4bd043';
-    ctx.font = 'bold 48px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText((student.name || student.full_name || 'ST').slice(0, 2).toUpperCase(), p.x + p.width / 2, p.y + p.height / 2 + 15);
-  }
-  ctx.restore();
-
-  // Photo Frame Border
-  ctx.strokeStyle = p.borderColor;
-  ctx.lineWidth = p.borderWidth;
-  roundRect(ctx, p.x, p.y, p.width, p.height, p.borderRadius);
-  ctx.stroke();
-
-  // 4. Student Dynamic Fields with Text Auto-Scaling
-  ctx.textAlign = 'left';
-
-  // Dynamic Full Name (Auto-Shrinks for long names)
-  const fullName = (student.name || student.full_name || 'STUDENT NAME').toUpperCase();
-  const n = t.name;
-  let fontSize = n.maxFontSize;
-  ctx.font = `${n.fontWeight} ${fontSize}px ${n.fontFamily}`;
-  while (ctx.measureText(fullName).width > n.maxWidth && fontSize > n.minFontSize) {
-    fontSize -= 1;
-    ctx.font = `${n.fontWeight} ${fontSize}px ${n.fontFamily}`;
-  }
-  ctx.fillStyle = n.color;
-  ctx.fillText(fullName, n.x, n.y);
-
-  // Registration Number (The only number used to track students)
-  const regNo = String(student.registration_number || student.matric || cardInfo?.matric_number || cardInfo?.id_card_number || '20241029481').trim();
-  const r = t.registrationNumber;
-  ctx.fillStyle = r.color;
-  ctx.font = `${r.fontWeight} ${r.fontSize}px ${r.fontFamily}`;
-  ctx.fillText(`REG NO: ${regNo}`, r.x, r.y);
-
-  // Programme
-  ctx.fillStyle = '#86efac';
-  ctx.font = 'bold 12px system-ui, sans-serif';
-  ctx.fillText('PROGRAMME:', t.programme.x, t.programme.y - 12);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '600 15px system-ui, sans-serif';
-  ctx.fillText(student.programme || 'B.Tech Computer Science', t.programme.x, t.programme.y + 10);
-
-  // Level & Admission Year
-  ctx.fillStyle = '#86efac';
-  ctx.font = 'bold 12px system-ui, sans-serif';
-  ctx.fillText('LEVEL & SESSION:', t.academicLevel.x, t.academicLevel.y - 12);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '600 15px system-ui, sans-serif';
-  const levelText = `${student.level || student.current_level || '300 Level'} • Session 2026/2027`;
-  ctx.fillText(levelText, t.academicLevel.x, t.academicLevel.y + 10);
-
-  // Faculty
-  ctx.fillStyle = '#86efac';
-  ctx.font = 'bold 12px system-ui, sans-serif';
-  ctx.fillText('FACULTY:', t.faculty.x, t.faculty.y - 12);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '600 14px system-ui, sans-serif';
-  ctx.fillText(student.faculty || 'School of Information & Comm. Tech (SICT)', t.faculty.x, t.faculty.y + 8);
-
-  // 5. Dynamic Scannable QR Code leading to verification URL
-  const q = t.qrCode;
-  ctx.fillStyle = '#FFFFFF';
-  roundRect(ctx, q.x, q.y, q.size, q.size, 8);
-  ctx.fill();
-  ctx.strokeStyle = '#138601';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Generate real dynamic QR code URL based on student's registration number
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nacos-futo.org.ng';
-  const verifyUrl = `${origin}/verify/id/${regNo}`;
-
-  try {
-    const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
-      margin: 1,
-      width: q.size - 8,
-      color: { dark: '#041801', light: '#ffffff' }
-    });
-
-    const qrImg = new Image();
-    qrImg.src = qrDataUrl;
-    await new Promise((resolve) => {
-      qrImg.onload = () => {
-        ctx.drawImage(qrImg, q.x + 4, q.y + 4, q.size - 8, q.size - 8);
-        resolve();
-      };
-      qrImg.onerror = () => resolve();
-    });
-  } catch (err) {
-    // Fallback decorative pattern if QR generation encounters an issue
-    ctx.fillStyle = '#041801';
-    roundRect(ctx, q.x + 10, q.y + 10, 24, 24, 3);
-    ctx.fill();
-    roundRect(ctx, q.x + q.size - 34, q.y + 10, 24, 24, 3);
-    ctx.fill();
-    roundRect(ctx, q.x + 10, q.y + q.size - 34, 24, 24, 3);
-    ctx.fill();
-  }
-
-  // 6. Card Footer & Security Signature Bar
-  ctx.fillStyle = 'rgba(4, 24, 1, 0.9)';
-  roundRect(ctx, 4, t.footer.y, canvas.width - 8, t.footer.height + 24, [0, 0, 20, 20]);
-  ctx.fill();
-  ctx.strokeStyle = '#138601';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  ctx.fillStyle = '#86efac';
-  ctx.font = 'bold 11px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText(t.footer.authorizedText, 65, t.footer.y + 35);
-
-  ctx.fillStyle = '#a3cfbb';
-  ctx.font = '10px monospace';
-  ctx.fillText(`SECURITY VERIFY: /verify/id/${idNumber}`, 65, t.footer.y + 55);
-
-  ctx.fillStyle = '#4bd043';
-  ctx.font = 'bold 11px system-ui, sans-serif';
-  ctx.textAlign = 'right';
-  ctx.fillText('STATUS: CLEARED & ACTIVE', canvas.width - 65, t.footer.y + 42);
-}
-
-function roundRect(ctx, x, y, width, height, radius = 0) {
-  if (typeof radius === 'number') {
-    radius = [radius, radius, radius, radius];
-  }
-  const [tl, tr, br, bl] = radius;
+function traceRoundedHexagon(ctx, vertices, radius = 18) {
   ctx.beginPath();
-  ctx.moveTo(x + tl, y);
-  ctx.lineTo(x + width - tr, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + tr);
-  ctx.lineTo(x + width, y + height - br);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - br, y + height);
-  ctx.lineTo(x + bl, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - bl);
-  ctx.lineTo(x, y + tl);
-  ctx.quadraticCurveTo(x, y, x + tl, y);
+  const len = vertices.length;
+  for (let i = 0; i < len; i++) {
+    const pPrev = vertices[(i - 1 + len) % len];
+    const pCurr = vertices[i];
+    const pNext = vertices[(i + 1) % len];
+    const midPrevX = (pPrev.x + pCurr.x) / 2;
+    const midPrevY = (pPrev.y + pCurr.y) / 2;
+    if (i === 0) {
+      ctx.moveTo(midPrevX, midPrevY);
+    }
+    ctx.arcTo(pCurr.x, pCurr.y, pNext.x, pNext.y, radius);
+  }
   ctx.closePath();
 }
 
 /**
- * Download high-resolution PNG image
+ * Image loader helper with fallback URLs and cross-origin handling
  */
-export function downloadIdCardAsImage(canvas, filename = 'NACOS-Student-ID-Card') {
-  if (!canvas) return;
-  const link = document.createElement('a');
-  link.download = `${filename}.png`;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+function loadTemplateImage(primaryUrl, fallbackUrl) {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') return resolve(null);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      if (fallbackUrl && fallbackUrl !== primaryUrl) {
+        const fallbackImg = new Image();
+        fallbackImg.crossOrigin = 'anonymous';
+        fallbackImg.onload = () => resolve(fallbackImg);
+        fallbackImg.onerror = () => resolve(null);
+        fallbackImg.src = fallbackUrl;
+      } else {
+        resolve(null);
+      }
+    };
+    img.src = fallbackUrl || primaryUrl;
+  });
+}
+
+function loadOptionalImage(src) {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined' || !src) return resolve(null);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
 }
 
 /**
- * Generate and download high-resolution PDF document formatted for standard CR-80 card printing
+ * High-Resolution Canvas Rendering Engine for NACOS Official Student ID Card
+ * Takes the authoritative EMPTY ID CARD TEMPLATE as the master visual background layer,
+ * and composites:
+ * 1. Student Passport Photo (clipped inside the existing rounded hexagonal frame,
+ *    with object-fit: cover, keeping the template's green and white border visible above).
+ * 2. Student Full Name (uppercase, Aeonik Black font, centered horizontally underneath
+ *    the static 'NAME' badge, auto-wrapped into 1 or 2 lines, auto-scaled if long).
+ * 3. Student Registration Number (digits only, Aeonik Black font, centered horizontally
+ *    underneath the static 'REG NO.' badge).
  */
-export function downloadIdCardAsPdf(canvas, filename = 'NACOS-Student-ID-Card') {
+export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = null, options = {}) {
   if (!canvas) return;
-  const imgData = canvas.toDataURL('image/png');
+  const ctx = canvas.getContext('2d');
+  const t = ID_CARD_TEMPLATE;
+
+  // Set exact master card resolution: 662 × 1075 px
+  canvas.width = t.dimensions.width;
+  canvas.height = t.dimensions.height;
+
+  // 1. Load Master Template Image (Priority: local asset / public -> Cloudinary URL)
+  const templateImg = options.templateImg || await loadTemplateImage(
+    t.masterTemplateUrl, 
+    '/nacos_id_template_master.jpg'
+  );
+
+  // Draw master empty template as the authoritative background
+  if (templateImg && templateImg.complete && templateImg.naturalWidth > 0) {
+    ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+  } else {
+    // Elegant deep green fallback if template image is still loading
+    ctx.fillStyle = '#083002';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // 2. Composite Student Passport Photograph
+  if (photoImg && photoImg.complete && photoImg.naturalWidth > 0) {
+    ctx.save();
+    // Clip strictly inside the rounded hexagon
+    traceRoundedHexagon(ctx, t.photo.vertices, t.photo.cornerRadius);
+    ctx.clip();
+
+    // Cover scaling centered at (331, 358)
+    const targetW = t.photo.boundingBox.width + 6; // 300px
+    const targetH = t.photo.boundingBox.height + 6; // 334px
+    const imgRatio = photoImg.naturalWidth / photoImg.naturalHeight;
+    const boxRatio = targetW / targetH;
+    let renderW, renderH, renderX, renderY;
+
+    if (imgRatio > boxRatio) {
+      renderH = targetH;
+      renderW = targetH * imgRatio;
+    } else {
+      renderW = targetW;
+      renderH = targetW / imgRatio;
+    }
+    renderX = t.photo.centerX - renderW / 2;
+    renderY = t.photo.centerY - renderH / 2;
+
+    ctx.drawImage(photoImg, renderX, renderY, renderW, renderH);
+    ctx.restore();
+  }
+
+  // 2b. Frame Overlay (Ensures authentic green and white border sits cleanly above the photo)
+  const frameImg = options.frameImg || await loadOptionalImage('/nacos_id_template_frame.png');
+  if (frameImg && frameImg.complete && frameImg.naturalWidth > 0) {
+    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  } else {
+    // Sharp border stroke to guarantee clean border lines if frame PNG is not present
+    ctx.save();
+    ctx.strokeStyle = 'rgba(10, 115, 1, 0.95)';
+    ctx.lineWidth = 6;
+    ctx.lineJoin = 'round';
+    traceRoundedHexagon(ctx, t.photo.vertices, t.photo.cornerRadius);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 3. Render Dynamic Student Full Name (Maintaining Fixed 38px Aeonik Black font across all generations)
+  const rawName = student?.full_name || student?.name || 'STUDENT NAME';
+  const fullName = String(rawName).trim().toUpperCase();
+
+  const nameFontSize = t.name.fontSize; // Fixed 38px - never scaled down
+  ctx.font = `${t.name.fontWeight} ${nameFontSize}px ${t.name.fontFamily}`;
+
+  // Word and hyphen-based tokenization to support natural multi-line wrapping
+  const rawWords = fullName.split(/\s+/).filter(Boolean);
+  const initialTokens = [];
+  for (const word of rawWords) {
+    if (word.includes('-')) {
+      const parts = word.split('-');
+      for (let i = 0; i < parts.length; i++) {
+        if (i < parts.length - 1) {
+          initialTokens.push(parts[i] + '-');
+        } else if (parts[i]) {
+          initialTokens.push(parts[i]);
+        }
+      }
+    } else {
+      initialTokens.push(word);
+    }
+  }
+
+  // Break excessively long single words if any token alone exceeds maxWidth
+  const tokens = [];
+  for (const token of initialTokens) {
+    if (ctx.measureText(token).width > t.name.maxWidth && token.length > 12) {
+      const half = Math.ceil(token.length / 2);
+      tokens.push(token.slice(0, half) + '-');
+      tokens.push(token.slice(half));
+    } else {
+      tokens.push(token);
+    }
+  }
+
+  // Greedily assemble tokens into lines without shrinking the font size
+  const lines = [];
+  let currentLine = '';
+
+  for (const token of tokens) {
+    const testLine = currentLine
+      ? (currentLine.endsWith('-') ? `${currentLine}${token}` : `${currentLine} ${token}`)
+      : token;
+
+    if (ctx.measureText(testLine).width <= t.name.maxWidth) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      currentLine = token;
+    }
+  }
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  // Center multiple lines vertically between the NAME badge (bottom = 682) and REG NO. badge (top = 865)
+  const numLines = lines.length;
+  let centerY = 750;
+  let lineGap = 50;
+
+  if (numLines <= 1) {
+    centerY = 750;
+    lineGap = 0;
+  } else if (numLines === 2) {
+    centerY = 750;
+    lineGap = 50; // Lines at 725 and 775
+  } else if (numLines === 3) {
+    centerY = 750;
+    lineGap = 46; // Lines at 704, 750, 796
+  } else {
+    centerY = 755;
+    lineGap = 40; // Lines at 695, 735, 775, 815
+  }
+
+  const startY = centerY - ((numLines - 1) * lineGap) / 2;
+
+  ctx.fillStyle = t.name.color; // #000000
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  lines.forEach((lineText, idx) => {
+    const lineY = startY + idx * lineGap;
+    ctx.fillText(lineText, t.name.centerX, lineY);
+  });
+
+  // 4. Render Dynamic Registration Number (Strictly Digits Only)
+  const rawReg = student?.registration_number || student?.matric || cardInfo?.matric_number || cardInfo?.id_card_number || '20241424442';
+  const regNo = String(rawReg).replace(/\D/g, '') || String(rawReg).trim();
+
+  let regFontSize = t.registrationNumber.fontSize; // 38
+  ctx.font = `${t.registrationNumber.fontWeight} ${regFontSize}px ${t.registrationNumber.fontFamily}`;
+  while (ctx.measureText(regNo).width > t.registrationNumber.maxWidth && regFontSize > 22) {
+    regFontSize -= 1;
+    ctx.font = `${t.registrationNumber.fontWeight} ${regFontSize}px ${t.registrationNumber.fontFamily}`;
+  }
+
+  ctx.fillStyle = t.registrationNumber.color; // #000000
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(regNo, t.registrationNumber.centerX, t.registrationNumber.y); // (331, 956)
+}
+
+/**
+ * Trigger download of single image (dataURL or URL)
+ */
+function triggerFileDownload(urlOrDataUrl, filename) {
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = urlOrDataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Download high-resolution PNG image
+ * Supports downloading Front, Back, or Both sides
+ */
+export async function downloadIdCardAsImage(frontCanvasOrUrl, filename = 'NACOS-Student-ID-Card', side = 'both') {
+  const frontDataUrl = typeof frontCanvasOrUrl === 'string' 
+    ? frontCanvasOrUrl 
+    : frontCanvasOrUrl?.toDataURL('image/png');
+
+  const backUrl = ID_CARD_TEMPLATE.masterBackUrl || '/nacos_id_template_back.jpg';
+
+  if (side === 'front' || side === 'both') {
+    if (frontDataUrl) {
+      triggerFileDownload(frontDataUrl, `${filename}-front.png`);
+    }
+  }
+
+  if (side === 'back' || side === 'both') {
+    if (side === 'both') {
+      // Short delay to avoid browser download blocking
+      setTimeout(() => {
+        triggerFileDownload(backUrl, `${filename}-back.png`);
+      }, 400);
+    } else {
+      triggerFileDownload(backUrl, `${filename}-back.png`);
+    }
+  }
+}
+
+/**
+ * Generate and download high-resolution PDF document formatted for standard portrait CR-80 card printing
+ * Contains Page 1: Front of ID, Page 2: Back of ID
+ */
+export function downloadIdCardAsPdf(frontCanvasOrUrl, filename = 'NACOS-Student-ID-Card', backUrl = null) {
+  const frontImgData = typeof frontCanvasOrUrl === 'string'
+    ? frontCanvasOrUrl
+    : frontCanvasOrUrl?.toDataURL('image/png');
+
+  if (!frontImgData) return;
+
+  const backImgData = backUrl || ID_CARD_TEMPLATE.masterBackUrl || '/nacos_id_template_back.jpg';
 
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
-    downloadIdCardAsImage(canvas, filename);
+    downloadIdCardAsImage(frontCanvasOrUrl, filename, 'both');
     return;
   }
 
@@ -1192,29 +1250,53 @@ export function downloadIdCardAsPdf(canvas, filename = 'NACOS-Student-ID-Card') 
     <!DOCTYPE html>
     <html>
       <head>
-        <title>${filename}</title>
+        <title>${filename} - Official Two-Sided NACOS ID Card</title>
         <style>
           @page {
-            size: 85.6mm 53.98mm;
+            size: 53.98mm 85.6mm;
             margin: 0;
           }
-          body {
+          *, *::before, *::after {
+            box-sizing: border-box;
+          }
+          html, body {
             margin: 0;
             padding: 0;
+            background: #ffffff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .id-card-page {
+            width: 53.98mm;
+            height: 85.6mm;
+            page-break-after: always;
+            page-break-inside: avoid;
+            break-after: page;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #ffffff;
+            overflow: hidden;
+            margin: 0 auto;
+          }
+          .id-card-page:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
           }
           img {
-            width: 85.6mm;
-            height: 53.98mm;
+            width: 53.98mm;
+            height: 85.6mm;
             display: block;
+            object-fit: cover;
           }
         </style>
       </head>
       <body>
-        <img src="${imgData}" onload="window.print();window.close();" />
+        <div class="id-card-page">
+          <img src="${frontImgData}" alt="NACOS ID Card Front" />
+        </div>
+        <div class="id-card-page">
+          <img src="${backImgData}" alt="NACOS ID Card Back" onload="window.print();" />
+        </div>
       </body>
     </html>
   `);

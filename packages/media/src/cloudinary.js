@@ -32,7 +32,7 @@ export const CANONICAL_NACOS_FOLDERS = [
     name: 'Root Organization',
     surface: 'shared',
     categoryKey: 'root',
-    description: 'Root NACOS Cloudinary media container'
+    description: 'Root NACOS media storage container'
   },
   {
     path: 'nacos/students',

@@ -30,7 +30,8 @@ import {
   submitIdApplication,
   drawIdCardOnCanvas, 
   downloadIdCardAsImage, 
-  downloadIdCardAsPdf 
+  downloadIdCardAsPdf,
+  saveGeneratedIdCardAsset
 } from '@nacos/supabase/idCard';
 import { ID_CARD_TEMPLATE } from '@nacos/config/idCardTemplate';
 import { MediaUpload, CLOUDINARY_FOLDERS, getOptimizedImageUrl } from '@nacos/media';
@@ -43,6 +44,7 @@ const IdCard = () => {
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({ id_card_fee: 2500, academic_session: '2026/2027' });
   const [application, setApplication] = useState(null);
+  const [currentSide, setCurrentSide] = useState('front'); // 'front' | 'back'
 
   // Interaction feedback states
   const [isApplying, setIsApplying] = useState(false);
@@ -87,21 +89,29 @@ const IdCard = () => {
   useEffect(() => {
     if (application && application.status === 'generated' && canvasRef.current && student) {
       const photoUrl = application.passport_url || student.profile_photo_url || student.avatar_url;
+      const render = (img) => {
+        drawIdCardOnCanvas(canvasRef.current, student, img, application).then(() => {
+          if (!application.id_card_image_url && canvasRef.current) {
+            try {
+              const dataUrl = canvasRef.current.toDataURL('image/png');
+              saveGeneratedIdCardAsset(application.id, dataUrl);
+              setApplication(prev => ({ ...prev, id_card_image_url: dataUrl }));
+            } catch (e) {}
+          }
+        });
+      };
+
       if (photoUrl) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          drawIdCardOnCanvas(canvasRef.current, student, img, application);
-        };
-        img.onerror = () => {
-          drawIdCardOnCanvas(canvasRef.current, student, null, application);
-        };
+        img.onload = () => render(img);
+        img.onerror = () => render(null);
         img.src = photoUrl;
       } else {
-        drawIdCardOnCanvas(canvasRef.current, student, null, application);
+        render(null);
       }
     }
-  }, [application, student]);
+  }, [application?.status, student]);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -167,7 +177,7 @@ const IdCard = () => {
       avatar_url: photoUrl,
       cloudinary_public_id: media.publicId
     }));
-    showNotification('Passport photograph uploaded to Cloudinary successfully!');
+    showNotification('Passport photograph uploaded successfully!');
   };
 
   // State 4 -> State 5: Submit Application
@@ -197,18 +207,20 @@ const IdCard = () => {
   };
 
   // Downloads
-  const handleDownloadImage = () => {
-    if (!canvasRef.current || !student) return;
+  const handleDownloadImage = (side = 'both') => {
+    if (!student) return;
     const rawName = (student.name || student.full_name || 'Student').replace(/[^a-zA-Z0-9]/g, '-');
     const rawId = (application?.id_card_number || 'NACOS-ID').replace(/[^a-zA-Z0-9]/g, '-');
-    downloadIdCardAsImage(canvasRef.current, `${rawName}-${rawId}`);
+    const source = application?.id_card_image_url || canvasRef.current;
+    downloadIdCardAsImage(source, `${rawName}-${rawId}`, side);
   };
 
   const handleDownloadPdf = () => {
-    if (!canvasRef.current || !student) return;
+    if (!student) return;
     const rawName = (student.name || student.full_name || 'Student').replace(/[^a-zA-Z0-9]/g, '-');
     const rawId = (application?.id_card_number || 'NACOS-ID').replace(/[^a-zA-Z0-9]/g, '-');
-    downloadIdCardAsPdf(canvasRef.current, `${rawName}-${rawId}`);
+    const source = application?.id_card_image_url || canvasRef.current;
+    downloadIdCardAsPdf(source, `${rawName}-${rawId}`, application?.id_card_back_url);
   };
 
   if (loading) {
@@ -564,65 +576,138 @@ const IdCard = () => {
         {isState7 && (
           <div className="space-y-6">
             
-            {/* Visual Canvas ID Card Preview Container */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm space-y-4">
+            {/* Visual Canvas Two-Sided ID Card Preview Container */}
+            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-[#138601]/20 pb-4">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                      Official Student Identity Card
+                      Official Student Identity Card (Two-Sided)
                     </h3>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
                       Active
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-green-200/70 mt-0.5">
-                    Official CR-80 format with scannable QR verification and dynamic watermark.
+                    Official NACOS FUTO double-sided identity card. Tap Front or Back to inspect each side.
                   </p>
                 </div>
 
+                {/* Front / Back Toggle Buttons */}
                 <div className="flex items-center gap-2">
+                  <div className="inline-flex p-1 rounded-xl bg-gray-100 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/30">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentSide('front')}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        currentSide === 'front'
+                          ? 'bg-[#138601] text-white shadow-sm'
+                          : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      Front Side
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentSide('back')}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        currentSide === 'back'
+                          ? 'bg-[#138601] text-white shadow-sm'
+                          : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      Back Side
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentSide(prev => prev === 'front' ? 'back' : 'front')}
+                    className="p-2 rounded-xl bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-[#138601]/20 text-gray-700 dark:text-green-200 border border-gray-200 dark:border-[#138601]/30 transition-colors cursor-pointer"
+                    title="Flip Card"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+
                   <a
                     href={`/verify/id/${application.id_card_number}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 dark:text-green-200 bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-green-200 bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 border border-gray-200 dark:border-[#138601]/30 transition-colors"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Public Verify Page</span>
+                    <span>Verify</span>
                   </a>
                 </div>
               </div>
 
-              {/* High-Resolution HTML5 Canvas Card */}
-              <div className="flex justify-center items-center py-2 overflow-x-auto">
-                <div className="max-w-2xl w-full rounded-2xl overflow-hidden shadow-2xl border border-[#138601]/40">
-                  <canvas
-                    ref={canvasRef}
-                    className="w-full h-auto block"
-                    style={{ aspectRatio: `${ID_CARD_TEMPLATE.dimensions.aspectRatio}` }}
-                  />
+              {/* Card Sides Preview Area (Portrait CR-80 Card: 662 × 1075 px) */}
+              <div className="flex justify-center items-center py-4">
+                <div className="max-w-xs sm:max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl border-2 border-[#138601]/50 bg-[#083002]">
+                  
+                  {/* FRONT SIDE */}
+                  <div className={`${currentSide === 'front' ? 'block' : 'hidden'}`}>
+                    <canvas
+                      ref={canvasRef}
+                      className="w-full h-auto block"
+                      style={{ aspectRatio: `${ID_CARD_TEMPLATE.dimensions.aspectRatio}` }}
+                    />
+                  </div>
+
+                  {/* BACK SIDE (Static Master Back Template) */}
+                  <div className={`${currentSide === 'back' ? 'block' : 'hidden'}`}>
+                    <img
+                      src={application.id_card_back_url || ID_CARD_TEMPLATE.masterBackUrl || '/nacos_id_template_back.jpg'}
+                      alt="NACOS Student ID Card Back"
+                      className="w-full h-auto block object-cover"
+                      style={{ aspectRatio: `${ID_CARD_TEMPLATE.dimensions.aspectRatio}` }}
+                    />
+                  </div>
+
                 </div>
               </div>
 
+              {/* Side indicator badge */}
+              <div className="text-center text-xs font-semibold text-gray-500 dark:text-green-200/70">
+                Viewing: <span className="text-[#138601] dark:text-[#4bd043] uppercase font-bold">{currentSide} of official card</span>
+              </div>
+
               {/* Download Buttons Bar */}
-              <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-[#138601]/20">
+              <div className="flex flex-wrap items-center justify-end gap-2.5 pt-4 border-t border-gray-100 dark:border-[#138601]/20">
                 <button
                   type="button"
-                  onClick={handleDownloadImage}
-                  className="px-5 py-2.5 min-h-[42px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-2"
+                  onClick={() => handleDownloadImage('front')}
+                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download Image (PNG)</span>
+                  <Download className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
+                  <span>Front (PNG)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDownloadImage('back')}
+                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
+                  <span>Back (PNG)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDownloadImage('both')}
+                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
+                  <span>Both Sides (PNG)</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
-                  className="px-7 py-2.5 min-h-[42px] text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-md transition-colors cursor-pointer inline-flex items-center gap-2"
+                  className="px-6 py-2.5 min-h-[40px] text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-md transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>Print / Download PDF</span>
+                  <span>Print / Two-Sided PDF</span>
                 </button>
               </div>
             </div>
