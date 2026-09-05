@@ -10,7 +10,9 @@ export {
   deleteMedia,
   replaceMedia,
   getCloudinaryFoldersStatus,
-  syncCloudinaryFolders
+  syncCloudinaryFolders,
+  CLOUDINARY_MANIFEST,
+  getCloudinaryAssetUrl
 } from './cloudinary.js';
 
 export { MediaUpload } from './MediaUpload.jsx';

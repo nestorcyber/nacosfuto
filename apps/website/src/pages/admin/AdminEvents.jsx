@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { MediaUpload, CloudinaryImage, CLOUDINARY_FOLDERS, deleteMedia } from '@nacos/media';
 import { recordAdminAction } from '@nacos/supabase/adminAuth';
+import { syncWebsiteEvent } from '@nacos/supabase/media';
+import { supabase } from '@nacos/supabase';
 
 const INITIAL_EVENTS = [
   {
@@ -72,14 +74,45 @@ const AdminEvents = () => {
   const [flyerPublicId, setFlyerPublicId] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('nacos_website_events_store');
-    if (stored) {
+    async function loadEvents() {
       try {
-        setEvents(JSON.parse(stored));
-      } catch (e) {
-        console.error(e);
+        const { data, error } = await supabase
+          .from('website_events')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const mapped = data.map(d => ({
+            id: d.id,
+            title: d.title,
+            slug: d.slug,
+            date: d.event_date,
+            time: d.event_time,
+            location: d.location,
+            description: d.description,
+            image_url: d.image_url,
+            cloudinary_public_id: d.cloudinary_public_id,
+            is_published: d.is_published,
+            is_featured: d.is_featured
+          }));
+          const dbSlugs = new Set(mapped.map(m => m.slug));
+          setEvents([...mapped, ...INITIAL_EVENTS.filter(i => !dbSlugs.has(i.slug))]);
+          return;
+        }
+      } catch (err) {
+        console.warn('Supabase events query bypassed:', err);
+      }
+
+      const stored = localStorage.getItem('nacos_website_events_store');
+      if (stored) {
+        try {
+          setEvents(JSON.parse(stored));
+        } catch (e) {
+          console.error(e);
+        }
       }
     }
+    loadEvents();
   }, []);
 
   const showFeedback = (text, type = 'success') => {
@@ -94,6 +127,8 @@ const AdminEvents = () => {
         recordAdminAction(next ? 'event_publish' : 'event_unpublish', 'event', ev.slug, {
           title: ev.title
         });
+        // Update in Supabase
+        supabase.from('website_events').update({ is_published: next }).eq('slug', ev.slug).then(() => {});
         return { ...ev, is_published: next };
       }
       return ev;
@@ -101,7 +136,7 @@ const AdminEvents = () => {
 
     setEvents(updated);
     localStorage.setItem('nacos_website_events_store', JSON.stringify(updated));
-    showFeedback('Event visibility updated.');
+    showFeedback('Event visibility updated in database.');
   };
 
   const handleDelete = async (eventItem) => {
@@ -109,6 +144,12 @@ const AdminEvents = () => {
 
     if (eventItem.cloudinary_public_id) {
       await deleteMedia(eventItem.cloudinary_public_id);
+    }
+
+    try {
+      await supabase.from('website_events').delete().eq('slug', eventItem.slug);
+    } catch (e) {
+      console.warn('Supabase event delete bypassed', e);
     }
 
     const updated = events.filter(e => e.id !== eventItem.id);
@@ -119,7 +160,7 @@ const AdminEvents = () => {
       title: eventItem.title
     });
 
-    showFeedback('Event removed from schedule.');
+    showFeedback('Event removed from schedule and database.');
   };
 
   const handleSaveEvent = async (e) => {
@@ -141,7 +182,10 @@ const AdminEvents = () => {
       is_featured: false
     };
 
-    const updated = [newEvent, ...events];
+    // 1. Two-way sync to Cloudinary + Supabase
+    await syncWebsiteEvent(newEvent);
+
+    const updated = [newEvent, ...events.filter(ev => ev.slug !== slug)];
     setEvents(updated);
     localStorage.setItem('nacos_website_events_store', JSON.stringify(updated));
 
@@ -158,7 +202,7 @@ const AdminEvents = () => {
     setDescription('');
     setFlyerUrl('');
     setFlyerPublicId('');
-    showFeedback('New event published to the website schedule!');
+    showFeedback('New event published & synced with database & Cloudinary!');
   };
 
   return (

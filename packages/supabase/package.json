@@ -1,9 +1,17 @@
 {
   "name": "@nacos/supabase",
   "version": "1.0.0",
-  "main": "src/client.js",
-  "module": "src/client.js",
+  "main": "src/index.js",
+  "module": "src/index.js",
   "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./src/client.js",
+    "./auth": "./src/auth.js",
+    "./adminAuth": "./src/adminAuth.js",
+    "./idCard": "./src/idCard.js",
+    "./media": "./src/media.js"
+  },
   "dependencies": {
     "@nacos/media": "*",
     "@supabase/supabase-js": "^2.49.1",

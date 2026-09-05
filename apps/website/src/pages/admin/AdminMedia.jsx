@@ -38,6 +38,7 @@ import {
   syncCloudinaryFolders
 } from '@nacos/media';
 import { recordAdminAction } from '@nacos/supabase/adminAuth';
+import { syncMediaAsset, deleteMediaAsset, fetchMediaAssets } from '@nacos/supabase/media';
 
 const INITIAL_WEBSITE_MEDIA = [
   {
@@ -150,19 +151,15 @@ const AdminMedia = () => {
   const [uploadAlt, setUploadAlt] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('nacos_website_media_store');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const existingIds = new Set(parsed.map(p => p.cloudinary_public_id));
-          const merged = [...parsed, ...INITIAL_WEBSITE_MEDIA.filter(item => !existingIds.has(item.cloudinary_public_id))];
-          setMediaList(merged);
-        }
-      } catch (e) {
-        console.error(e);
+    async function loadData() {
+      const res = await fetchMediaAssets({ category: selectedCategory });
+      if (res.data && res.data.length > 0) {
+        const existingIds = new Set(res.data.map(d => d.cloudinary_public_id));
+        const merged = [...res.data, ...INITIAL_WEBSITE_MEDIA.filter(item => !existingIds.has(item.cloudinary_public_id))];
+        setMediaList(merged);
       }
     }
+    loadData();
 
     // Query folder status on mount
     async function loadFolderStatus() {
@@ -176,7 +173,7 @@ const AdminMedia = () => {
       }
     }
     loadFolderStatus();
-  }, []);
+  }, [selectedCategory]);
 
   const showFeedback = (text, type = 'success') => {
     setFeedback({ text, type });
@@ -228,27 +225,40 @@ const AdminMedia = () => {
   };
 
   const handleDelete = async (item) => {
-    if (!window.confirm(`Delete "${item.cloudinary_public_id}" from Cloudinary?`)) return;
+    if (!window.confirm(`Delete "${item.cloudinary_public_id}" from Cloudinary and database?`)) return;
 
-    await deleteMedia(item.cloudinary_public_id);
+    await deleteMediaAsset(item.cloudinary_public_id);
     const updated = mediaList.filter(m => m.cloudinary_public_id !== item.cloudinary_public_id);
     setMediaList(updated);
-    localStorage.setItem('nacos_website_media_store', JSON.stringify(updated));
 
     await recordAdminAction('image_delete', 'media', item.cloudinary_public_id, {
       category: item.category
     });
 
-    showFeedback('Media asset removed from Cloudinary library.');
+    showFeedback('Media asset removed from Cloudinary and database.');
   };
 
   const handleUploadSuccess = async ({ url, publicId, format, bytes, width, height }) => {
-    const newAsset = {
-      id: `wm-${Date.now()}`,
+    const res = await syncMediaAsset({
+      publicId,
+      url,
+      folder: `nacos/${uploadCategory}`,
+      category: uploadCategory,
+      image_alt: uploadAlt || `NACOS ${uploadCategory} media`,
+      entity_type: uploadCategory,
+      entity_id: publicId.split('/').pop(),
+      format: format || 'jpg',
+      bytes: bytes || 180000,
+      width: width || 800,
+      height: height || 600
+    });
+
+    const newAsset = res.data || {
       cloudinary_public_id: publicId,
       image_url: url,
       image_alt: uploadAlt || `NACOS ${uploadCategory} media`,
       category: uploadCategory,
+      folder: `nacos/${uploadCategory}`,
       format: format || 'jpg',
       bytes: bytes || 180000,
       width: width || 800,
@@ -256,9 +266,8 @@ const AdminMedia = () => {
       created_at: new Date().toISOString()
     };
 
-    const updated = [newAsset, ...mediaList];
+    const updated = [newAsset, ...mediaList.filter(m => m.cloudinary_public_id !== publicId)];
     setMediaList(updated);
-    localStorage.setItem('nacos_website_media_store', JSON.stringify(updated));
 
     await recordAdminAction('image_upload', 'media', publicId, {
       category: uploadCategory,
@@ -267,7 +276,7 @@ const AdminMedia = () => {
 
     setIsUploadOpen(false);
     setUploadAlt('');
-    showFeedback('Image successfully uploaded to Cloudinary CDN!');
+    showFeedback('Image successfully uploaded to Cloudinary CDN & synced with database!');
   };
 
   const categories = [

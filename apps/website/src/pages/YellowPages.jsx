@@ -20,6 +20,7 @@ import flyerPeacemaker from '../assets/flyer_peacemaker.jpg';
 import flyerNiforix from '../assets/flyer_niforix.jpg';
 import flyerCypher from '../assets/flyer_cypher.jpg';
 import flyerNinasBraid from '../assets/flyer_ninas_braid.jpg';
+import { getCloudinaryAssetUrl } from '@nacos/media';
 
 const YellowPages = () => {
   const { theme } = useTheme();
@@ -71,7 +72,7 @@ const YellowPages = () => {
       email: "",
       rating: 5.0,
       reviewsCount: 14,
-      image: flyerPeacemaker,
+      image: getCloudinaryAssetUrl('flyer_peacemaker') || flyerPeacemaker,
       imagePosition: "top left"
     },
     {
@@ -88,7 +89,7 @@ const YellowPages = () => {
       email: "",
       rating: 5.0,
       reviewsCount: 25,
-      image: flyerNiforix,
+      image: getCloudinaryAssetUrl('flyer_niforix') || flyerNiforix,
       imagePosition: "top right"
     },
     {
@@ -105,7 +106,7 @@ const YellowPages = () => {
       email: "",
       rating: 4.9,
       reviewsCount: 38,
-      image: flyerCypher,
+      image: getCloudinaryAssetUrl('flyer_cypher') || flyerCypher,
       imagePosition: "top center"
     },
     {
@@ -113,16 +114,16 @@ const YellowPages = () => {
       name: "Nina's Braid",
       category: "Fashion & Styling",
       ownerName: "Nina's Braid",
-      ownerLevel: "Hairstylist In Futo",
-      description: "Hair that steals the spotlight! Knotless braid, Goddess braid, Box braid, Corn row, Twist, Crochet, and custom styling to match your vibe.",
-      location: "Aba & FUTO Campus",
-      phone: "+2349066392251",
-      whatsapp: "2349066392251",
+      ownerLevel: "Student Business",
+      description: "Hair styling, braiding, and accessories on campus.",
+      location: "FUTO Hostel Delivery",
+      phone: "+2348000000000",
+      whatsapp: "2348000000000",
       email: "",
-      rating: 5.0,
-      reviewsCount: 18,
-      image: flyerNinasBraid,
-      imagePosition: "top left"
+      rating: 4.8,
+      reviewsCount: 19,
+      image: getCloudinaryAssetUrl('flyer_ninas_braid') || flyerNinasBraid,
+      imagePosition: "top center"
     }
   ]);
 

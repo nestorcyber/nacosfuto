@@ -11,9 +11,11 @@ import {
 } from "react-icons/fi";
 import { FaGraduationCap, FaAward, FaBook, FaUsers } from "react-icons/fa";
 import ScrollToTopLink from "../components/ScrollToTopLink";
-import researchImage from "../assets/research.jpg";
+import { getCloudinaryAssetUrl } from "@nacos/media";
+import researchImageFallback from "../assets/research.jpg";
 
 const Research = () => {
+  const researchImage = getCloudinaryAssetUrl('research') || researchImageFallback;
   const researchAreas = [
     {
       title: "Artificial Intelligence & Machine Learning",

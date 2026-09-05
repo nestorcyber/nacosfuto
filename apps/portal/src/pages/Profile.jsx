@@ -10,6 +10,8 @@ import {
 import PortalLayout from '../components/PortalLayout';
 import logoDark from '../assets/full-logo-dark.png';
 import { MediaUpload, CloudinaryImage, CLOUDINARY_FOLDERS } from '@nacos/media';
+import { syncMediaAsset } from '@nacos/supabase/media';
+import { supabase } from '@nacos/supabase';
 
 const Profile = () => {
   const [user, setUser] = useState({
@@ -184,7 +186,7 @@ const Profile = () => {
                 helperText="JPG, PNG, or WebP passport photo (Max 5MB)"
                 aspectRatio="portrait"
                 previewPreset="id_card_photo"
-                onUploadSuccess={({ url, publicId }) => {
+                onUploadSuccess={async ({ url, publicId }) => {
                   const updated = {
                     ...user,
                     profile_photo_url: url,
@@ -194,10 +196,35 @@ const Profile = () => {
                   };
                   setUser(updated);
                   localStorage.setItem('nacos_user', JSON.stringify(updated));
+
+                  // Two-way sync: Save to Supabase media_assets & update student profile
+                  const regNum = user.matric || user.registration_number;
+                  await syncMediaAsset({
+                    publicId,
+                    url,
+                    folder: CLOUDINARY_FOLDERS.STUDENTS,
+                    category: 'students',
+                    image_alt: `Student Passport - ${user.name || regNum}`,
+                    entity_type: 'student_passport',
+                    entity_id: String(regNum)
+                  });
+
+                  if (user.id || regNum) {
+                    try {
+                      await supabase.from('profiles').update({
+                        profile_photo_url: url,
+                        avatar_url: url,
+                        cloudinary_public_id: publicId
+                      }).or(`id.eq.${user.id || '00000000-0000-0000-0000-000000000000'},registration_number.eq.${regNum}`);
+                    } catch (e) {
+                      console.warn('Supabase profile photo update bypassed', e);
+                    }
+                  }
+
                   setSaveSuccess(true);
                   setTimeout(() => setSaveSuccess(false), 2500);
                 }}
-                onDeleteSuccess={() => {
+                onDeleteSuccess={async () => {
                   const updated = {
                     ...user,
                     profile_photo_url: '',
@@ -207,6 +234,17 @@ const Profile = () => {
                   };
                   setUser(updated);
                   localStorage.setItem('nacos_user', JSON.stringify(updated));
+
+                  const regNum = user.matric || user.registration_number;
+                  if (user.id || regNum) {
+                    try {
+                      await supabase.from('profiles').update({
+                        profile_photo_url: null,
+                        avatar_url: null,
+                        cloudinary_public_id: null
+                      }).or(`id.eq.${user.id || '00000000-0000-0000-0000-000000000000'},registration_number.eq.${regNum}`);
+                    } catch (e) {}
+                  }
                 }}
               />
             </div>

@@ -1,4 +1,5 @@
 import { supabase } from './client.js';
+import { syncMediaAsset } from './media.js';
 import { ID_CARD_TEMPLATE } from '@nacos/config/idCardTemplate';
 import { getLocalStudentsDatabase } from './auth.js';
 import { uploadMedia, CLOUDINARY_FOLDERS, getOptimizedImageUrl } from '@nacos/media';
@@ -525,6 +526,16 @@ export async function savePassportToApplication(applicationId, file, student) {
 
   // 5. Supabase sync
   try {
+    await syncMediaAsset({
+      publicId,
+      url: photoUrl,
+      folder: CLOUDINARY_FOLDERS.STUDENTS,
+      category: 'students',
+      image_alt: `Student Passport - ${matric}`,
+      entity_type: 'student_passport',
+      entity_id: String(matric)
+    });
+
     if (updatedApp) {
       await supabase.from('id_card_applications').update({
         passport_url: photoUrl,

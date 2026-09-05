@@ -8,7 +8,7 @@ import {
   FiCheckCircle,
   FiArrowRight,
 } from "react-icons/fi";
-import { FaGraduationCap, FaCertificate, FaCalendarAlt } from "react-icons/fa";
+import { FaGraduationCap, FaCertificate, FaCalendarAlt, FaAward } from "react-icons/fa";
 import ScrollToTopLink from "../components/ScrollToTopLink";
 import academicsImage from "../assets/academics.jpg";
 

@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { MediaUpload, CloudinaryImage, CLOUDINARY_FOLDERS, deleteMedia } from '@nacos/media';
 import { recordAdminAction } from '@nacos/supabase/adminAuth';
+import { syncWebsiteGalleryItem } from '@nacos/supabase/media';
+import { supabase } from '@nacos/supabase';
 
 const INITIAL_GALLERY = [
   {
@@ -60,14 +62,42 @@ const AdminGallery = () => {
   const [newItemFeatured, setNewItemFeatured] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('nacos_website_gallery_store');
-    if (stored) {
-      try {
-        setItems(JSON.parse(stored));
-      } catch (e) {
-        console.error(e);
-      }
+    async function loadGallery() {
+       try {
+         const { data, error } = await supabase
+           .from('website_gallery')
+           .select('*')
+           .order('sort_order', { ascending: true });
+
+         if (!error && data && data.length > 0) {
+           const mapped = data.map(d => ({
+             id: d.id,
+             title: d.title,
+             caption: d.caption,
+             image_url: d.image_url,
+             cloudinary_public_id: d.cloudinary_public_id,
+             category: d.category,
+             is_featured: d.is_featured,
+             created_at: d.created_at
+           }));
+           const dbIds = new Set(mapped.map(m => m.cloudinary_public_id));
+           setItems([...mapped, ...INITIAL_GALLERY.filter(i => !dbIds.has(i.cloudinary_public_id))]);
+           return;
+         }
+       } catch (err) {
+         console.warn('Supabase gallery query bypassed:', err);
+       }
+
+       const stored = localStorage.getItem('nacos_website_gallery_store');
+       if (stored) {
+         try {
+           setItems(JSON.parse(stored));
+         } catch (e) {
+           console.error(e);
+         }
+       }
     }
+    loadGallery();
   }, []);
 
   const showFeedback = (text, type = 'success') => {
@@ -82,6 +112,9 @@ const AdminGallery = () => {
         recordAdminAction('gallery_feature_toggle', 'gallery', item.cloudinary_public_id, {
           is_featured: next
         });
+        if (item.cloudinary_public_id) {
+          supabase.from('website_gallery').update({ is_featured: next }).eq('cloudinary_public_id', item.cloudinary_public_id).then(() => {});
+        }
         return { ...item, is_featured: next };
       }
       return item;
@@ -89,7 +122,7 @@ const AdminGallery = () => {
 
     setItems(updated);
     localStorage.setItem('nacos_website_gallery_store', JSON.stringify(updated));
-    showFeedback('Gallery featured status updated.');
+    showFeedback('Gallery featured status updated in database.');
   };
 
   const handleDelete = async (item) => {
@@ -97,6 +130,11 @@ const AdminGallery = () => {
 
     if (item.cloudinary_public_id) {
       await deleteMedia(item.cloudinary_public_id);
+      try {
+        await supabase.from('website_gallery').delete().eq('cloudinary_public_id', item.cloudinary_public_id);
+      } catch (e) {
+        console.warn('Supabase gallery delete bypassed', e);
+      }
     }
 
     const updated = items.filter(i => i.id !== item.id);
@@ -107,7 +145,7 @@ const AdminGallery = () => {
       title: item.title
     });
 
-    showFeedback('Photo removed from campus gallery.');
+    showFeedback('Photo removed from campus gallery and database.');
   };
 
   const handleUploadSuccess = async ({ url, publicId }) => {
@@ -122,7 +160,10 @@ const AdminGallery = () => {
       created_at: new Date().toISOString()
     };
 
-    const updated = [newItem, ...items];
+    // Two-way sync to Cloudinary + Supabase
+    await syncWebsiteGalleryItem(newItem);
+
+    const updated = [newItem, ...items.filter(i => i.cloudinary_public_id !== publicId)];
     setItems(updated);
     localStorage.setItem('nacos_website_gallery_store', JSON.stringify(updated));
 
@@ -134,7 +175,7 @@ const AdminGallery = () => {
     setIsAddOpen(false);
     setNewItemTitle('');
     setNewItemCaption('');
-    showFeedback('Photo published to Campus Life Gallery!');
+    showFeedback('Photo published & synced with database & Cloudinary!');
   };
 
   return (

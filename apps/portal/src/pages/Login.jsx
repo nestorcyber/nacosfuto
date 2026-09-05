@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { getCloudinaryAssetUrl } from '@nacos/media';
 import { signInStudent } from '@nacos/supabase/auth';
 import studentPhoto from '../assets/gallery_student_group.jpg';
 import logoDark from '../assets/full-logo-dark.png';
@@ -50,14 +51,14 @@ const Login = () => {
       {/* LEFT HALF (50%): Real Department Photo with Logo, Clean Overlay & Bold Text */}
       <div 
         className="md:w-1/2 min-h-[360px] md:min-h-screen relative flex flex-col justify-between p-8 sm:p-12 md:p-14 lg:p-16 bg-cover bg-center"
-        style={{ backgroundImage: `url(${studentPhoto})` }}
+        style={{ backgroundImage: `url(${getCloudinaryAssetUrl('gallery_student_group') || studentPhoto})` }}
       >
         {/* Subtle dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/25 pointer-events-none"></div>
 
         {/* Top Left NACOS Brand Logo */}
         <div className="relative z-10">
-          <img src={logoDark} alt="NACOS FUTO Logo" className="h-9 sm:h-11 w-auto object-contain drop-shadow" />
+          <img src={getCloudinaryAssetUrl('full-logo-dark') || logoDark} alt="NACOS FUTO Logo" className="h-9 sm:h-11 w-auto object-contain drop-shadow" />
         </div>
 
         {/* Text bottom left */}

@@ -5,6 +5,10 @@
  * ============================================================================
  */
 
+import cloudinaryAssetsData from './cloudinaryAssets.json';
+
+export const CLOUDINARY_MANIFEST = cloudinaryAssetsData?.assets || {};
+
 export const CLOUDINARY_FOLDERS = {
   // STUDENT PORTAL FOLDERS
   STUDENTS: 'nacos/students',              // Student passport & profile photos
@@ -541,4 +545,20 @@ export async function syncCloudinaryFolders() {
   } catch (err) {
     return { success: false, error: err.message };
   }
+}
+
+/**
+ * Retrieve the live Cloudinary CDN delivery URL for a synchronized project asset
+ * e.g. getCloudinaryAssetUrl('president_irechukwu', { preset: 'card' })
+ */
+export function getCloudinaryAssetUrl(assetKey, options = {}) {
+  if (!assetKey) return '';
+  const asset = CLOUDINARY_MANIFEST[assetKey];
+  if (asset && asset.url) {
+    return getOptimizedImageUrl(asset.url, options);
+  }
+  if (asset && asset.publicId) {
+    return getOptimizedImageUrl(asset.publicId, options);
+  }
+  return '';
 }

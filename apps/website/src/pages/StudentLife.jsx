@@ -10,9 +10,11 @@ import {
   FiCheck,
 } from "react-icons/fi";
 import ScrollToTopLink from "../components/ScrollToTopLink";
-import studentLifeImage from "../assets/student-life.jpg";
+import { getCloudinaryAssetUrl } from "@nacos/media";
+import studentLifeImageFallback from "../assets/student-life.jpg";
 
 const StudentLife = () => {
+  const studentLifeImage = getCloudinaryAssetUrl('student-life') || studentLifeImageFallback;
   const clubs = [
     {
       title: "Google Developer Student Club",

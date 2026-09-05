@@ -10,11 +10,13 @@ import {
 } from "react-icons/fi";
 import { FaGraduationCap, FaAward, FaBuilding, FaGlobeAmericas, FaLinkedin, FaUserGraduate } from "react-icons/fa";
 import ScrollToTopLink from "../components/ScrollToTopLink";
+import { getCloudinaryAssetUrl } from "@nacos/media";
 import alumniImage from "../assets/alumni.jpg";
 import benitaImg from "../assets/alumni_benita.jpg";
 import godfirstImg from "../assets/alumni_godfirst.jpg";
 
 const Alumni = () => {
+  const alumniHeroImg = getCloudinaryAssetUrl('alumni') || alumniImage;
   const alumniStats = [
     {
       value: "5,000+",
@@ -45,7 +47,7 @@ const Alumni = () => {
       position: "Lead Software Engineer @ Sudo Africa",
       achievement: "Fintech infrastructure specialist building modern digital card payment systems across Africa",
       linkedin: "https://www.linkedin.com/in/godfirst-asogwa/",
-      image: godfirstImg
+      image: getCloudinaryAssetUrl('alumni_godfirst', { preset: 'card' }) || godfirstImg
     },
     {
       name: "Benita Nwabueze",
@@ -53,7 +55,7 @@ const Alumni = () => {
       position: "Senior Cybersecurity Analyst @ FirstBank",
       achievement: "Securing modern enterprise infrastructure, banking compliance, and digital banking assets",
       linkedin: "https://www.linkedin.com/in/nwabueze-benita/",
-      image: benitaImg
+      image: getCloudinaryAssetUrl('alumni_benita', { preset: 'card' }) || benitaImg
     }
   ];
 
@@ -92,7 +94,7 @@ const Alumni = () => {
             </div>
             <div className="rounded-2xl overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
               <img
-                src={alumniImage}
+                src={alumniHeroImg}
                 alt="FUTO Computer Science Alumni"
                 className="w-full h-auto object-cover"
               />

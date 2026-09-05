@@ -42,6 +42,7 @@ import {
   syncCloudinaryFolders
 } from '@nacos/media';
 import { supabase } from '@nacos/supabase';
+import { syncMediaAsset, deleteMediaAsset, fetchMediaAssets } from '@nacos/supabase/media';
 
 // Seed demo media library items representing typical NACOS assets
 const INITIAL_MEDIA_ASSETS = [
@@ -218,34 +219,11 @@ const AdminMedia = () => {
   }, []);
 
   const loadMediaFromDatabase = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('media_assets')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        const existingIds = new Set(data.map(d => d.cloudinary_public_id));
-        const merged = [...data, ...INITIAL_MEDIA_ASSETS.filter(item => !existingIds.has(item.cloudinary_public_id))];
-        setMediaList(merged);
-        return;
-      }
-    } catch (e) {
-      console.warn('Supabase media_assets query bypassed, using local store', e);
-    }
-
-    const stored = localStorage.getItem('nacos_media_assets_db');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const existingIds = new Set(parsed.map(p => p.cloudinary_public_id));
-          const merged = [...parsed, ...INITIAL_MEDIA_ASSETS.filter(item => !existingIds.has(item.cloudinary_public_id))];
-          setMediaList(merged);
-        }
-      } catch (e) {
-        console.error(e);
-      }
+    const res = await fetchMediaAssets({ category: selectedCategory });
+    if (res.data && res.data.length > 0) {
+      const existingIds = new Set(res.data.map(d => d.cloudinary_public_id));
+      const merged = [...res.data, ...INITIAL_MEDIA_ASSETS.filter(item => !existingIds.has(item.cloudinary_public_id))];
+      setMediaList(merged);
     }
   };
 
@@ -306,33 +284,35 @@ const AdminMedia = () => {
       return;
     }
 
-    await deleteMedia(item.cloudinary_public_id);
-
-    try {
-      await supabase
-        .from('media_assets')
-        .delete()
-        .eq('cloudinary_public_id', item.cloudinary_public_id);
-    } catch (e) {
-      console.warn('Supabase media delete skipped', e);
-    }
+    await deleteMediaAsset(item.cloudinary_public_id);
 
     const updated = mediaList.filter(m => m.cloudinary_public_id !== item.cloudinary_public_id);
     setMediaList(updated);
-    localStorage.setItem('nacos_media_assets_db', JSON.stringify(updated));
-    showNotification(`Asset ${item.cloudinary_public_id} deleted successfully.`);
+    showNotification(`Asset ${item.cloudinary_public_id} deleted successfully from Cloudinary and database.`);
   };
 
   const handleUploadSuccess = async ({ url, publicId, format, bytes, width, height }) => {
-    const newAsset = {
-      id: `media-${Date.now()}`,
+    const res = await syncMediaAsset({
+      publicId,
+      url,
+      folder: `nacos/${newAssetCategory}`,
+      category: newAssetCategory,
+      image_alt: newAssetAlt || `NACOS ${newAssetCategory} asset`,
+      entity_type: newAssetCategory,
+      entity_id: newAssetEntity || 'general',
+      format: format || 'jpg',
+      bytes: bytes || 150000,
+      width: width || 800,
+      height: height || 600,
+      uploaded_by: currentUser?.id
+    });
+
+    const newAsset = res.data || {
       cloudinary_public_id: publicId,
       image_url: url,
       image_alt: newAssetAlt || `NACOS ${newAssetCategory} asset`,
       category: newAssetCategory,
       folder: `nacos/${newAssetCategory}`,
-      entity_type: newAssetCategory,
-      entity_id: newAssetEntity || 'general',
       format: format || 'jpg',
       bytes: bytes || 150000,
       width: width || 800,
@@ -340,20 +320,13 @@ const AdminMedia = () => {
       created_at: new Date().toISOString()
     };
 
-    try {
-      await supabase.from('media_assets').insert([newAsset]);
-    } catch (e) {
-      console.warn('Supabase media asset insert skipped in offline mode', e);
-    }
-
-    const updated = [newAsset, ...mediaList];
+    const updated = [newAsset, ...mediaList.filter(m => m.cloudinary_public_id !== publicId)];
     setMediaList(updated);
-    localStorage.setItem('nacos_media_assets_db', JSON.stringify(updated));
 
     setIsUploadModalOpen(false);
     setNewAssetAlt('');
     setNewAssetEntity('');
-    showNotification('New asset saved to Cloudinary media library!');
+    showNotification('New asset saved to Cloudinary & synced with database!');
   };
 
   if (!isAuthorized) {

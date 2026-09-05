@@ -37,25 +37,27 @@ import provost2Img from '../assets/executives/provost2_chidera.jpg';
 import rubyImg from '../assets/executives/msrc_ruby.jpg';
 import ogbuImg from '../assets/executives/hon_ogbu.jpg';
 
+import { getCloudinaryAssetUrl } from '@nacos/media';
+
 const NacosExecutives = () => {
     const { theme } = useTheme();
 
     const currentExecutives = [
-        { role: "President", name: "High Comrade Irechukwu Emmanuel S.", level: "400 Level", image: presidentImg },
-        { role: "Vice President", name: "Comrade Okolie Chinaemereme E.", level: "300 Level", image: vpImg },
-        { role: "Secretary General", name: "High Comrade Egwuonwu Makuochukwu V.", level: "400 Level", image: null },
-        { role: "Ass. Secretary General", name: "Comrade Jibulu Chinecherem Favour", level: "300 Level", image: null },
-        { role: "Financial Secretary", name: "Comrade Nzeh Daniel Chukwuka", level: "300 Level", image: danielImg },
-        { role: "Treasurer", name: "Comrade Pedro Dennis Chikamso", level: "300 Level", image: treasurerImg },
-        { role: "P.R.O", name: "Journalist Comrade Balogun John M.", level: "300 Level", image: proImg },
-        { role: "Director of Welfare", name: "Comrade Jonathan Faith Onyoiza", level: "200 Level", image: null },
-        { role: "Director of ICT", name: "Comrade Anyanwu Nestor Ifeanyi", level: "200 Level", image: ictImg },
-        { role: "Asst. Director of ICT", name: "Comrade Okere Kelechukwu Victory", level: "200 Level", image: ictAsstImg },
-        { role: "Director of Socials", name: "Comrade Ikenna Elvis Munachimso", level: "300 Level", image: socialsImg },
-        { role: "Director of Sports", name: "Comrade Azubuike Ebenezer Ifeanyi", level: "300 Level", image: sportsImg },
-        { role: "Provost 1", name: "Comrade Emeka Mmesoma Rosemary", level: "200 Level", image: provost1Img },
-        { role: "Provost 2", name: "Comrade Nduka Anselem Chidera", level: "200 Level", image: provost2Img },
-        { role: "MSRC", name: "HON. Ogbu Promise Ruby Ucha", level: "300 Level", image: rubyImg },
+        { role: "President", name: "High Comrade Irechukwu Emmanuel S.", level: "400 Level", image: getCloudinaryAssetUrl('president_irechukwu', { preset: 'card' }) || presidentImg },
+        { role: "Vice President", name: "Comrade Okolie Chinaemereme E.", level: "300 Level", image: getCloudinaryAssetUrl('vp_chinaemerem', { preset: 'card' }) || vpImg },
+        { role: "Secretary General", name: "High Comrade Egwuonwu Makuochukwu V.", level: "400 Level", image: getCloudinaryAssetUrl('sec_gen_makuochukwu', { preset: 'card' }) || secGenImg },
+        { role: "Ass. Secretary General", name: "Comrade Jibulu Chinecherem Favour", level: "300 Level", image: getCloudinaryAssetUrl('asg_chinecherem', { preset: 'card' }) || asgImg },
+        { role: "Financial Secretary", name: "Comrade Nzeh Daniel Chukwuka", level: "300 Level", image: getCloudinaryAssetUrl('daniel_chukwuka', { preset: 'card' }) || danielImg },
+        { role: "Treasurer", name: "Comrade Pedro Dennis Chikamso", level: "300 Level", image: getCloudinaryAssetUrl('treasurer_chikamso', { preset: 'card' }) || treasurerImg },
+        { role: "P.R.O", name: "Journalist Comrade Balogun John M.", level: "300 Level", image: getCloudinaryAssetUrl('pro_john', { preset: 'card' }) || proImg },
+        { role: "Director of Welfare", name: "Comrade Jonathan Faith Onyoiza", level: "200 Level", image: getCloudinaryAssetUrl('welfare_onyoiza', { preset: 'card' }) || welfareImg },
+        { role: "Director of ICT", name: "Comrade Anyanwu Nestor Ifeanyi", level: "200 Level", image: getCloudinaryAssetUrl('ict_dir_ifeanyi', { preset: 'card' }) || ictImg },
+        { role: "Asst. Director of ICT", name: "Comrade Okere Kelechukwu Victory", level: "200 Level", image: getCloudinaryAssetUrl('ict_asst_victory', { preset: 'card' }) || ictAsstImg },
+        { role: "Director of Socials", name: "Comrade Ikenna Elvis Munachimso", level: "300 Level", image: getCloudinaryAssetUrl('socials_dir_munachimso', { preset: 'card' }) || socialsImg },
+        { role: "Director of Sports", name: "Comrade Azubuike Ebenezer Ifeanyi", level: "300 Level", image: getCloudinaryAssetUrl('sports_dir_ifeanyi', { preset: 'card' }) || sportsImg },
+        { role: "Provost 1", name: "Comrade Emeka Mmesoma Rosemary", level: "200 Level", image: getCloudinaryAssetUrl('provost1_rosemary', { preset: 'card' }) || provost1Img },
+        { role: "Provost 2", name: "Comrade Nduka Anselem Chidera", level: "200 Level", image: getCloudinaryAssetUrl('provost2_chidera', { preset: 'card' }) || provost2Img },
+        { role: "MSRC", name: "HON. Ogbu Promise Ruby Ucha", level: "300 Level", image: getCloudinaryAssetUrl('msrc_ruby', { preset: 'card' }) || rubyImg },
     ];
 
     const pastExecutives = [

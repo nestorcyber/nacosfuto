@@ -1,0 +1,717 @@
+{
+  "cloudName": "z3wgqisj",
+  "syncedAt": "2026-09-05T00:47:47.819Z",
+  "assets": {
+    "asg_chinecherem": {
+      "publicId": "nacos/executives/asg_chinecherem",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569268/nacos/executives/asg_chinecherem.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 109447
+    },
+    "daniel_chukwuka": {
+      "publicId": "nacos/executives/daniel_chukwuka",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569269/nacos/executives/daniel_chukwuka.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 120690
+    },
+    "hod_stanley": {
+      "publicId": "nacos/executives/hod_stanley",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569270/nacos/executives/hod_stanley.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 132,
+      "height": 155,
+      "bytes": 5181
+    },
+    "hon_ogbu": {
+      "publicId": "nacos/executives/hon_ogbu",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569271/nacos/executives/hon_ogbu.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 132,
+      "height": 115,
+      "bytes": 3902
+    },
+    "ict_asst_victory": {
+      "publicId": "nacos/executives/ict_asst_victory",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569271/nacos/executives/ict_asst_victory.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 97613
+    },
+    "ict_dir_ifeanyi": {
+      "publicId": "nacos/executives/ict_dir_ifeanyi",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569272/nacos/executives/ict_dir_ifeanyi.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 105307
+    },
+    "msrc_ruby": {
+      "publicId": "nacos/executives/msrc_ruby",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569273/nacos/executives/msrc_ruby.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 93485
+    },
+    "president_irechukwu": {
+      "publicId": "nacos/executives/president_irechukwu",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569274/nacos/executives/president_irechukwu.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 108678
+    },
+    "provost1_rosemary": {
+      "publicId": "nacos/executives/provost1_rosemary",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569275/nacos/executives/provost1_rosemary.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 109447
+    },
+    "provost2_chidera": {
+      "publicId": "nacos/executives/provost2_chidera",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569276/nacos/executives/provost2_chidera.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 157618
+    },
+    "pro_john": {
+      "publicId": "nacos/executives/pro_john",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569277/nacos/executives/pro_john.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 103869
+    },
+    "sec_gen_makuochukwu": {
+      "publicId": "nacos/executives/sec_gen_makuochukwu",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569277/nacos/executives/sec_gen_makuochukwu.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 120690
+    },
+    "socials_dir_munachimso": {
+      "publicId": "nacos/executives/socials_dir_munachimso",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569278/nacos/executives/socials_dir_munachimso.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 147372
+    },
+    "sports_dir_ifeanyi": {
+      "publicId": "nacos/executives/sports_dir_ifeanyi",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569279/nacos/executives/sports_dir_ifeanyi.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 112878
+    },
+    "staff_adviser_nwokorie": {
+      "publicId": "nacos/executives/staff_adviser_nwokorie",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569280/nacos/executives/staff_adviser_nwokorie.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 132,
+      "height": 164,
+      "bytes": 4581
+    },
+    "state_ict_okikere": {
+      "publicId": "nacos/executives/state_ict_okikere",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569280/nacos/executives/state_ict_okikere.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 161,
+      "height": 251,
+      "bytes": 8001
+    },
+    "treasurer_chikamso": {
+      "publicId": "nacos/executives/treasurer_chikamso",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569281/nacos/executives/treasurer_chikamso.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 81425
+    },
+    "vp_chinaemerem": {
+      "publicId": "nacos/executives/vp_chinaemerem",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569282/nacos/executives/vp_chinaemerem.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 731,
+      "height": 1024,
+      "bytes": 101119
+    },
+    "welfare_onyoiza": {
+      "publicId": "nacos/executives/welfare_onyoiza",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569283/nacos/executives/welfare_onyoiza.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 118,
+      "height": 140,
+      "bytes": 4338
+    },
+    "zonal_coord_johnson": {
+      "publicId": "nacos/executives/zonal_coord_johnson",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569283/nacos/executives/zonal_coord_johnson.jpg",
+      "folder": "nacos/executives",
+      "category": "executives",
+      "width": 161,
+      "height": 180,
+      "bytes": 5869
+    },
+    "alumni": {
+      "publicId": "nacos/alumni/alumni",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569284/nacos/alumni/alumni.jpg",
+      "folder": "nacos/alumni",
+      "category": "alumni",
+      "width": 259,
+      "height": 194,
+      "bytes": 14518
+    },
+    "alumni_benita": {
+      "publicId": "nacos/alumni/alumni_benita",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569285/nacos/alumni/alumni_benita.jpg",
+      "folder": "nacos/alumni",
+      "category": "alumni",
+      "width": 480,
+      "height": 600,
+      "bytes": 35985
+    },
+    "alumni_godfirst": {
+      "publicId": "nacos/alumni/alumni_godfirst",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569286/nacos/alumni/alumni_godfirst.jpg",
+      "folder": "nacos/alumni",
+      "category": "alumni",
+      "width": 500,
+      "height": 500,
+      "bytes": 38615
+    },
+    "alumni_home": {
+      "publicId": "nacos/alumni/alumni_home",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569286/nacos/alumni/alumni_home.jpg",
+      "folder": "nacos/alumni",
+      "category": "alumni",
+      "width": 960,
+      "height": 720,
+      "bytes": 112781
+    },
+    "department": {
+      "publicId": "nacos/gallery/department",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569287/nacos/gallery/department.webp",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 711,
+      "height": 474,
+      "bytes": 39252
+    },
+    "event_allstars_media": {
+      "publicId": "nacos/events/event_allstars_media",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569289/nacos/events/event_allstars_media.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 821,
+      "height": 1024,
+      "bytes": 183007
+    },
+    "event_asicts_techtalk": {
+      "publicId": "nacos/events/event_asicts_techtalk",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569289/nacos/events/event_asicts_techtalk.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 1024,
+      "bytes": 183396
+    },
+    "event_atf_ai_challenge": {
+      "publicId": "nacos/events/event_atf_ai_challenge",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569291/nacos/events/event_atf_ai_challenge.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 169461
+    },
+    "event_bridging_gap": {
+      "publicId": "nacos/events/event_bridging_gap",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569292/nacos/events/event_bridging_gap.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 154964
+    },
+    "event_cv_masterclass": {
+      "publicId": "nacos/events/event_cv_masterclass",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569293/nacos/events/event_cv_masterclass.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 154579
+    },
+    "event_founders_table": {
+      "publicId": "nacos/events/event_founders_table",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569293/nacos/events/event_founders_table.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 134840
+    },
+    "event_fyb_week": {
+      "publicId": "nacos/events/event_fyb_week",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569294/nacos/events/event_fyb_week.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 241592
+    },
+    "event_global_internship": {
+      "publicId": "nacos/events/event_global_internship",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569295/nacos/events/event_global_internship.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 560,
+      "height": 560,
+      "bytes": 103452
+    },
+    "event_ieee_opportunities": {
+      "publicId": "nacos/events/event_ieee_opportunities",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569296/nacos/events/event_ieee_opportunities.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 308579
+    },
+    "event_linkedin_branding": {
+      "publicId": "nacos/events/event_linkedin_branding",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569297/nacos/events/event_linkedin_branding.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 124272
+    },
+    "event_masked_affairs": {
+      "publicId": "nacos/events/event_masked_affairs",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569298/nacos/events/event_masked_affairs.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 236120
+    },
+    "event_nacos_schedule": {
+      "publicId": "nacos/events/event_nacos_schedule",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569298/nacos/events/event_nacos_schedule.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 800,
+      "bytes": 84682
+    },
+    "event_nacos_sportsday": {
+      "publicId": "nacos/events/event_nacos_sportsday",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569299/nacos/events/event_nacos_sportsday.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 1000,
+      "bytes": 90036
+    },
+    "event_nacos_thanksgiving_mass": {
+      "publicId": "nacos/events/event_nacos_thanksgiving_mass",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569300/nacos/events/event_nacos_thanksgiving_mass.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 1000,
+      "bytes": 90364
+    },
+    "event_nacos_week_schedule": {
+      "publicId": "nacos/events/event_nacos_week_schedule",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569301/nacos/events/event_nacos_week_schedule.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 800,
+      "bytes": 112097
+    },
+    "event_oldschool_picnic": {
+      "publicId": "nacos/events/event_oldschool_picnic",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569302/nacos/events/event_oldschool_picnic.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 1000,
+      "bytes": 135276
+    },
+    "event_old_school_picnic": {
+      "publicId": "nacos/events/event_old_school_picnic",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569302/nacos/events/event_old_school_picnic.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 1000,
+      "bytes": 203467
+    },
+    "event_safer_internet": {
+      "publicId": "nacos/events/event_safer_internet",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569303/nacos/events/event_safer_internet.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 142862
+    },
+    "event_sports_day": {
+      "publicId": "nacos/events/event_sports_day",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569305/nacos/events/event_sports_day.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 1000,
+      "bytes": 136148
+    },
+    "event_tech_day": {
+      "publicId": "nacos/events/event_tech_day",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569305/nacos/events/event_tech_day.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 800,
+      "bytes": 97380
+    },
+    "event_tech_rewind": {
+      "publicId": "nacos/events/event_tech_rewind",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569307/nacos/events/event_tech_rewind.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 143358
+    },
+    "event_thanksgiving_mass": {
+      "publicId": "nacos/events/event_thanksgiving_mass",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569307/nacos/events/event_thanksgiving_mass.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 800,
+      "height": 1000,
+      "bytes": 130355
+    },
+    "event_unfair_advantage": {
+      "publicId": "nacos/events/event_unfair_advantage",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569308/nacos/events/event_unfair_advantage.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 819,
+      "height": 1024,
+      "bytes": 164981
+    },
+    "event_zonal_convention": {
+      "publicId": "nacos/events/event_zonal_convention",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569309/nacos/events/event_zonal_convention.jpg",
+      "folder": "nacos/events",
+      "category": "events",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 174324
+    },
+    "flyer_cypher": {
+      "publicId": "nacos/yellow_pages/flyer_cypher",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569310/nacos/yellow_pages/flyer_cypher.jpg",
+      "folder": "nacos/yellow_pages",
+      "category": "yellow_pages",
+      "width": 682,
+      "height": 1024,
+      "bytes": 204077
+    },
+    "flyer_niforix": {
+      "publicId": "nacos/yellow_pages/flyer_niforix",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569311/nacos/yellow_pages/flyer_niforix.jpg",
+      "folder": "nacos/yellow_pages",
+      "category": "yellow_pages",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 211022
+    },
+    "flyer_ninas_braid": {
+      "publicId": "nacos/yellow_pages/flyer_ninas_braid",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569312/nacos/yellow_pages/flyer_ninas_braid.jpg",
+      "folder": "nacos/yellow_pages",
+      "category": "yellow_pages",
+      "width": 819,
+      "height": 1024,
+      "bytes": 167013
+    },
+    "flyer_peacemaker": {
+      "publicId": "nacos/yellow_pages/flyer_peacemaker",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569313/nacos/yellow_pages/flyer_peacemaker.jpg",
+      "folder": "nacos/yellow_pages",
+      "category": "yellow_pages",
+      "width": 819,
+      "height": 1024,
+      "bytes": 223178
+    },
+    "full-logo-dark": {
+      "publicId": "nacos/general/full-logo-dark",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569314/nacos/general/full-logo-dark.png",
+      "folder": "nacos/general",
+      "category": "general",
+      "width": 1574,
+      "height": 342,
+      "bytes": 412597
+    },
+    "full-logo-light": {
+      "publicId": "nacos/general/full-logo-light",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569315/nacos/general/full-logo-light.png",
+      "folder": "nacos/general",
+      "category": "general",
+      "width": 1024,
+      "height": 222,
+      "bytes": 199964
+    },
+    "full-logo": {
+      "publicId": "nacos/general/full-logo",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569316/nacos/general/full-logo.png",
+      "folder": "nacos/general",
+      "category": "general",
+      "width": 1024,
+      "height": 222,
+      "bytes": 227351
+    },
+    "gallery_dept_front": {
+      "publicId": "nacos/gallery/gallery_dept_front",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569317/nacos/gallery/gallery_dept_front.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 1024,
+      "height": 768,
+      "bytes": 236960
+    },
+    "gallery_nature_hangout": {
+      "publicId": "nacos/gallery/gallery_nature_hangout",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569318/nacos/gallery/gallery_nature_hangout.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 768,
+      "height": 1024,
+      "bytes": 335286
+    },
+    "gallery_student_group": {
+      "publicId": "nacos/gallery/gallery_student_group",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569318/nacos/gallery/gallery_student_group.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 1024,
+      "height": 768,
+      "bytes": 270075
+    },
+    "gallery_traditional_day": {
+      "publicId": "nacos/gallery/gallery_traditional_day",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569319/nacos/gallery/gallery_traditional_day.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 1024,
+      "height": 768,
+      "bytes": 323958
+    },
+    "header-dark": {
+      "publicId": "nacos/homepage/header-dark",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569321/nacos/homepage/header-dark.png",
+      "folder": "nacos/homepage",
+      "category": "homepage",
+      "width": 1640,
+      "height": 924,
+      "bytes": 1414166
+    },
+    "header-light": {
+      "publicId": "nacos/homepage/header-light",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569323/nacos/homepage/header-light.png",
+      "folder": "nacos/homepage",
+      "category": "homepage",
+      "width": 1640,
+      "height": 924,
+      "bytes": 1414166
+    },
+    "header": {
+      "publicId": "nacos/homepage/header",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569326/nacos/homepage/header.png",
+      "folder": "nacos/homepage",
+      "category": "homepage",
+      "width": 1640,
+      "height": 924,
+      "bytes": 1414166
+    },
+    "logo": {
+      "publicId": "nacos/general/logo",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569327/nacos/general/logo.png",
+      "folder": "nacos/general",
+      "category": "general",
+      "width": 51,
+      "height": 48,
+      "bytes": 3581
+    },
+    "nacos1": {
+      "publicId": "nacos/gallery/nacos1",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569327/nacos/gallery/nacos1.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 217,
+      "height": 176,
+      "bytes": 10775
+    },
+    "nacos10": {
+      "publicId": "nacos/gallery/nacos10",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569328/nacos/gallery/nacos10.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 400,
+      "height": 400,
+      "bytes": 30435
+    },
+    "nacos11": {
+      "publicId": "nacos/gallery/nacos11",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569329/nacos/gallery/nacos11.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 400,
+      "height": 400,
+      "bytes": 32597
+    },
+    "nacos12": {
+      "publicId": "nacos/gallery/nacos12",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569329/nacos/gallery/nacos12.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 153,
+      "height": 129,
+      "bytes": 6050
+    },
+    "nacos2": {
+      "publicId": "nacos/gallery/nacos2",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569330/nacos/gallery/nacos2.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 176,
+      "height": 173,
+      "bytes": 7912
+    },
+    "nacos3": {
+      "publicId": "nacos/gallery/nacos3",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569331/nacos/gallery/nacos3.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 177,
+      "height": 155,
+      "bytes": 8855
+    },
+    "nacos4": {
+      "publicId": "nacos/gallery/nacos4",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569332/nacos/gallery/nacos4.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 152,
+      "height": 128,
+      "bytes": 6480
+    },
+    "nacos5": {
+      "publicId": "nacos/gallery/nacos5",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569332/nacos/gallery/nacos5.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 149,
+      "height": 142,
+      "bytes": 7255
+    },
+    "nacos6": {
+      "publicId": "nacos/gallery/nacos6",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569333/nacos/gallery/nacos6.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 152,
+      "height": 147,
+      "bytes": 7100
+    },
+    "nacos7": {
+      "publicId": "nacos/gallery/nacos7",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569334/nacos/gallery/nacos7.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 148,
+      "height": 135,
+      "bytes": 6086
+    },
+    "nacos8": {
+      "publicId": "nacos/gallery/nacos8",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569335/nacos/gallery/nacos8.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 209893
+    },
+    "nacos9": {
+      "publicId": "nacos/gallery/nacos9",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569336/nacos/gallery/nacos9.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 400,
+      "height": 400,
+      "bytes": 29730
+    },
+    "nacos_exec_group": {
+      "publicId": "nacos/gallery/nacos_exec_group",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569337/nacos/gallery/nacos_exec_group.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 1024,
+      "height": 705,
+      "bytes": 183548
+    },
+    "research": {
+      "publicId": "nacos/gallery/research",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569339/nacos/gallery/research.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 5184,
+      "height": 3456,
+      "bytes": 2645875
+    },
+    "student-life": {
+      "publicId": "nacos/gallery/student-life",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569340/nacos/gallery/student-life.jpg",
+      "folder": "nacos/gallery",
+      "category": "gallery",
+      "width": 259,
+      "height": 194,
+      "bytes": 12651
+    }
+  }
+}
