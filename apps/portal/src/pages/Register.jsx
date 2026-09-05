@@ -78,11 +78,11 @@ const Register = () => {
   const handleNextStep2 = (e) => {
     e.preventDefault();
     if (!formData.matricNumber.trim()) {
-      setError('Registration / Matric number is required.');
+      setError('Registration number is required.');
       return;
     }
     if (!detectedAcademic || !detectedAcademic.valid) {
-      setError(detectedAcademic?.error || 'Please enter a valid registration number (e.g. 2024CS12345).');
+      setError(detectedAcademic?.error || 'Please enter a valid registration number (digits only, e.g. 20241029481).');
       return;
     }
     if (!formData.email.trim()) {
@@ -310,12 +310,12 @@ const Register = () => {
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Registration / Matric Number *
+                      Registration Number (Digits only, no letters) *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. 2024CS12345 or 2022/139481"
+                      placeholder="e.g. 20241029481"
                       value={formData.matricNumber}
                       onChange={(e) => setFormData({ ...formData, matricNumber: e.target.value })}
                       className="w-full px-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"

@@ -36,7 +36,7 @@ const Login = () => {
 
   const handleQuickLogin = async (role) => {
     setIsLoading(true);
-    const regNo = role === 'President' ? '2020/112948' : '2024CS12345';
+    const regNo = role === 'President' ? '20201112948' : '20241029481';
     const res = await signInStudent(regNo, 'password');
     setIsLoading(false);
     if (!res.error) {
@@ -106,7 +106,7 @@ const Login = () => {
               <input
                 type="text"
                 required
-                placeholder="Registration / Matric number"
+                placeholder="Registration number (digits only, e.g. 20241029481)"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full px-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"

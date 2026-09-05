@@ -1,0 +1,853 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import PortalLayout from '../components/PortalLayout';
+import { 
+  Image as ImageIcon, 
+  Upload, 
+  Trash2, 
+  RefreshCw, 
+  ExternalLink, 
+  Copy, 
+  Check, 
+  Filter, 
+  Search, 
+  Sliders, 
+  Layers, 
+  HardDrive, 
+  Sparkles,
+  Eye,
+  Edit,
+  ShieldAlert,
+  Calendar,
+  Users,
+  Award,
+  FolderSync,
+  FolderTree,
+  Building2,
+  GraduationCap,
+  CreditCard,
+  UserCheck,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
+import { 
+  MediaUpload, 
+  CloudinaryImage, 
+  CLOUDINARY_FOLDERS, 
+  CANONICAL_NACOS_FOLDERS,
+  TRANSFORMATION_PRESETS, 
+  getOptimizedImageUrl,
+  deleteMedia,
+  getCloudinaryFoldersStatus,
+  syncCloudinaryFolders
+} from '@nacos/media';
+import { supabase } from '@nacos/supabase';
+
+// Seed demo media library items representing typical NACOS assets
+const INITIAL_MEDIA_ASSETS = [
+  {
+    id: 'media-1',
+    cloudinary_public_id: 'nacos/students/20241029481_passport',
+    image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600',
+    image_alt: 'Passport photo - Nestor Anyanwu',
+    category: 'students',
+    folder: 'nacos/students',
+    entity_type: 'student_passport',
+    entity_id: '20241029481',
+    format: 'jpg',
+    bytes: 184320,
+    width: 600,
+    height: 720,
+    created_at: '2026-08-20T10:15:00Z'
+  },
+  {
+    id: 'media-2',
+    cloudinary_public_id: 'nacos/executives/president_irechukwu',
+    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600',
+    image_alt: 'Chapter President - Irechukwu',
+    category: 'executives',
+    folder: 'nacos/executives',
+    entity_type: 'executive_portrait',
+    entity_id: 'president',
+    format: 'jpg',
+    bytes: 245100,
+    width: 600,
+    height: 600,
+    created_at: '2026-08-15T14:30:00Z'
+  },
+  {
+    id: 'media-3',
+    cloudinary_public_id: 'nacos/events/masked_affairs_banner',
+    image_url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&q=80&w=1200',
+    image_alt: 'Masked Affairs Social Mixer Banner',
+    category: 'events',
+    folder: 'nacos/events',
+    entity_type: 'event_banner',
+    entity_id: 'masked-affairs-2026',
+    format: 'jpg',
+    bytes: 482900,
+    width: 1200,
+    height: 630,
+    created_at: '2026-08-25T09:00:00Z'
+  },
+  {
+    id: 'media-4',
+    cloudinary_public_id: 'nacos/gallery/tetfund_dept_complex',
+    image_url: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&q=80&w=1200',
+    image_alt: 'Department of Computer Science TETFUND Complex',
+    category: 'gallery',
+    folder: 'nacos/gallery',
+    entity_type: 'campus_gallery',
+    entity_id: 'dept-front',
+    format: 'jpg',
+    bytes: 524000,
+    width: 1200,
+    height: 800,
+    created_at: '2026-08-10T12:00:00Z'
+  },
+  {
+    id: 'media-5',
+    cloudinary_public_id: 'nacos/certificates/hackathon_first_place',
+    image_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=1200',
+    image_alt: 'BuildX NACOS 2026 Certificate Badge',
+    category: 'certificates',
+    folder: 'nacos/certificates',
+    entity_type: 'certificate_template',
+    entity_id: 'buildx-2026-cert',
+    format: 'png',
+    bytes: 312000,
+    width: 1200,
+    height: 850,
+    created_at: '2026-09-01T16:20:00Z'
+  },
+  {
+    id: 'media-6',
+    cloudinary_public_id: 'nacos/ids/id_20241029481_card',
+    image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200',
+    image_alt: 'Digital Student ID Card - Nestor Anyanwu',
+    category: 'ids',
+    folder: 'nacos/ids',
+    entity_type: 'student_id_card',
+    entity_id: '20241029481',
+    format: 'png',
+    bytes: 420000,
+    width: 1012,
+    height: 638,
+    created_at: '2026-09-02T11:00:00Z'
+  },
+  {
+    id: 'media-7',
+    cloudinary_public_id: 'nacos/yellow_pages/peacemaker_tech_flyer',
+    image_url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200',
+    image_alt: 'Peacemaker Technologies Indigenous Student Startup',
+    category: 'yellow_pages',
+    folder: 'nacos/yellow_pages',
+    entity_type: 'business_flyer',
+    entity_id: 'peacemaker-tech',
+    format: 'png',
+    bytes: 412000,
+    width: 1200,
+    height: 800,
+    created_at: '2026-08-28T10:00:00Z'
+  },
+  {
+    id: 'media-8',
+    cloudinary_public_id: 'nacos/alumni/emeka_okoye_spotlight',
+    image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600',
+    image_alt: 'Alumni Network Spotlight - Principal Engineer',
+    category: 'alumni',
+    folder: 'nacos/alumni',
+    entity_type: 'alumni_spotlight',
+    entity_id: 'alumni-emeka',
+    format: 'jpg',
+    bytes: 280000,
+    width: 600,
+    height: 600,
+    created_at: '2026-08-18T11:00:00Z'
+  }
+];
+
+const AdminMedia = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [mediaList, setMediaList] = useState(INITIAL_MEDIA_ASSETS);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [previewMedia, setPreviewMedia] = useState(null);
+  const [activePreset, setActivePreset] = useState('card');
+  const [copiedId, setCopiedId] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  // Folder Architecture Tracker & Cloudinary Sync State
+  const [folderSyncStatus, setFolderSyncStatus] = useState({
+    configured: false,
+    cloudName: 'nacos-futo',
+    folders: CANONICAL_NACOS_FOLDERS
+  });
+  const [isSyncingFolders, setIsSyncingFolders] = useState(false);
+  const [showFolderSection, setShowFolderSection] = useState(true);
+
+  // New Upload Form State
+  const [newAssetCategory, setNewAssetCategory] = useState('students');
+  const [newAssetAlt, setNewAssetAlt] = useState('');
+  const [newAssetEntity, setNewAssetEntity] = useState('');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('nacos_user');
+    if (stored) {
+      try {
+        setCurrentUser(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    loadMediaFromDatabase();
+
+    // Query folder status on mount
+    async function loadFolderStatus() {
+      try {
+        const status = await getCloudinaryFoldersStatus();
+        if (status) {
+          setFolderSyncStatus(status);
+        }
+      } catch (e) {
+        console.warn('Could not query folder status', e);
+      }
+    }
+    loadFolderStatus();
+  }, []);
+
+  const loadMediaFromDatabase = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('media_assets')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const existingIds = new Set(data.map(d => d.cloudinary_public_id));
+        const merged = [...data, ...INITIAL_MEDIA_ASSETS.filter(item => !existingIds.has(item.cloudinary_public_id))];
+        setMediaList(merged);
+        return;
+      }
+    } catch (e) {
+      console.warn('Supabase media_assets query bypassed, using local store', e);
+    }
+
+    const stored = localStorage.getItem('nacos_media_assets_db');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map(p => p.cloudinary_public_id));
+          const merged = [...parsed, ...INITIAL_MEDIA_ASSETS.filter(item => !existingIds.has(item.cloudinary_public_id))];
+          setMediaList(merged);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const showNotification = (text, type = 'success') => {
+    setNotification({ text, type });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleSyncFolders = async () => {
+    setIsSyncingFolders(true);
+    try {
+      const res = await syncCloudinaryFolders();
+      if (res.success) {
+        showNotification(
+          res.mode === 'live_cloudinary'
+            ? `All ${res.totalFolders || 12} canonical folders verified & provisioned live in Cloudinary!`
+            : `All ${res.results?.length || 12} canonical folders cataloged and ready for upload!`
+        );
+        const updated = await getCloudinaryFoldersStatus();
+        if (updated) setFolderSyncStatus(updated);
+      } else {
+        showNotification(`Folder sync notice: ${res.error || 'Folders tracked locally'}`, 'info');
+      }
+    } catch (err) {
+      showNotification(`Sync error: ${err.message}`, 'error');
+    } finally {
+      setIsSyncingFolders(false);
+    }
+  };
+
+  const isAuthorized = currentUser?.role === 'Admin' || currentUser?.role === 'Chapter President';
+
+  const filteredMedia = useMemo(() => {
+    return mediaList.filter(item => {
+      const matchesCategory = 
+        selectedCategory === 'all' || 
+        item.category === selectedCategory ||
+        item.cloudinary_public_id?.startsWith(`nacos/${selectedCategory}`);
+      const q = searchQuery.toLowerCase();
+      const matchesQuery = 
+        !searchQuery ||
+        item.cloudinary_public_id.toLowerCase().includes(q) ||
+        (item.image_alt && item.image_alt.toLowerCase().includes(q)) ||
+        (item.entity_id && item.entity_id.toLowerCase().includes(q));
+      return matchesCategory && matchesQuery;
+    });
+  }, [mediaList, selectedCategory, searchQuery]);
+
+  const handleCopyUrl = (url, id) => {
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    showNotification('Cloudinary CDN URL copied to clipboard!');
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDeleteAsset = async (item) => {
+    if (!window.confirm(`Are you sure you want to delete "${item.cloudinary_public_id}" from Cloudinary and database?`)) {
+      return;
+    }
+
+    await deleteMedia(item.cloudinary_public_id);
+
+    try {
+      await supabase
+        .from('media_assets')
+        .delete()
+        .eq('cloudinary_public_id', item.cloudinary_public_id);
+    } catch (e) {
+      console.warn('Supabase media delete skipped', e);
+    }
+
+    const updated = mediaList.filter(m => m.cloudinary_public_id !== item.cloudinary_public_id);
+    setMediaList(updated);
+    localStorage.setItem('nacos_media_assets_db', JSON.stringify(updated));
+    showNotification(`Asset ${item.cloudinary_public_id} deleted successfully.`);
+  };
+
+  const handleUploadSuccess = async ({ url, publicId, format, bytes, width, height }) => {
+    const newAsset = {
+      id: `media-${Date.now()}`,
+      cloudinary_public_id: publicId,
+      image_url: url,
+      image_alt: newAssetAlt || `NACOS ${newAssetCategory} asset`,
+      category: newAssetCategory,
+      folder: `nacos/${newAssetCategory}`,
+      entity_type: newAssetCategory,
+      entity_id: newAssetEntity || 'general',
+      format: format || 'jpg',
+      bytes: bytes || 150000,
+      width: width || 800,
+      height: height || 600,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      await supabase.from('media_assets').insert([newAsset]);
+    } catch (e) {
+      console.warn('Supabase media asset insert skipped in offline mode', e);
+    }
+
+    const updated = [newAsset, ...mediaList];
+    setMediaList(updated);
+    localStorage.setItem('nacos_media_assets_db', JSON.stringify(updated));
+
+    setIsUploadModalOpen(false);
+    setNewAssetAlt('');
+    setNewAssetEntity('');
+    showNotification('New asset saved to Cloudinary media library!');
+  };
+
+  if (!isAuthorized) {
+    return (
+      <PortalLayout>
+        <div className="p-10 text-center max-w-lg mx-auto space-y-4">
+          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto border border-red-200 dark:border-red-800">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Access Restricted</h2>
+          <p className="text-xs text-gray-500 dark:text-green-200/80 leading-relaxed">
+            The Dedicated Cloudinary Media Management Dashboard is restricted to Chapter Presidents and Administrators.
+          </p>
+        </div>
+      </PortalLayout>
+    );
+  }
+
+  const categories = [
+    { id: 'all', label: 'All Media' },
+    { id: 'students', label: 'Students', icon: UserCheck },
+    { id: 'ids', label: 'ID Cards', icon: CreditCard },
+    { id: 'executives', label: 'Executives', icon: Users },
+    { id: 'yellow_pages', label: 'Yellow Pages', icon: Building2 },
+    { id: 'events', label: 'Events & Banners', icon: Calendar },
+    { id: 'gallery', label: 'Campus Gallery', icon: ImageIcon },
+    { id: 'alumni', label: 'Alumni Network', icon: GraduationCap },
+    { id: 'news', label: 'News & Articles', icon: Layers },
+    { id: 'certificates', label: 'Certificates', icon: Award },
+    { id: 'homepage', label: 'Homepage Hero', icon: Sparkles },
+    { id: 'general', label: 'General', icon: HardDrive }
+  ];
+
+  const getFolderIcon = (key) => {
+    switch (key) {
+      case 'students': return UserCheck;
+      case 'ids': return CreditCard;
+      case 'executives': return Users;
+      case 'yellow_pages': return Building2;
+      case 'events': return Calendar;
+      case 'gallery': return ImageIcon;
+      case 'alumni': return GraduationCap;
+      case 'news': return Layers;
+      case 'homepage': return Sparkles;
+      case 'certificates': return Award;
+      default: return HardDrive;
+    }
+  };
+
+  return (
+    <PortalLayout>
+      <div className="space-y-6">
+        
+        {/* Title Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Cloudinary Media Infrastructure
+              </h1>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-green-100/70">
+              Dedicated media management, transformations, facial-centering, and global CDN delivery for NACOS.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsUploadModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-sm transition-colors cursor-pointer"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload New Media</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Global Feedback Banner */}
+        {notification && (
+          <div className="p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800/40 animate-fade-in">
+            <Check className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
+            <span>{notification.text}</span>
+          </div>
+        )}
+
+        {/* =========================================================================
+            CLOUDINARY FOLDER ARCHITECTURE TRACKER & SYNC PANEL
+            ========================================================================= */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-[#138601]/20">
+            <div>
+              <div className="flex items-center gap-2">
+                <FolderTree className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
+                <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                  Cloudinary Folder Architecture & Auto-Provisioning
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800 dark:bg-green-950/60 dark:text-green-300">
+                  {folderSyncStatus.cloudName || 'nacos-futo'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-green-200/70 mt-0.5">
+                All 12 canonical media folders partitioned across Portal, Website, and Shared surfaces.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSyncFolders}
+                disabled={isSyncingFolders}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <FolderSync className={`w-3.5 h-3.5 ${isSyncingFolders ? 'animate-spin' : ''}`} />
+                <span>{isSyncingFolders ? 'Syncing...' : 'Sync Cloudinary Folders'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowFolderSection(!showFolderSection)}
+                className="p-1.5 rounded-lg text-gray-500 dark:text-green-200/80 hover:bg-gray-100 dark:hover:bg-[#041801] transition-colors"
+                title={showFolderSection ? 'Collapse Folder View' : 'Expand Folder View'}
+              >
+                {showFolderSection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {showFolderSection && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pt-1">
+              {(folderSyncStatus.folders || CANONICAL_NACOS_FOLDERS).map((folder) => {
+                const IconComponent = getFolderIcon(folder.categoryKey);
+                const isCurrent = selectedCategory === folder.categoryKey;
+                const assetCount = mediaList.filter(m => 
+                  m.category === folder.categoryKey || 
+                  m.cloudinary_public_id?.startsWith(folder.path)
+                ).length;
+
+                return (
+                  <div
+                    key={folder.path}
+                    onClick={() => setSelectedCategory(folder.categoryKey === 'root' ? 'all' : folder.categoryKey)}
+                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                      isCurrent
+                        ? 'bg-[#138601]/10 border-[#138601] shadow-sm'
+                        : 'bg-gray-50 dark:bg-[#041801] border-gray-200 dark:border-[#138601]/20 hover:border-[#138601]/50'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <div className="p-1.5 rounded-lg bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30">
+                          <IconComponent className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                          folder.surface === 'portal' 
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
+                            : folder.surface === 'website'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        }`}>
+                          {folder.surface}
+                        </span>
+                      </div>
+
+                      <div className="font-bold text-xs text-gray-900 dark:text-white truncate">
+                        {folder.name}
+                      </div>
+                      <div className="font-mono text-[10px] text-[#138601] dark:text-[#4bd043] truncate">
+                        /{folder.path}
+                      </div>
+                      <p className="text-[11px] text-gray-500 dark:text-green-200/70 line-clamp-2 mt-1">
+                        {folder.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-2.5 pt-2 border-t border-gray-200/60 dark:border-[#138601]/20 flex items-center justify-between text-[10px] text-gray-500 dark:text-green-200/60">
+                      <span className="font-semibold text-gray-700 dark:text-green-300">
+                        {assetCount} {assetCount === 1 ? 'Asset' : 'Assets'}
+                      </span>
+                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                        <ShieldCheck className="w-3 h-3" /> Ready
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Storage & Optimization Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
+            <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Total Cloudinary Assets</span>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{mediaList.length}</div>
+            <span className="text-[10px] text-green-600 dark:text-green-300 font-medium">Auto WebP/AVIF Enabled</span>
+          </div>
+          <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
+            <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Database Binary Storage</span>
+            <div className="text-2xl font-bold text-[#138601] dark:text-[#4bd043]">0 MB</div>
+            <span className="text-[10px] text-gray-500 dark:text-green-200/70 font-medium">100% offloaded to Cloudinary</span>
+          </div>
+          <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
+            <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Dynamic Crop Engine</span>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">g_face, f_auto</div>
+            <span className="text-[10px] text-green-600 dark:text-green-300 font-medium">Automatic facial centering</span>
+          </div>
+          <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
+            <span className="text-[11px] text-gray-500 dark:text-green-200/70 block">Cloud Delivery CDN</span>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">Active</div>
+            <span className="text-[10px] text-green-600 dark:text-green-300 font-medium">Edge cache & transformations</span>
+          </div>
+        </div>
+
+        {/* Filter Tabs & Search Bar */}
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex flex-col md:flex-row gap-4 items-center justify-between">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                  selectedCategory === cat.id
+                    ? 'bg-[#138601] text-white'
+                    : 'bg-gray-100 dark:bg-[#041801] text-gray-700 dark:text-green-200 hover:bg-gray-200 dark:hover:bg-black'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full md:w-72">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by public ID or tag..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-lg text-xs bg-gray-50 dark:bg-[#041801] border border-gray-300 dark:border-[#138601]/40 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
+            />
+          </div>
+        </div>
+
+        {/* Media Asset Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {filteredMedia.map((item) => (
+            <div
+              key={item.id || item.cloudinary_public_id}
+              className="rounded-xl overflow-hidden bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex flex-col shadow-sm group hover:border-[#138601] transition-all"
+            >
+              {/* Image Preview Container */}
+              <div className="relative aspect-[4/3] bg-gray-100 dark:bg-[#041801] overflow-hidden">
+                <CloudinaryImage
+                  src={item.image_url}
+                  alt={item.image_alt || item.cloudinary_public_id}
+                  preset="card"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                
+                {/* Category Tag Badge */}
+                <div className="absolute top-2 left-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white backdrop-blur">
+                    {item.category}
+                  </span>
+                </div>
+
+                {/* Quick Actions Hover Overlay */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+                  <button
+                    type="button"
+                    title="Preview Transformations"
+                    onClick={() => setPreviewMedia(item)}
+                    className="p-2 rounded-full bg-white text-gray-900 hover:bg-gray-100 shadow transition-transform hover:scale-110 cursor-pointer"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Copy CDN URL"
+                    onClick={() => handleCopyUrl(item.image_url, item.id)}
+                    className="p-2 rounded-full bg-[#138601] text-white hover:bg-[#0f6c01] shadow transition-transform hover:scale-110 cursor-pointer"
+                  >
+                    {copiedId === item.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    title="Delete Asset"
+                    onClick={() => handleDeleteAsset(item)}
+                    className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 shadow transition-transform hover:scale-110 cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Metadata Details */}
+              <div className="p-3.5 flex-1 flex flex-col justify-between space-y-2 text-xs">
+                <div>
+                  <div className="font-mono text-[11px] font-bold text-gray-900 dark:text-white truncate" title={item.cloudinary_public_id}>
+                    {item.cloudinary_public_id}
+                  </div>
+                  <p className="text-[11px] text-gray-500 dark:text-green-200/70 truncate mt-0.5">
+                    {item.image_alt || 'No alt text provided'}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100 dark:border-[#138601]/20 flex items-center justify-between text-[10px] text-gray-500 dark:text-green-200/60 font-mono">
+                  <span>{item.format?.toUpperCase() || 'JPG'} • {((item.bytes || 0) / 1024).toFixed(0)} KB</span>
+                  <span>{item.width || 600}×{item.height || 400}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredMedia.length === 0 && (
+          <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-3">
+            <ImageIcon className="w-12 h-12 text-gray-400 mx-auto" />
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">No media assets found</h3>
+            <p className="text-xs text-gray-500 dark:text-green-200/70">
+              No assets match folder category "{selectedCategory}" or search query "{searchQuery}".
+            </p>
+          </div>
+        )}
+
+        {/* ================================================================
+            MODAL 1: UPLOAD NEW MEDIA ASSET (ALL CANONICAL FOLDERS)
+            ================================================================ */}
+        {isUploadModalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#138601]/20 pb-3">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
+                  <span>Upload Asset to Cloudinary</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsUploadModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">
+                    Target Cloudinary Folder
+                  </label>
+                  <select
+                    value={newAssetCategory}
+                    onChange={(e) => setNewAssetCategory(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#041801] border border-gray-300 dark:border-[#138601]/40 text-gray-900 dark:text-white"
+                  >
+                    <option value="students">Student Passports (nacos/students)</option>
+                    <option value="ids">Student ID Cards (nacos/ids)</option>
+                    <option value="executives">Executive Council (nacos/executives)</option>
+                    <option value="yellow_pages">Yellow Pages Businesses (nacos/yellow_pages)</option>
+                    <option value="events">Events & Banners (nacos/events)</option>
+                    <option value="gallery">Campus Gallery (nacos/gallery)</option>
+                    <option value="alumni">Alumni Network (nacos/alumni)</option>
+                    <option value="news">News & Articles (nacos/news)</option>
+                    <option value="homepage">Homepage & Hero (nacos/homepage)</option>
+                    <option value="certificates">Certificates (nacos/certificates)</option>
+                    <option value="general">General Branding (nacos/general)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">
+                    Image Description / Alt Text
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Passport photograph for clearance, or ID card back"
+                    value={newAssetAlt}
+                    onChange={(e) => setNewAssetAlt(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#041801] border border-gray-300 dark:border-[#138601]/40 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">
+                    Associated Entity Tag (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 20241029481 or event-masked-affairs"
+                    value={newAssetEntity}
+                    onChange={(e) => setNewAssetEntity(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#041801] border border-gray-300 dark:border-[#138601]/40 text-gray-900 dark:text-white font-mono"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <MediaUpload
+                    folder={`nacos/${newAssetCategory}`}
+                    label="Select Media File"
+                    helperText="JPG, PNG, or WebP up to 5MB"
+                    aspectRatio={newAssetCategory === 'students' ? 'portrait' : 'landscape'}
+                    onUploadSuccess={handleUploadSuccess}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================
+            MODAL 2: DYNAMIC TRANSFORMATION PREVIEW
+            ================================================================ */}
+        {previewMedia && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#138601]/20 pb-3">
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                    Cloudinary Transformation Inspector
+                  </h3>
+                  <p className="text-[11px] font-mono text-gray-500 dark:text-green-200/70">
+                    {previewMedia.cloudinary_public_id}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMedia(null)}
+                  className="text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Transformation Presets Selector */}
+              <div className="flex flex-wrap gap-2 text-xs">
+                {Object.keys(TRANSFORMATION_PRESETS).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActivePreset(key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                      activePreset === key
+                        ? 'bg-[#138601] text-white'
+                        : 'bg-gray-100 dark:bg-[#041801] text-gray-700 dark:text-green-200'
+                    }`}
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+
+              {/* Transformed Image Preview */}
+              <div className="bg-gray-100 dark:bg-[#041801] rounded-xl p-4 flex items-center justify-center min-h-[300px] overflow-hidden border border-gray-200 dark:border-[#138601]/30">
+                <img
+                  src={getOptimizedImageUrl(previewMedia.image_url, { preset: activePreset })}
+                  alt={previewMedia.image_alt || 'Preview'}
+                  className="max-h-[360px] w-auto object-contain rounded-lg shadow-md"
+                />
+              </div>
+
+              {/* Active URL with Copy */}
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/30 space-y-1">
+                <span className="text-[10px] text-gray-500 dark:text-green-200/70 block uppercase font-bold">
+                  Generated On-The-Fly Delivery URL
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={getOptimizedImageUrl(previewMedia.image_url, { preset: activePreset })}
+                    className="flex-1 text-[11px] font-mono bg-transparent border-0 text-gray-800 dark:text-white select-all focus:outline-none truncate"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleCopyUrl(getOptimizedImageUrl(previewMedia.image_url, { preset: activePreset }), 'modal')}
+                    className="px-3 py-1.5 rounded-lg bg-[#138601] text-white text-xs font-semibold hover:bg-[#0f6c01] cursor-pointer"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+      </div>
+    </PortalLayout>
+  );
+};
+
+export default AdminMedia;

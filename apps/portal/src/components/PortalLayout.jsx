@@ -12,7 +12,8 @@ import {
   X, 
   ChevronRight,
   ShieldCheck,
-  Globe
+  Globe,
+  Image as ImageIcon
 } from 'lucide-react';
 import { BsSun, BsMoon } from 'react-icons/bs';
 import { useTheme } from '../context/ThemeContext';
@@ -56,7 +57,11 @@ const PortalLayout = ({ children }) => {
     { label: 'Course Materials', path: '/courses', icon: BookOpen },
     { label: 'Student Profile & Bio', path: '/profile', icon: User },
     ...(user.role === 'Chapter President' || user.role === 'Admin'
-      ? [{ label: 'Student Registry', path: '/admin/students', icon: Users }]
+      ? [
+          { label: 'Student Registry', path: '/admin/students', icon: Users },
+          { label: 'ID Applications', path: '/admin/id-cards', icon: ShieldCheck },
+          { label: 'Media Management', path: '/admin/media', icon: ImageIcon }
+        ]
       : [])
   ];
 

@@ -9,6 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@nacos/config": "*",
+    "@nacos/media": "*",
+    "@nacos/supabase": "*",
+    "@nacos/types": "*",
+    "@nacos/ui": "*",
     "@gsap/react": "^2.1.2",
     "@tailwindcss/vite": "^4.0.15",
     "appwrite": "^18.1.1",

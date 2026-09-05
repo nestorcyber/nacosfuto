@@ -5,6 +5,8 @@
   "module": "src/client.js",
   "type": "module",
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.1"
+    "@nacos/media": "*",
+    "@supabase/supabase-js": "^2.49.1",
+    "qrcode": "^1.5.4"
   }
 }

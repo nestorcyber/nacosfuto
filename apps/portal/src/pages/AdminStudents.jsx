@@ -386,11 +386,11 @@ const AdminStudents = () => {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 dark:text-green-200 font-semibold mb-1">Registration Number *</label>
+                  <label className="block text-gray-700 dark:text-green-200 font-semibold mb-1">Registration Number (Digits only) *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 2024CS12345"
+                    placeholder="e.g. 20241029481"
                     value={newStudent.matricNumber}
                     onChange={(e) => setNewStudent({ ...newStudent, matricNumber: e.target.value })}
                     className="w-full px-3 py-2 rounded border border-gray-300 dark:border-[#138601]/40 bg-white dark:bg-[#041801] text-gray-900 dark:text-white"

@@ -67,7 +67,13 @@ export function getLocalStudentsDatabase() {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Auto-migrate legacy entries containing letters to canonical digits-only format
+      if (Array.isArray(parsed) && parsed.some(s => s.registration_number && /[a-zA-Z]/.test(s.registration_number))) {
+        localStorage.removeItem(STORAGE_KEY);
+      } else {
+        return parsed;
+      }
     } catch (e) {
       console.error('Failed to parse local students DB', e);
     }
@@ -77,7 +83,7 @@ export function getLocalStudentsDatabase() {
   const seeded = [
     {
       id: 'student-seed-a',
-      registration_number: '2024CS12345',
+      registration_number: '20241029481',
       full_name: 'Nestor Anyanwu',
       email: 'nestor.anyanwu@futo.edu.ng',
       phone_number: '+234 801 234 5678',
@@ -95,7 +101,7 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-b',
-      registration_number: '2025CS54321',
+      registration_number: '20251145321',
       full_name: 'Chioma Eze',
       email: 'chioma.eze@futo.edu.ng',
       phone_number: '+234 809 876 5432',
@@ -113,7 +119,7 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-c',
-      registration_number: '2026CS99999',
+      registration_number: '20261099999',
       full_name: 'Emeka Okoro',
       email: 'emeka.okoro@futo.edu.ng',
       phone_number: '+234 812 345 6789',
@@ -131,7 +137,7 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-david',
-      registration_number: '2022/139481',
+      registration_number: '20221139481',
       full_name: 'David Okonkwo',
       email: 'david.okonkwo@futo.edu.ng',
       phone_number: '+234 814 592 0184',
@@ -149,7 +155,7 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-pres',
-      registration_number: '2020/112948',
+      registration_number: '20201112948',
       full_name: 'Chapter President (FUTO)',
       email: 'president.futo@nacos.org.ng',
       phone_number: '+234 803 112 3456',

@@ -1,4 +1,4 @@
-﻿import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import GSAPWrapper from "./utils/GSAPWrapper";
 import { ToastContainer } from "react-toastify";
@@ -33,6 +33,19 @@ import Announcements from "./pages/Announcements";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 import UnreadAnnouncementBanner from "./components/UnreadAnnouncementBanner";
+import IdVerification from "./pages/IdVerification";
+
+// Admin CMS Pages
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminMedia from "./pages/admin/AdminMedia";
+import AdminGallery from "./pages/admin/AdminGallery";
+import AdminNews from "./pages/admin/AdminNews";
+import AdminEvents from "./pages/admin/AdminEvents";
+import AdminHomepage from "./pages/admin/AdminHomepage";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 
 // Lazy-loaded pages
 const Events = lazy(() => import("./pages/Events"));
@@ -122,6 +135,21 @@ function App() {
             <Route path="/upskill/vibe-coding" element={<PlaceholderPage title="Vibe Coding" message="Learn modern AI-assisted prompt engineering and full-stack software prototyping." />} />
             <Route path="/upskill/social-media" element={<PlaceholderPage title="Social Media" message="Grow tech brands and personal influence across social platforms." />} />
             <Route path="/upskill/all" element={<PlaceholderPage title="All Courses" message="Browse the complete catalog of skill tracks." />} />
+
+            {/* Public Student ID Card Verification */}
+            <Route path="/verify/id/:id" element={<IdVerification />} />
+
+            {/* Main Website Admin CMS Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+            <Route path="/admin/media" element={<AdminProtectedRoute requiredPermission="main_website.media"><AdminMedia /></AdminProtectedRoute>} />
+            <Route path="/admin/gallery" element={<AdminProtectedRoute requiredPermission="main_website.gallery"><AdminGallery /></AdminProtectedRoute>} />
+            <Route path="/admin/news" element={<AdminProtectedRoute requiredPermission="main_website.news"><AdminNews /></AdminProtectedRoute>} />
+            <Route path="/admin/events" element={<AdminProtectedRoute requiredPermission="main_website.events"><AdminEvents /></AdminProtectedRoute>} />
+            <Route path="/admin/homepage" element={<AdminProtectedRoute requiredPermission="main_website.homepage"><AdminHomepage /></AdminProtectedRoute>} />
+            <Route path="/admin/audit-logs" element={<AdminProtectedRoute requiredPermission="main_website.view"><AdminAuditLogs /></AdminProtectedRoute>} />
+            <Route path="/admin/admins" element={<AdminProtectedRoute requiredPermission="super_admin"><AdminUsers /></AdminProtectedRoute>} />
+            <Route path="/admin/settings" element={<AdminProtectedRoute requiredPermission="main_website.settings"><AdminHomepage /></AdminProtectedRoute>} />
 
             {/* 404 Not Found */}
             <Route path="*" element={<NotFound />} />

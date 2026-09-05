@@ -28,14 +28,15 @@ export function parseAdmissionYear(regNumber, currentYearStart = CURRENT_ACADEMI
     return { valid: false, error: 'Registration number is too short.' };
   }
 
-  const yearPrefix = cleaned.substring(0, 4);
-  if (!/^\d{4}$/.test(yearPrefix)) {
-    return { 
-      valid: false, 
-      error: `Registration number must begin with a valid 4-digit year (e.g. 2024...). Found "${yearPrefix}".` 
+  // Enforce strictly numeric format: registration numbers contain digits only, no letters
+  if (!/^\d+$/.test(cleaned)) {
+    return {
+      valid: false,
+      error: 'Registration number must contain digits only without any letters (e.g. 20241029481).'
     };
   }
 
+  const yearPrefix = cleaned.substring(0, 4);
   const year = parseInt(yearPrefix, 10);
   if (year < 1980) {
     return { valid: false, error: `Admission year ${year} is invalid (must be 1980 or later).` };

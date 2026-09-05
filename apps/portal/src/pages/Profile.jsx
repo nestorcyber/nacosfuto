@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import PortalLayout from '../components/PortalLayout';
 import logoDark from '../assets/full-logo-dark.png';
+import { MediaUpload, CloudinaryImage, CLOUDINARY_FOLDERS } from '@nacos/media';
 
 const Profile = () => {
   const [user, setUser] = useState({
@@ -109,8 +110,17 @@ const Profile = () => {
 
               {/* Student Details & Photo Avatar */}
               <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded bg-[#138601] flex items-center justify-center text-white text-lg font-bold shrink-0">
-                  {user.name.slice(0, 2).toUpperCase()}
+                <div className="w-14 h-14 rounded bg-[#138601] flex items-center justify-center text-white text-lg font-bold shrink-0 overflow-hidden border border-[#4bd043]/30">
+                  {user.profile_photo_url || user.avatar_url ? (
+                    <CloudinaryImage
+                      src={user.profile_photo_url || user.avatar_url}
+                      alt={user.name}
+                      preset="avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user.name.slice(0, 2).toUpperCase()
+                  )}
                 </div>
                 <div className="overflow-hidden space-y-0.5">
                   <h4 className="text-sm font-bold text-white truncate">{user.name}</h4>
@@ -153,6 +163,53 @@ const Profile = () => {
               <Download className="w-4 h-4" />
               <span>Download Digital ID (PDF)</span>
             </button>
+
+            {/* Cloudinary Passport Photo Management */}
+            <div className="p-5 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-3">
+              <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center justify-between">
+                <span>Official Passport Photo</span>
+                <span className="text-[10px] font-normal text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/40 px-2 py-0.5 rounded">
+                  Cloudinary CDN
+                </span>
+              </h3>
+              <p className="text-[11px] text-gray-500 dark:text-green-200/70 leading-relaxed">
+                Your photograph is processed with automated face centering and optimized for your digital student ID card.
+              </p>
+              <MediaUpload
+                currentImageUrl={user.profile_photo_url || user.avatar_url || ''}
+                currentPublicId={user.cloudinary_public_id || ''}
+                folder={CLOUDINARY_FOLDERS.STUDENTS}
+                publicId={`${CLOUDINARY_FOLDERS.STUDENTS}/${(user.matric || 'student').replace(/[^a-zA-Z0-9]/g, '_')}_passport`}
+                label=""
+                helperText="JPG, PNG, or WebP passport photo (Max 5MB)"
+                aspectRatio="portrait"
+                previewPreset="id_card_photo"
+                onUploadSuccess={({ url, publicId }) => {
+                  const updated = {
+                    ...user,
+                    profile_photo_url: url,
+                    avatar_url: url,
+                    photo_url: url,
+                    cloudinary_public_id: publicId
+                  };
+                  setUser(updated);
+                  localStorage.setItem('nacos_user', JSON.stringify(updated));
+                  setSaveSuccess(true);
+                  setTimeout(() => setSaveSuccess(false), 2500);
+                }}
+                onDeleteSuccess={() => {
+                  const updated = {
+                    ...user,
+                    profile_photo_url: '',
+                    avatar_url: '',
+                    photo_url: '',
+                    cloudinary_public_id: ''
+                  };
+                  setUser(updated);
+                  localStorage.setItem('nacos_user', JSON.stringify(updated));
+                }}
+              />
+            </div>
           </div>
 
           {/* COMPREHENSIVE BIO-DATA FORM / VIEW */}
