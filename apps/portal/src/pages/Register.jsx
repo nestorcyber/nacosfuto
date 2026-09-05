@@ -298,7 +298,7 @@ const Register = () => {
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-              {step === 1 && 'Verify Registration Number'}
+              {step === 1 && 'Student Registration'}
               {step === 2 && 'Confirm Identity & Verification Code'}
               {step === 3 && 'Create Account Password'}
             </h1>
@@ -389,13 +389,10 @@ const Register = () => {
                       {isLookingUp ? (
                         <>
                           <RotateCw className="w-4 h-4 animate-spin" />
-                          <span>Verifying with Database...</span>
+                          <span>Please wait...</span>
                         </>
                       ) : (
-                        <>
-                          <span>Verify Registration Number</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </>
+                        <span>Continue</span>
                       )}
                     </button>
                   </div>
