@@ -89,11 +89,6 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Student Email Instruction Notice */}
-          <div className="p-3 rounded bg-[#ebf3ff]/70 border border-[#cbe1ff] text-xs text-gray-700 leading-relaxed">
-            <span className="font-semibold text-gray-900">Notice:</span> When signing up, please use the <strong>exact same email address</strong> you used on the FUTO portal when you joined FUTO.
-          </div>
-
           {/* Error Message */}
           {error && (
             <div className="p-3 rounded bg-red-50 text-xs text-red-600 font-medium">
@@ -107,7 +102,7 @@ const Login = () => {
               <input
                 type="text"
                 required
-                placeholder="Registration number (digits only, e.g. 20241029481)"
+                placeholder="Registration number (e.g. 20241029481)"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full px-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"

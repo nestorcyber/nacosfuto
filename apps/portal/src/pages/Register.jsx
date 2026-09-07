@@ -22,11 +22,10 @@ import {
   verifyStudentRegistrationCode, 
   completeVerifiedStudentRegistration 
 } from '@nacos/supabase';
-import { parseAdmissionYear, calculateCurrentLevel, calculateExpectedGraduation, CURRENT_ACADEMIC_YEAR_START } from '@nacos/config/academic';
 
 const Register = () => {
   const navigate = useNavigate();
-  // Step 1: Matric Lookup, Step 2: Personal Details & OTP, Step 3: Password Creation
+  // Step 1: Registration Check, Step 2: Personal Details & OTP, Step 3: Password Creation
   const [step, setStep] = useState(1);
 
   // Form states
@@ -54,27 +53,6 @@ const Register = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Real-time automatic admission year & academic level preview
-  const detectedAcademic = useMemo(() => {
-    if (!matricNumber || matricNumber.trim().length < 4) {
-      return null;
-    }
-    const parse = parseAdmissionYear(matricNumber, CURRENT_ACADEMIC_YEAR_START);
-    if (!parse.valid) {
-      return { valid: false, error: parse.error };
-    }
-    const admissionYear = parse.admissionYear;
-    const levelInfo = calculateCurrentLevel(admissionYear, CURRENT_ACADEMIC_YEAR_START, 5);
-    const expectedGraduation = calculateExpectedGraduation(admissionYear, 5);
-
-    return {
-      valid: true,
-      admissionYear,
-      levelString: levelInfo.levelString,
-      expectedGraduation
-    };
-  }, [matricNumber]);
-
   // Resend cooldown timer
   useEffect(() => {
     let timer;
@@ -94,11 +72,6 @@ const Register = () => {
     const cleanMatric = matricNumber.trim();
     if (!cleanMatric) {
       setError('Please enter your registration number.');
-      return;
-    }
-
-    if (detectedAcademic && !detectedAcademic.valid) {
-      setError(detectedAcademic.error);
       return;
     }
 
@@ -387,34 +360,6 @@ const Register = () => {
                     />
                   </div>
 
-                  {/* Real-time Academic Level & Admission Year Preview */}
-                  {detectedAcademic && (
-                    <div className={`p-3 rounded border text-xs transition-all ${
-                      detectedAcademic.valid 
-                        ? 'bg-green-50/80 border-green-200 text-green-900' 
-                        : 'bg-amber-50 border-amber-200 text-amber-800'
-                    }`}>
-                      {detectedAcademic.valid ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">Detected Admission Year:</span>
-                            <span className="font-bold text-[#138601]">{detectedAcademic.admissionYear}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">Academic Level:</span>
-                            <span className="font-bold text-[#138601]">{detectedAcademic.levelString}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">Expected Graduation:</span>
-                            <span className="font-bold text-gray-700">{detectedAcademic.expectedGraduation}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <p>{detectedAcademic.error}</p>
-                      )}
-                    </div>
-                  )}
-
                   <div className="pt-2">
                     <button
                       type="submit"
@@ -545,7 +490,7 @@ const Register = () => {
                       </button>
                     </div>
                     <p className="text-[11px] text-gray-500 mt-1">
-                      Enter your active personal or school email to receive your 6-digit verification code.
+                      Enter your active email address to receive your 6-digit verification code.
                     </p>
                   </div>
 

@@ -53,13 +53,8 @@ const ForgotPassword = () => {
               Reset your password
             </h1>
             <p className="mt-1 text-xs text-gray-600">
-              Enter your student email address to receive password recovery instructions.
+              Enter your registered email address to receive password recovery instructions.
             </p>
-          </div>
-
-          {/* Student Email Instruction Notice */}
-          <div className="p-3 rounded bg-[#ebf3ff]/70 border border-[#cbe1ff] text-xs text-gray-700 leading-relaxed">
-            <span className="font-semibold text-gray-900">Notice:</span> Please enter the <strong>exact same email address</strong> you used on the FUTO portal when you joined FUTO.
           </div>
 
           {isSent ? (
@@ -86,7 +81,7 @@ const ForgotPassword = () => {
                 <input
                   type="email"
                   required
-                  placeholder="Student email address"
+                  placeholder="Registered email address (e.g. name@gmail.com)"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
