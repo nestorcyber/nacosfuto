@@ -162,16 +162,6 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Minimal Footnote Link to Main Website */}
-          <div className="pt-6 border-t border-gray-100 flex items-center justify-end text-xs text-gray-500">
-            <a 
-              href="http://localhost:5173" 
-              className="hover:text-black transition-colors"
-            >
-              Main Website →
-            </a>
-          </div>
-
         </div>
       </div>
 

@@ -13,8 +13,7 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  Phone,
-  Shield
+  Phone
 } from 'lucide-react';
 import { 
   lookupVerifiedStudentRecord, 
@@ -25,7 +24,7 @@ import {
 
 const Register = () => {
   const navigate = useNavigate();
-  // Step 1: Registration Check, Step 2: Personal Details & OTP, Step 3: Password Creation
+  // Step 1: Registration Check, Step 2: Personal Details, Step 3: Verify Code, Step 4: Password Creation
   const [step, setStep] = useState(1);
 
   // Form states
@@ -85,7 +84,7 @@ const Register = () => {
       }
 
       setVerifiedRecord(lookup.data);
-      // Move to Step 2 for personal details & email verification
+      // Move to Step 2 for personal details
       setStep(2);
     } catch (err) {
       setError('An error occurred during verification lookup. Please try again.');
@@ -95,11 +94,37 @@ const Register = () => {
   };
 
   // =========================================================================
-  // STEP 2: Send OTP Code to student's typed email
+  // STEP 2: Validate Personal Details & Dispatch Verification Code
   // =========================================================================
-  const handleSendCode = async (e) => {
-    if (e) e.preventDefault();
+  const handleStep2Continue = async (e) => {
+    e.preventDefault();
     setError('');
+
+    if (!lastName.trim()) {
+      setError('Please enter your surname / last name.');
+      return;
+    }
+
+    if (!firstName.trim()) {
+      setError('Please enter your first name.');
+      return;
+    }
+
+    if (!middleName.trim()) {
+      setError('Please enter your middle name.');
+      return;
+    }
+
+    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+    if (!cleanPhone) {
+      setError('Please enter your phone number.');
+      return;
+    }
+
+    if (cleanPhone.length < 10) {
+      setError('Please enter a valid phone number (at least 10 digits).');
+      return;
+    }
 
     const cleanEmail = studentEmail.trim().toLowerCase();
     if (!cleanEmail) {
@@ -120,6 +145,7 @@ const Register = () => {
         setDevTestCode(dispatch.code || '');
         setResendCooldown(60);
         setCodeSent(true);
+        setStep(3);
       } else {
         setError(dispatch.error?.message || 'Failed to dispatch verification code. Please check your email and try again.');
       }
@@ -131,49 +157,31 @@ const Register = () => {
   };
 
   const handleResendCode = async () => {
-    if (resendCooldown > 0 || !matricNumber || !studentEmail) return;
-    await handleSendCode();
+    if (resendCooldown > 0 || !matricNumber || !studentEmail || isSendingCode) return;
+    setError('');
+    setIsSendingCode(true);
+    try {
+      const cleanEmail = studentEmail.trim().toLowerCase();
+      const dispatch = await sendStudentVerificationCode(matricNumber.trim(), cleanEmail);
+      if (dispatch.success) {
+        setDevTestCode(dispatch.code || '');
+        setResendCooldown(60);
+      } else {
+        setError(dispatch.error?.message || 'Failed to dispatch verification code. Please try again.');
+      }
+    } catch (err) {
+      setError('Failed to resend verification code. Please try again.');
+    } finally {
+      setIsSendingCode(false);
+    }
   };
 
   // =========================================================================
-  // STEP 2: Validate Student Names, Mandatory Phone (for 2FA) & 6-digit OTP
+  // STEP 3: Validate 6-digit Verification Code
   // =========================================================================
-  const handleConfirmCode = async (e) => {
+  const handleVerifyCode = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (!firstName.trim()) {
-      setError('Please enter your first name.');
-      return;
-    }
-
-    if (!lastName.trim()) {
-      setError('Please enter your last name / surname.');
-      return;
-    }
-
-    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
-    if (!cleanPhone) {
-      setError('Contact phone number is compulsory for two-factor authentication (2FA).');
-      return;
-    }
-
-    if (cleanPhone.length < 10) {
-      setError('Please enter a valid contact phone number (at least 10 digits). Required for 2FA.');
-      return;
-    }
-
-    const cleanEmail = studentEmail.trim().toLowerCase();
-    if (!cleanEmail) {
-      setError('Please enter your email address.');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(cleanEmail)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
 
     if (!verificationCode.trim() || verificationCode.trim().length !== 6) {
       setError('Please enter the 6-digit verification code sent to your email.');
@@ -189,8 +197,8 @@ const Register = () => {
         return;
       }
 
-      // Code valid -> Proceed to Step 3 (Set Password)
-      setStep(3);
+      // Code valid -> Proceed to Step 4 (Set Password)
+      setStep(4);
     } catch (err) {
       setError('Code verification failed. Please try again.');
     } finally {
@@ -199,7 +207,7 @@ const Register = () => {
   };
 
   // =========================================================================
-  // STEP 3: Complete Registration & Create Account
+  // STEP 4: Complete Registration & Create Account
   // =========================================================================
   const handleCompleteRegistration = async (e) => {
     e.preventDefault();
@@ -217,14 +225,10 @@ const Register = () => {
       setError('Passwords do not match.');
       return;
     }
-    if (!agreeTerms) {
-      setError('You must confirm that you agree to the NACOS FUTO constitution and student guidelines.');
-      return;
-    }
 
     setIsSubmitting(true);
     try {
-      const fullName = [firstName.trim(), middleName.trim(), lastName.trim()].filter(Boolean).join(' ');
+      const fullName = [lastName.trim(), firstName.trim(), middleName.trim()].filter(Boolean).join(' ');
       const res = await completeVerifiedStudentRegistration(
         matricNumber.trim(),
         verificationCode.trim(),
@@ -280,7 +284,7 @@ const Register = () => {
         </div>
       </div>
 
-      {/* RIGHT HALF (50%): Controlled 3-Step Verification & Registration Form */}
+      {/* RIGHT HALF (50%): Controlled 4-Step Verification & Registration Form */}
       <div className="md:w-1/2 flex items-center justify-center p-6 sm:p-10 md:p-14 lg:p-16 bg-white overflow-y-auto">
         <div className="w-full max-w-md space-y-5 my-auto">
           
@@ -288,12 +292,12 @@ const Register = () => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#138601]">
-                Step {step} of 3
+                Step {step} of 4
               </span>
               <span className="text-xs text-gray-500">
                 {step === 1 && 'Registration Check'}
-                {step === 2 && 'Personal Details & Code'}
-                {step === 3 && 'Account Password'}
+                {step === 2 && 'Personal Details'}
+                {step === 3 && 'Email Verification'}
               </span>
             </div>
 
@@ -301,14 +305,15 @@ const Register = () => {
             <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-4">
               <div 
                 className="h-full bg-[#138601] transition-all duration-300 rounded-full"
-                style={{ width: `${(step / 3) * 100}%` }}
+                style={{ width: `${(step / 4) * 100}%` }}
               ></div>
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
               {step === 1 && 'Student Registration'}
-              {step === 2 && 'Personal Details & Verification'}
-              {step === 3 && 'Create Account Password'}
+              {step === 2 && 'Personal Details'}
+              {step === 3 && 'Verify Email Address'}
+              {step === 4 && 'Create Password'}
             </h1>
             <p className="mt-1 text-xs text-gray-600">
               Already have an account?{' '}
@@ -380,10 +385,25 @@ const Register = () => {
               )}
 
               {/* ========================================================
-                  STEP 2: STUDENT DETAILS, MANDATORY 2FA PHONE & OTP
+                  STEP 2: STUDENT PERSONAL DETAILS
                   ======================================================== */}
               {step === 2 && verifiedRecord && (
-                <form onSubmit={handleConfirmCode} className="space-y-4">
+                <form onSubmit={handleStep2Continue} className="space-y-4">
+                  {/* Surname / Last Name (First) */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Surname *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Okonkwo"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                    />
+                  </div>
+
                   {/* First Name & Middle Name */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -401,10 +421,11 @@ const Register = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Middle Name
+                        Middle Name *
                       </label>
                       <input
                         type="text"
+                        required
                         placeholder="e.g. Emmanuel"
                         value={middleName}
                         onChange={(e) => setMiddleName(e.target.value)}
@@ -413,32 +434,11 @@ const Register = () => {
                     </div>
                   </div>
 
-                  {/* Last Name / Surname */}
+                  {/* Phone Number */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Last Name / Surname *
+                      Phone Number *
                     </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Okonkwo"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
-                    />
-                  </div>
-
-                  {/* Contact Phone Number - Compulsory for 2FA */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-semibold text-gray-700">
-                        Contact Phone Number *
-                      </label>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#138601] bg-green-50 px-2 py-0.5 rounded border border-green-200">
-                        <Shield className="w-3 h-3 text-[#138601]" />
-                        Compulsory for 2FA
-                      </span>
-                    </div>
                     <div className="relative">
                       <input
                         type="tel"
@@ -450,9 +450,6 @@ const Register = () => {
                       />
                       <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
                     </div>
-                    <p className="text-[11px] text-gray-500 mt-1">
-                      Required for two-factor authentication (2FA) and account security verification.
-                    </p>
                   </div>
 
                   {/* Email Address */}
@@ -460,49 +457,62 @@ const Register = () => {
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       Email Address *
                     </label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <input
-                          type="email"
-                          required
-                          placeholder="e.g. yourname@gmail.com"
-                          value={studentEmail}
-                          onChange={(e) => {
-                            setStudentEmail(e.target.value);
-                            if (codeSent) setCodeSent(false);
-                          }}
-                          className="w-full pl-10 pr-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
-                        />
-                        <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleSendCode}
-                        disabled={isSendingCode || !studentEmail.trim()}
-                        className="px-4 py-2.5 text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5 whitespace-nowrap"
-                      >
-                        {isSendingCode ? (
-                          <RotateCw className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Mail className="w-3.5 h-3.5" />
-                        )}
-                        <span>{codeSent ? (resendCooldown > 0 ? `${resendCooldown}s` : 'Resend') : 'Send Code'}</span>
-                      </button>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        required
+                        placeholder="e.g. yourname@gmail.com"
+                        value={studentEmail}
+                        onChange={(e) => setStudentEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                      />
+                      <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
                     </div>
-                    <p className="text-[11px] text-gray-500 mt-1">
-                      Enter your active email address to receive your 6-digit verification code.
-                    </p>
                   </div>
 
-                  {/* Code Sent Notice */}
-                  {codeSent && (
-                    <div className="p-3 rounded bg-green-50 border border-green-200 text-xs text-green-900 flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#138601] mt-0.5 shrink-0" />
-                      <div>
-                        A 6-digit verification code has been dispatched to <strong>{studentEmail}</strong>. Enter it below to proceed.
-                      </div>
+                  {/* Buttons */}
+                  <div className="pt-2 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep(1);
+                        setError('');
+                      }}
+                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Back</span>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSendingCode}
+                      className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isSendingCode ? (
+                        <>
+                          <RotateCw className="w-4 h-4 animate-spin" />
+                          <span>Sending Code...</span>
+                        </>
+                      ) : (
+                        <span>Continue</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* ========================================================
+                  STEP 3: ENTER VERIFICATION CODE
+                  ======================================================== */}
+              {step === 3 && verifiedRecord && (
+                <form onSubmit={handleVerifyCode} className="space-y-4">
+                  {/* Sent Notice */}
+                  <div className="p-3.5 rounded bg-green-50 border border-green-200 text-xs text-green-900 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#138601] mt-0.5 shrink-0" />
+                    <div className="leading-relaxed">
+                      A 6-digit verification code has been sent to <strong>{studentEmail}</strong>. Please enter the code below to verify your email.
                     </div>
-                  )}
+                  </div>
 
                   {/* Development Mode Helper Banner */}
                   {devTestCode && (
@@ -529,6 +539,7 @@ const Register = () => {
                     <input
                       type="text"
                       required
+                      autoFocus
                       maxLength={6}
                       placeholder="e.g. 123456"
                       value={verificationCode}
@@ -537,12 +548,26 @@ const Register = () => {
                     />
                   </div>
 
+                  {/* Resend Code Option */}
+                  <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
+                    <span>Didn't receive the code?</span>
+                    <button
+                      type="button"
+                      onClick={handleResendCode}
+                      disabled={resendCooldown > 0 || isSendingCode}
+                      className="text-[#138601] hover:underline font-semibold disabled:opacity-50 disabled:no-underline cursor-pointer inline-flex items-center gap-1"
+                    >
+                      {isSendingCode && <RotateCw className="w-3 h-3 animate-spin" />}
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+                    </button>
+                  </div>
+
                   {/* Buttons */}
                   <div className="pt-2 flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => {
-                        setStep(1);
+                        setStep(2);
                         setError('');
                       }}
                       className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
@@ -569,19 +594,20 @@ const Register = () => {
               )}
 
               {/* ========================================================
-                  STEP 3: CREATE PASSWORD & COMPLETE ONBOARDING
+                  STEP 4: CREATE PASSWORD & COMPLETE ONBOARDING
                   ======================================================== */}
-              {step === 3 && verifiedRecord && (
+              {step === 4 && verifiedRecord && (
                 <form onSubmit={handleCompleteRegistration} className="space-y-4">
-                  {/* Password */}
+                  {/* Create Password */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Create Portal Password *
+                      Create Password *
                     </label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
                         required
+                        autoFocus
                         placeholder="At least 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -590,7 +616,7 @@ const Register = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3.5 text-gray-500 hover:text-gray-700"
+                        className="absolute right-3 top-3.5 text-gray-500 hover:text-gray-700 cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -612,26 +638,14 @@ const Register = () => {
                     />
                   </div>
 
-                  {/* Confirmation Terms Checkbox */}
-                  <div className="flex items-start pt-1">
-                    <input
-                      type="checkbox"
-                      required
-                      id="agreeTerms"
-                      checked={agreeTerms}
-                      onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="w-4 h-4 mt-0.5 text-[#138601] border-gray-300 rounded focus:ring-[#138601] cursor-pointer"
-                    />
-                    <label htmlFor="agreeTerms" className="ml-2 text-xs text-gray-600 select-none cursor-pointer leading-relaxed">
-                      I confirm that I am a registered student in good standing with NACOS FUTO and agree to the portal terms.
-                    </label>
-                  </div>
-
                   {/* Action Buttons */}
                   <div className="pt-2 flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => setStep(2)}
+                      onClick={() => {
+                        setStep(3);
+                        setError('');
+                      }}
                       className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" />
@@ -648,7 +662,7 @@ const Register = () => {
                           <span>Activating Account...</span>
                         </>
                       ) : (
-                        <span>Complete Registration</span>
+                        <span>Continue</span>
                       )}
                     </button>
                   </div>
@@ -657,16 +671,6 @@ const Register = () => {
 
             </div>
           )}
-
-          {/* Footnote Link to Main Website */}
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-end text-xs text-gray-500">
-            <a 
-              href="http://localhost:5173" 
-              className="hover:text-black transition-colors"
-            >
-              Main Website →
-            </a>
-          </div>
 
         </div>
       </div>
