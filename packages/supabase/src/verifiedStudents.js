@@ -252,10 +252,10 @@ export async function lookupVerifiedStudentRecord(regNo) {
       .maybeSingle();
 
     if (!error && data) {
-      if (data.status !== 'active') {
+      if (data.status && data.status !== 'active') {
         return { found: false, error: { message: GENERIC_ERROR } };
       }
-      if (data.has_registered) {
+      if (data.has_registered || data.is_registered) {
         return {
           found: false,
           error: { message: 'An account has already been registered for this student. Please sign in or recover your account.' }
@@ -554,11 +554,11 @@ export async function completeSecureRegistration(sessionToken, regNo, password, 
     return { data: null, error: { message: GENERIC_ERROR } };
   }
 
-  if (verifiedRecord.has_registered) {
+  if (verifiedRecord.has_registered || verifiedRecord.is_registered) {
     return { data: null, error: { message: 'An account has already been registered for this student. Please sign in or recover your account.' } };
   }
 
-  if (verifiedRecord.status !== 'active') {
+  if (verifiedRecord.status && verifiedRecord.status !== 'active') {
     return { data: null, error: { message: GENERIC_ERROR } };
   }
 

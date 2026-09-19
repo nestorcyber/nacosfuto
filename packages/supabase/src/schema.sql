@@ -113,6 +113,9 @@ ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS programme TEXT DEF
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS department TEXT DEFAULT 'Computer Science';
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS faculty TEXT DEFAULT 'School of Information & Communication Tech (SICT)';
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS is_registered BOOLEAN DEFAULT false;
+ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS has_registered BOOLEAN DEFAULT false;
+ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS auth_user_id TEXT;
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS registered_at TIMESTAMPTZ;
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW());
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW());
