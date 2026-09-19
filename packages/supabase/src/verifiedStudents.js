@@ -893,6 +893,9 @@ export async function adminToggleVerifiedStudentStatus(regNo) {
  */
 export async function adminAddVerifiedStudent(studentData) {
   const {
+    surname,
+    firstName,
+    middleName,
     fullName,
     matricNumber,
     email,
@@ -903,8 +906,13 @@ export async function adminAddVerifiedStudent(studentData) {
     programmeDuration
   } = studentData;
 
-  if (!fullName?.trim() || !matricNumber?.trim() || !email?.trim()) {
-    return { error: { message: 'Full name, registration number, and email are required.' } };
+  const resolvedSurname = (surname || '').trim() || (fullName || '').trim().split(' ')[0] || '';
+  const resolvedFirstName = (firstName || '').trim() || (fullName || '').trim().split(' ')[1] || '';
+  const resolvedMiddleName = (middleName || '').trim() || (fullName || '').trim().split(' ').slice(2).join(' ') || '';
+  const resolvedFullName = [resolvedSurname, resolvedFirstName, resolvedMiddleName].filter(Boolean).join(' ') || (fullName || '').trim();
+
+  if (!resolvedFullName || !matricNumber?.trim() || !email?.trim()) {
+    return { error: { message: 'Surname, first name, registration number, and email are required.' } };
   }
 
   const cleanReg = matricNumber.trim().toUpperCase();
@@ -927,7 +935,11 @@ export async function adminAddVerifiedStudent(studentData) {
   const record = {
     id: 'vs-' + Date.now(),
     registration_number: cleanReg,
-    full_name: fullName.trim(),
+    surname: resolvedSurname,
+    first_name: resolvedFirstName,
+    middle_name: resolvedMiddleName,
+    last_name: resolvedSurname,
+    full_name: resolvedFullName,
     email: cleanEmail,
     phone_number: phone?.trim() || '',
     department: department || 'Computer Science',

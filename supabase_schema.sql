@@ -100,9 +100,11 @@ CREATE TABLE IF NOT EXISTS public.verified_students (
 
 -- Ensure columns exist even if table pre-existed with different columns
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS registration_number VARCHAR(30);
-ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS surname TEXT;
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS first_name TEXT;
+ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS middle_name TEXT DEFAULT '';
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS last_name TEXT;
+ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS full_name TEXT;
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS phone_number TEXT;
 ALTER TABLE public.verified_students ADD COLUMN IF NOT EXISTS masked_email TEXT;
@@ -130,6 +132,7 @@ CREATE INDEX IF NOT EXISTS idx_verified_students_phone ON public.verified_studen
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   registration_number VARCHAR(30),
+  surname TEXT DEFAULT '',
   first_name TEXT DEFAULT '',
   middle_name TEXT DEFAULT '',
   last_name TEXT DEFAULT '',
@@ -155,6 +158,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- Ensure all profiles columns exist even if public.profiles already existed (e.g. Supabase starter)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS registration_number VARCHAR(30);
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS surname TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS first_name TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS middle_name TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_name TEXT DEFAULT '';
@@ -179,6 +183,69 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFA
 
 CREATE INDEX IF NOT EXISTS idx_profiles_reg ON public.profiles(registration_number);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+
+-- =========================================================================
+-- AUTOMATIC STUDENT NAME SYNCHRONIZATION FUNCTION & TRIGGERS
+-- Auto-computes Full Name from (Surname, First Name, Middle Name) and vice versa
+-- =========================================================================
+CREATE OR REPLACE FUNCTION public.sync_student_names()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_parts TEXT[];
+BEGIN
+  -- Sync surname <-> last_name
+  IF (NEW.surname IS NULL OR NEW.surname = '') AND (NEW.last_name IS NOT NULL AND NEW.last_name != '') THEN
+    NEW.surname := TRIM(NEW.last_name);
+  END IF;
+  IF (NEW.last_name IS NULL OR NEW.last_name = '') AND (NEW.surname IS NOT NULL AND NEW.surname != '') THEN
+    NEW.last_name := TRIM(NEW.surname);
+  END IF;
+
+  -- If surname or first_name provided -> construct full_name as: Surname Firstname Middlename
+  IF (NEW.surname IS NOT NULL AND NEW.surname != '') OR (NEW.first_name IS NOT NULL AND NEW.first_name != '') THEN
+    NEW.full_name := TRIM(CONCAT_WS(' ',
+      NULLIF(TRIM(COALESCE(NEW.surname, '')), ''),
+      NULLIF(TRIM(COALESCE(NEW.first_name, '')), ''),
+      NULLIF(TRIM(COALESCE(NEW.middle_name, '')), '')
+    ));
+  -- If only full_name provided -> extract surname, first_name, middle_name
+  ELSIF (NEW.full_name IS NOT NULL AND NEW.full_name != '') THEN
+    v_parts := regexp_split_to_array(TRIM(NEW.full_name), '\s+');
+    IF array_length(v_parts, 1) >= 1 THEN
+      NEW.surname := v_parts[1];
+      NEW.last_name := v_parts[1];
+    END IF;
+    IF array_length(v_parts, 1) = 2 THEN
+      NEW.first_name := v_parts[2];
+      NEW.middle_name := '';
+    ELSIF array_length(v_parts, 1) >= 3 THEN
+      NEW.first_name := v_parts[2];
+      NEW.middle_name := array_to_string(v_parts[3:array_length(v_parts, 1)], ' ');
+    END IF;
+  END IF;
+
+  -- Fallback guarantee
+  IF NEW.full_name IS NULL OR NEW.full_name = '' THEN
+    NEW.full_name := TRIM(CONCAT_WS(' ',
+      NULLIF(TRIM(COALESCE(NEW.surname, '')), ''),
+      NULLIF(TRIM(COALESCE(NEW.first_name, '')), ''),
+      NULLIF(TRIM(COALESCE(NEW.middle_name, '')), '')
+    ));
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_sync_verified_student_names ON public.verified_students;
+CREATE TRIGGER trg_sync_verified_student_names
+BEFORE INSERT OR UPDATE ON public.verified_students
+FOR EACH ROW EXECUTE FUNCTION public.sync_student_names();
+
+DROP TRIGGER IF EXISTS trg_sync_profile_names ON public.profiles;
+CREATE TRIGGER trg_sync_profile_names
+BEFORE INSERT OR UPDATE ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION public.sync_student_names();
 
 -- =========================================================================
 -- 4. OTP VERIFICATION (Zero-Serverless for Termii SMS & Resend Email)

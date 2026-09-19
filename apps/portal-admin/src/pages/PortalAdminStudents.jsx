@@ -75,6 +75,9 @@ const AdminStudents = () => {
 
   // Add Verified Student Form State
   const [newRosterStudent, setNewRosterStudent] = useState({
+    surname: '',
+    firstName: '',
+    middleName: '',
     fullName: '',
     matricNumber: '',
     email: '',
@@ -1085,16 +1088,64 @@ const AdminStudents = () => {
                 Add Student to Verified Department Roster
               </h2>
               <form onSubmit={handleAddRosterSubmit} className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-gray-700 dark:text-green-200 font-semibold mb-1">Full Legal Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Nestor Anyanwu"
-                    value={newRosterStudent.fullName}
-                    onChange={(e) => setNewRosterStudent({ ...newRosterStudent, fullName: e.target.value })}
-                    className="w-full px-3 py-2 rounded border border-gray-300 dark:border-[#138601]/40 bg-white dark:bg-[#041801] text-gray-900 dark:text-white"
-                  />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-gray-700 dark:text-green-200 font-semibold mb-1">Surname (Last Name) *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Anyanwu"
+                      value={newRosterStudent.surname}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const full = [val, newRosterStudent.firstName, newRosterStudent.middleName].filter(Boolean).map(s => s.trim()).join(' ');
+                        setNewRosterStudent({ ...newRosterStudent, surname: val, fullName: full });
+                      }}
+                      className="w-full px-3 py-2 rounded border border-gray-300 dark:border-[#138601]/40 bg-white dark:bg-[#041801] text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 dark:text-green-200 font-semibold mb-1">First Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Nestor"
+                      value={newRosterStudent.firstName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const full = [newRosterStudent.surname, val, newRosterStudent.middleName].filter(Boolean).map(s => s.trim()).join(' ');
+                        setNewRosterStudent({ ...newRosterStudent, firstName: val, fullName: full });
+                      }}
+                      className="w-full px-3 py-2 rounded border border-gray-300 dark:border-[#138601]/40 bg-white dark:bg-[#041801] text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-gray-700 dark:text-green-200 font-semibold mb-1">Middle Name (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Chukwuemeka"
+                      value={newRosterStudent.middleName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const full = [newRosterStudent.surname, newRosterStudent.firstName, val].filter(Boolean).map(s => s.trim()).join(' ');
+                        setNewRosterStudent({ ...newRosterStudent, middleName: val, fullName: full });
+                      }}
+                      className="w-full px-3 py-2 rounded border border-gray-300 dark:border-[#138601]/40 bg-white dark:bg-[#041801] text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 dark:text-green-200 font-semibold mb-1">Auto Full Legal Name</label>
+                    <input
+                      type="text"
+                      readOnly
+                      placeholder="Surname Firstname Middlename"
+                      value={newRosterStudent.fullName}
+                      className="w-full px-3 py-2 rounded border border-gray-200 dark:border-[#138601]/20 bg-gray-100 dark:bg-[#083002]/50 text-gray-700 dark:text-green-200 cursor-not-allowed font-medium"
+                    />
+                  </div>
                 </div>
 
                 <div>
