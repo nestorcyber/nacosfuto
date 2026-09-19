@@ -35,8 +35,8 @@ const IdVerification = () => {
     <div className="min-h-screen bg-[#f8fafc] dark:bg-[#041801] text-gray-900 dark:text-white flex flex-col font-sans selection:bg-[#138601] selection:text-white">
       
       {/* Top Header Banner */}
-      <header className="border-b border-gray-200 dark:border-[#138601]/30 bg-white dark:bg-[#083002] py-4 px-6 shadow-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <header className="border-b border-gray-200 dark:border-[#138601]/30 bg-white dark:bg-[#083002] py-4 shadow-sm">
+        <div className="max-w-4xl mx-auto padding-global flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3">
             <img src={isDark ? logoDark : logoLight} alt="NACOS Logo" className="h-8 md:h-9 w-auto object-contain" />
             <div className="hidden sm:block border-l border-gray-200 dark:border-[#138601]/30 pl-3">
@@ -57,17 +57,17 @@ const IdVerification = () => {
       </header>
 
       {/* Main Verification Card Area */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
+      <main className="flex-1 flex items-center justify-center padding-global py-10">
         <div className="w-full max-w-lg space-y-6">
           
           {loading ? (
-            <div className="p-12 rounded-3xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-3 shadow-lg">
+            <div className="p-12 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-3 shadow-lg">
               <RefreshCw className="w-8 h-8 text-[#138601] animate-spin mx-auto" />
               <p className="text-xs text-gray-500 font-medium">Validating cryptographic QR hash and identity records...</p>
             </div>
           ) : result?.status === 'valid' ? (
             /* VALID ACTIVE ID CARD */
-            <div className="rounded-3xl bg-white dark:bg-[#083002] border-2 border-[#138601] overflow-hidden shadow-2xl space-y-6">
+            <div className="rounded bg-white dark:bg-[#083002] border-2 border-[#138601] overflow-hidden shadow-2xl space-y-6">
               
               {/* Header Status Bar */}
               <div className="bg-[#138601] text-white p-6 text-center space-y-2">
@@ -86,15 +86,15 @@ const IdVerification = () => {
               <div className="px-6 pb-6 space-y-5">
                 
                 {/* Photo & Name */}
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
+                <div className="flex items-center gap-4 p-4 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
                   {result.card?.passport_url ? (
                     <img
                       src={result.card.passport_url}
                       alt="Student"
-                      className="w-16 h-20 object-cover rounded-xl border border-[#138601]"
+                      className="w-16 h-20 object-cover rounded border border-[#138601]"
                     />
                   ) : (
-                    <div className="w-16 h-20 rounded-xl bg-gray-200 dark:bg-[#083002] flex items-center justify-center text-xs font-bold text-gray-500">
+                    <div className="w-16 h-20 rounded bg-gray-200 dark:bg-[#083002] flex items-center justify-center text-xs font-bold text-gray-500">
                       PHOTO
                     </div>
                   )}
@@ -114,29 +114,29 @@ const IdVerification = () => {
 
                 {/* Academic Metadata Grid */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
+                  <div className="p-3.5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
                     <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-green-200/50 block">Department</span>
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{result.student?.department || 'Computer Science'}</span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
+                  <div className="p-3.5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
                     <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-green-200/50 block">Academic Level</span>
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{result.student?.level || '300 Level'}</span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
+                  <div className="p-3.5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
                     <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-green-200/50 block">Session</span>
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{result.student?.session || '2026/2027'}</span>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
+                  <div className="p-3.5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-100 dark:border-[#138601]/20">
                     <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-green-200/50 block">Faculty</span>
                     <span className="font-semibold text-gray-800 dark:text-gray-200">{result.student?.faculty || 'SICT'}</span>
                   </div>
                 </div>
 
                 {/* Institutional Endorsement */}
-                <div className="p-4 rounded-xl bg-green-50 dark:bg-[#041801] border border-green-200 dark:border-[#138601]/30 text-center space-y-1">
+                <div className="p-4 rounded bg-green-50 dark:bg-[#041801] border border-green-200 dark:border-[#138601]/30 text-center space-y-1">
                   <span className="text-xs font-bold text-[#138601] dark:text-[#4bd043] block">
                     ✓ Authenticated Departmental Member
                   </span>
@@ -150,7 +150,7 @@ const IdVerification = () => {
             </div>
           ) : result?.status === 'revoked' ? (
             /* REVOKED ID CARD */
-            <div className="rounded-3xl bg-white dark:bg-[#083002] border-2 border-red-500 overflow-hidden shadow-2xl space-y-6">
+            <div className="rounded bg-white dark:bg-[#083002] border-2 border-red-500 overflow-hidden shadow-2xl space-y-6">
               
               <div className="bg-red-600 text-white p-6 text-center space-y-2">
                 <div className="w-14 h-14 rounded-full bg-white/15 backdrop-blur-sm text-white flex items-center justify-center mx-auto border border-white/30">
@@ -165,11 +165,11 @@ const IdVerification = () => {
               </div>
 
               <div className="px-6 pb-6 space-y-4 text-center">
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-xs text-red-800 dark:text-red-300">
+                <div className="p-4 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-xs text-red-800 dark:text-red-300">
                   <strong>Notice:</strong> This identity card has been officially cancelled or revoked by the NACOS Directorate. It must not be accepted for examination clearance, elections, or laboratory access.
                 </div>
 
-                <div className="text-xs text-left p-4 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 space-y-2">
+                <div className="text-xs text-left p-4 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Holder Name:</span>
                     <span className="font-bold text-gray-900 dark:text-white">{result.student?.name}</span>
@@ -192,7 +192,7 @@ const IdVerification = () => {
             </div>
           ) : (
             /* NOT FOUND / UNREGISTERED */
-            <div className="rounded-3xl bg-white dark:bg-[#083002] border-2 border-amber-400 overflow-hidden shadow-2xl p-8 text-center space-y-4">
+            <div className="rounded bg-white dark:bg-[#083002] border-2 border-amber-400 overflow-hidden shadow-2xl p-8 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-200">
                 <AlertCircle className="w-8 h-8" />
               </div>
@@ -206,7 +206,7 @@ const IdVerification = () => {
               <div className="pt-2">
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01]"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01]"
                 >
                   Return to NACOS Home
                 </Link>

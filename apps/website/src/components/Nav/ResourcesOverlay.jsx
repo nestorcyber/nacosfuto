@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { useLocation } from "react-router-dom";
 import ScrollToTopLink from "../ScrollToTopLink";
@@ -72,7 +72,7 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
     <div
       className="fixed inset-0 z-40 pt-16 overflow-y-auto bg-white/95 dark:bg-[#041801]/98 backdrop-blur-xl transition-colors duration-300"
     >
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="site-container py-8">
         <div className="flex justify-end mb-8">
           <button
             onClick={closeOverlay}

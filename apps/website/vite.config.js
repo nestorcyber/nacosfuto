@@ -176,7 +176,13 @@ export default defineConfig({
       },
     },
   },
+  esbuild: {
+    target: 'esnext'
+  },
   optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    },
     // Explicitly exclude backend modules
     exclude: [
       'bcrypt',
@@ -191,6 +197,7 @@ export default defineConfig({
     ],
   },
   build: {
+    target: 'esnext',
     // Ensure Vite doesn't try to bundle backend files
     rollupOptions: {
       external: [

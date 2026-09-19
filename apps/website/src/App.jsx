@@ -35,18 +35,6 @@ import NotFound from "./pages/NotFound";
 import UnreadAnnouncementBanner from "./components/UnreadAnnouncementBanner";
 import IdVerification from "./pages/IdVerification";
 
-// Admin CMS Pages
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminMedia from "./pages/admin/AdminMedia";
-import AdminGallery from "./pages/admin/AdminGallery";
-import AdminNews from "./pages/admin/AdminNews";
-import AdminEvents from "./pages/admin/AdminEvents";
-import AdminHomepage from "./pages/admin/AdminHomepage";
-import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
-
 // Lazy-loaded pages
 const Events = lazy(() => import("./pages/Events"));
 const YellowPages = lazy(() => import("./pages/YellowPages"));
@@ -138,18 +126,6 @@ function App() {
 
             {/* Public Student ID Card Verification */}
             <Route path="/verify/id/:id" element={<IdVerification />} />
-
-            {/* Main Website Admin CMS Routes */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
-            <Route path="/admin/media" element={<AdminProtectedRoute requiredPermission="main_website.media"><AdminMedia /></AdminProtectedRoute>} />
-            <Route path="/admin/gallery" element={<AdminProtectedRoute requiredPermission="main_website.gallery"><AdminGallery /></AdminProtectedRoute>} />
-            <Route path="/admin/news" element={<AdminProtectedRoute requiredPermission="main_website.news"><AdminNews /></AdminProtectedRoute>} />
-            <Route path="/admin/events" element={<AdminProtectedRoute requiredPermission="main_website.events"><AdminEvents /></AdminProtectedRoute>} />
-            <Route path="/admin/homepage" element={<AdminProtectedRoute requiredPermission="main_website.homepage"><AdminHomepage /></AdminProtectedRoute>} />
-            <Route path="/admin/audit-logs" element={<AdminProtectedRoute requiredPermission="main_website.view"><AdminAuditLogs /></AdminProtectedRoute>} />
-            <Route path="/admin/admins" element={<AdminProtectedRoute requiredPermission="super_admin"><AdminUsers /></AdminProtectedRoute>} />
-            <Route path="/admin/settings" element={<AdminProtectedRoute requiredPermission="main_website.settings"><AdminHomepage /></AdminProtectedRoute>} />
 
             {/* 404 Not Found */}
             <Route path="*" element={<NotFound />} />

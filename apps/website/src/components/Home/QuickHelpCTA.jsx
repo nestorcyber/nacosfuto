@@ -5,7 +5,7 @@ import ScrollToTopLink from '../ScrollToTopLink';
 const QuickHelpCTA = () => {
     return (
         <section className="py-16 transition-colors duration-300 bg-[#f4faf3] dark:bg-[#041801]">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-5xl mx-auto padding-global">
                 <div className="relative overflow-hidden rounded p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border bg-white dark:bg-[#083002] border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                     
                     {/* Content */}

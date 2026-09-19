@@ -44,16 +44,14 @@ const Alumni = () => {
     {
       name: "Godfirst Asogwa",
       gradYear: "Alumnus",
-      position: "Lead Software Engineer @ Sudo Africa",
-      achievement: "Fintech infrastructure specialist building modern digital card payment systems across Africa",
+      position: "Lead Software Engineer",
       linkedin: "https://www.linkedin.com/in/godfirst-asogwa/",
       image: getCloudinaryAssetUrl('alumni_godfirst', { preset: 'card' }) || godfirstImg
     },
     {
       name: "Benita Nwabueze",
       gradYear: "Alumna",
-      position: "Senior Cybersecurity Analyst @ FirstBank",
-      achievement: "Securing modern enterprise infrastructure, banking compliance, and digital banking assets",
+      position: "Senior Cybersecurity Analyst",
       linkedin: "https://www.linkedin.com/in/nwabueze-benita/",
       image: getCloudinaryAssetUrl('alumni_benita', { preset: 'card' }) || benitaImg
     }
@@ -65,12 +63,9 @@ const Alumni = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                GLOBAL COMMUNITY
-              </div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-[#083002] dark:text-white tracking-tight leading-tight">
                 FUTO CSC <span className="text-[#138601] dark:text-[#4bd043]">Alumni Network</span>
               </h1>
@@ -105,7 +100,7 @@ const Alumni = () => {
 
       {/* Alumni Impact */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               Alumni <span className="text-[#138601] dark:text-[#4bd043]">Impact</span>
@@ -134,7 +129,7 @@ const Alumni = () => {
 
       {/* Notable Alumni */}
       <section className="py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               Distinguished <span className="text-[#138601] dark:text-[#4bd043]">Alumni Spotlight</span>
@@ -174,12 +169,8 @@ const Alumni = () => {
                     {alum.name}
                   </h3>
 
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#138601] dark:text-[#4bd043] mt-1 mb-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#138601] dark:text-[#4bd043] mt-1 mb-4">
                     {alum.position}
-                  </p>
-
-                  <p className="text-xs text-[#083002]/75 dark:text-green-100/75 leading-relaxed italic line-clamp-2 mb-4">
-                    {alum.achievement}
                   </p>
 
                   {/* Social Handle Button */}
@@ -205,7 +196,7 @@ const Alumni = () => {
 
       {/* Benefits and Giving Back */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm border border-[#138601]/20 dark:border-[#138601]/30">
               <h3 className="text-2xl font-bold text-[#083002] dark:text-white mb-4">

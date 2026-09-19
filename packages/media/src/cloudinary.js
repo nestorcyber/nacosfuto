@@ -190,6 +190,9 @@ export function getCloudName() {
   if (typeof process !== 'undefined' && process.env?.CLOUDINARY_CLOUD_NAME) {
     return process.env.CLOUDINARY_CLOUD_NAME;
   }
+  if (cloudinaryAssetsData?.cloudName) {
+    return cloudinaryAssetsData.cloudName;
+  }
   return 'nacos-futo';
 }
 
@@ -232,13 +235,16 @@ export function getOptimizedImageUrl(publicIdOrUrl, options = {}) {
 
   // Case 1: Already a full Cloudinary URL
   if (typeof publicIdOrUrl === 'string' && publicIdOrUrl.includes('res.cloudinary.com')) {
-    // If it already contains /image/upload/, inject or replace transformations
-    const regex = /\/image\/upload\/(?:[^\/]+\/)?(.+)$/;
+    // If no custom dimensions or crops are requested, preserve the original URL directly
+    if (!options.width && !options.height && !options.crop && !options.gravity && !options.preset) {
+      return publicIdOrUrl;
+    }
+    const regex = /res\.cloudinary\.com\/([^/]+)\/image\/upload\/(?:[^\/]+\/)?(.+)$/;
     const match = publicIdOrUrl.match(regex);
-    if (match && match[1]) {
-      // Remove any leading version like v123456789/
-      const cleanPath = match[1].replace(/^v\d+\//, '');
-      return `https://res.cloudinary.com/${cloudName}/image/upload/${transforms}/${cleanPath}`;
+    if (match && match[2]) {
+      const urlCloudName = match[1] || cloudName;
+      const cleanPath = match[2].replace(/^v\d+\//, '');
+      return `https://res.cloudinary.com/${urlCloudName}/image/upload/${transforms}/${cleanPath}`;
     }
     return publicIdOrUrl;
   }

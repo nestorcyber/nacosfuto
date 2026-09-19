@@ -37,7 +37,7 @@ const Login = () => {
 
   const handleQuickLogin = async (role) => {
     setIsLoading(true);
-    const regNo = role === 'President' ? '20201112948' : '20241029481';
+    const regNo = role === 'President' ? '20201012948' : '20241429481';
     const res = await signInStudent(regNo, 'password');
     setIsLoading(false);
     if (!res.error) {
@@ -66,7 +66,7 @@ const Login = () => {
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-snug tracking-tight">
             Your NACOS account unlocks a world of computing excellence
           </h2>
-          <p className="text-xs sm:text-sm text-gray-200 font-normal">
+          <p className="text-sm sm:text-base text-gray-200 font-normal">
             Department of Computer Science • Federal University of Technology, Owerri
           </p>
         </div>
@@ -78,10 +78,10 @@ const Login = () => {
           
           {/* Form Heading & Sign up link */}
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight">
               Sign in or create your account below
             </h1>
-            <p className="mt-2 text-xs text-gray-600">
+            <p className="mt-2 text-sm text-gray-600">
               Don't have an account yet?{' '}
               <Link to="/register" className="text-[#138601] font-semibold hover:underline">
                 Sign up here
@@ -91,7 +91,7 @@ const Login = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 rounded bg-red-50 text-xs text-red-600 font-medium">
+            <div className="p-3.5 rounded bg-red-50 text-sm text-red-600 font-medium">
               {error}
             </div>
           )}
@@ -102,10 +102,10 @@ const Login = () => {
               <input
                 type="text"
                 required
-                placeholder="Registration number (e.g. 20241029481)"
+                placeholder="Registration number (e.g. 20241429481)"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full px-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
+                className="w-full px-4 py-3 text-sm sm:text-base rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
               />
             </div>
 
@@ -116,12 +116,12 @@ const Login = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
+                className="w-full px-4 py-3 text-sm sm:text-base rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
               />
             </div>
 
             {/* Forgot Password Link */}
-            <div className="flex items-center justify-end text-xs">
+            <div className="flex items-center justify-end text-sm">
               <Link 
                 to="/forgot-password" 
                 className="text-[#138601] font-medium hover:underline"
@@ -133,7 +133,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="px-7 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center"
+              className="px-7 py-3 min-h-[44px] text-sm sm:text-base font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center"
             >
               {isLoading ? 'Signing in...' : 'Continue'}
             </button>
@@ -142,7 +142,7 @@ const Login = () => {
           {/* Horizontal Line with Clean Text */}
           <div className="relative flex items-center justify-center py-2">
             <div className="w-full border-t border-gray-300"></div>
-            <span className="bg-white px-3 text-xs text-gray-600 font-medium whitespace-nowrap">
+            <span className="bg-white px-3 text-sm text-gray-600 font-medium whitespace-nowrap">
               Or continue with
             </span>
             <div className="w-full border-t border-gray-300"></div>
@@ -153,7 +153,7 @@ const Login = () => {
             <button
               type="button"
               onClick={() => handleQuickLogin('President')}
-              className="w-full flex items-center px-4 py-2.5 text-sm font-medium text-gray-900 bg-[#f1f3f5] hover:bg-[#e9ecef] rounded transition-colors cursor-pointer"
+              className="w-full flex items-center px-4 py-3 text-sm sm:text-base font-medium text-gray-900 bg-[#f1f3f5] hover:bg-[#e9ecef] rounded transition-colors cursor-pointer"
             >
               <div className="w-6 flex items-center justify-center text-gray-900 mr-2">
                 <FaUserShield className="w-4 h-4" />

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import DesktopNav from './DesktopNav';
@@ -46,7 +46,7 @@ const Navbar = () => {
               }`
         }`}
       >
-        <div className="flex items-center h-16 mx-auto px-4 max-w-7xl w-full">
+        <div className="flex items-center h-16 site-container w-full">
           <div className="flex items-center flex-shrink-0 mr-8">
             <ScrollToTopLink to="/" className="flex items-center">
               <img

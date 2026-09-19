@@ -85,7 +85,7 @@ const HackathonApply = () => {
     <div className="min-h-screen bg-[#041801] text-white font-sans selection:bg-[#138601] selection:text-white">
       <HackathonNavbar />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div className="max-w-4xl mx-auto padding-global py-12 md:py-16">
         
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -99,10 +99,6 @@ const HackathonApply = () => {
 
         {/* Heading */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#083002] border border-[#138601]/40 text-[#4bd043] text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Team Registration</span>
-          </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
             Apply for BUILDX NACOS 2026
           </h1>
@@ -113,19 +109,19 @@ const HackathonApply = () => {
 
         {/* Multi-Step Indicator */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
-          <div className={`p-3 rounded-xl border text-center text-xs font-bold ${step >= 1 ? 'bg-[#083002] border-[#138601] text-[#4bd043]' : 'bg-[#041801] border-[#138601]/20 text-gray-500'}`}>
+          <div className={`p-3 rounded border text-center text-xs font-bold ${step >= 1 ? 'bg-[#083002] border-[#138601] text-[#4bd043]' : 'bg-[#041801] border-[#138601]/20 text-gray-500'}`}>
             1. Team & Lead
           </div>
-          <div className={`p-3 rounded-xl border text-center text-xs font-bold ${step >= 2 ? 'bg-[#083002] border-[#138601] text-[#4bd043]' : 'bg-[#041801] border-[#138601]/20 text-gray-500'}`}>
+          <div className={`p-3 rounded border text-center text-xs font-bold ${step >= 2 ? 'bg-[#083002] border-[#138601] text-[#4bd043]' : 'bg-[#041801] border-[#138601]/20 text-gray-500'}`}>
             2. Member Roster
           </div>
-          <div className={`p-3 rounded-xl border text-center text-xs font-bold ${step >= 3 ? 'bg-[#083002] border-[#138601] text-[#4bd043]' : 'bg-[#041801] border-[#138601]/20 text-gray-500'}`}>
+          <div className={`p-3 rounded border text-center text-xs font-bold ${step >= 3 ? 'bg-[#083002] border-[#138601] text-[#4bd043]' : 'bg-[#041801] border-[#138601]/20 text-gray-500'}`}>
             3. Project Pitch
           </div>
         </div>
 
         {/* Card Box */}
-        <div className="p-6 sm:p-10 rounded-3xl bg-[#083002] border border-[#138601]/40 shadow-2xl">
+        <div className="p-6 sm:p-10 rounded bg-[#083002] border border-[#138601]/40 shadow-2xl">
           {isSuccess ? (
             <div className="text-center py-10 space-y-5">
               <div className="w-20 h-20 rounded-full bg-[#138601]/30 text-[#4bd043] flex items-center justify-center mx-auto border border-[#138601]/50">
@@ -140,13 +136,13 @@ const HackathonApply = () => {
               <div className="pt-6 flex flex-wrap items-center justify-center gap-4">
                 <Link
                   to="/dashboard"
-                  className="px-6 py-3 text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl transition-all shadow-md"
+                  className="px-6 py-3 text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded transition-all shadow-md"
                 >
                   View in Student Dashboard
                 </Link>
                 <Link
                   to="/hackathons/BuildXNACOS"
-                  className="px-6 py-3 text-xs font-semibold text-green-100 bg-[#041801] hover:bg-black rounded-xl border border-[#138601]/30 transition-colors"
+                  className="px-6 py-3 text-xs font-semibold text-green-100 bg-[#041801] hover:bg-black rounded border border-[#138601]/30 transition-colors"
                 >
                   Return to Hackathon Page
                 </Link>
@@ -174,7 +170,7 @@ const HackathonApply = () => {
                         placeholder="e.g. Neural Pioneers"
                         value={formData.teamName}
                         onChange={(e) => setFormData({ ...formData, teamName: e.target.value })}
-                        className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                        className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                       />
                     </div>
 
@@ -187,7 +183,7 @@ const HackathonApply = () => {
                         required
                         value={formData.chapter}
                         onChange={(e) => setFormData({ ...formData, chapter: e.target.value })}
-                        className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                        className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                       />
                     </div>
                   </div>
@@ -199,7 +195,7 @@ const HackathonApply = () => {
                     <select
                       value={formData.track}
                       onChange={(e) => setFormData({ ...formData, track: e.target.value })}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601] cursor-pointer"
+                      className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601] cursor-pointer"
                     >
                       <option value="fintech">Open Payments & FinTech</option>
                       <option value="ai">Artificial Intelligence & Automation</option>
@@ -219,7 +215,7 @@ const HackathonApply = () => {
                           placeholder="e.g. David Okonkwo"
                           value={formData.leadName}
                           onChange={(e) => setFormData({ ...formData, leadName: e.target.value })}
-                          className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                          className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                         />
                       </div>
                       <div>
@@ -230,7 +226,7 @@ const HackathonApply = () => {
                           placeholder="david@futo.edu.ng"
                           value={formData.leadEmail}
                           onChange={(e) => setFormData({ ...formData, leadEmail: e.target.value })}
-                          className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                          className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                         />
                       </div>
                       <div>
@@ -241,7 +237,7 @@ const HackathonApply = () => {
                           placeholder="2022/139481"
                           value={formData.leadMatric}
                           onChange={(e) => setFormData({ ...formData, leadMatric: e.target.value })}
-                          className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                          className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                         />
                       </div>
                       <div>
@@ -252,7 +248,7 @@ const HackathonApply = () => {
                           placeholder="+234 801 234 5678"
                           value={formData.leadPhone}
                           onChange={(e) => setFormData({ ...formData, leadPhone: e.target.value })}
-                          className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                          className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                         />
                       </div>
                     </div>
@@ -261,7 +257,7 @@ const HackathonApply = () => {
                   <div className="pt-6 flex justify-end">
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl transition-all shadow-md cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded transition-all shadow-md cursor-pointer"
                     >
                       <span>Proceed to Roster</span>
                       <ArrowRight className="w-4 h-4" />
@@ -282,7 +278,7 @@ const HackathonApply = () => {
                       <button
                         type="button"
                         onClick={handleAddMember}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-[#4bd043] bg-[#041801] border border-[#138601]/40 rounded-lg hover:bg-[#138601]/20 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-[#4bd043] bg-[#041801] border border-[#138601]/40 rounded hover:bg-[#138601]/20 transition-colors cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" /> Add Member
                       </button>
@@ -290,7 +286,7 @@ const HackathonApply = () => {
                   </div>
 
                   {formData.members.map((member, idx) => (
-                    <div key={idx} className="p-4 rounded-2xl bg-[#041801] border border-[#138601]/20 space-y-3 relative">
+                    <div key={idx} className="p-4 rounded bg-[#041801] border border-[#138601]/20 space-y-3 relative">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-[#4bd043]">Member #{idx + 2}</span>
                         {formData.members.length > 1 && (
@@ -313,7 +309,7 @@ const HackathonApply = () => {
                             placeholder="Name"
                             value={member.name}
                             onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                            className="w-full px-3 py-2 text-xs rounded border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
                           />
                         </div>
                         <div>
@@ -324,7 +320,7 @@ const HackathonApply = () => {
                             placeholder="Email"
                             value={member.email}
                             onChange={(e) => handleMemberChange(idx, 'email', e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                            className="w-full px-3 py-2 text-xs rounded border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
                           />
                         </div>
                         <div>
@@ -335,7 +331,7 @@ const HackathonApply = () => {
                             placeholder="Matric"
                             value={member.matric}
                             onChange={(e) => handleMemberChange(idx, 'matric', e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                            className="w-full px-3 py-2 text-xs rounded border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
                           />
                         </div>
                         <div>
@@ -346,7 +342,7 @@ const HackathonApply = () => {
                             placeholder="e.g. UI/UX"
                             value={member.role}
                             onChange={(e) => handleMemberChange(idx, 'role', e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                            className="w-full px-3 py-2 text-xs rounded border border-[#138601]/30 bg-[#083002] text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
                           />
                         </div>
                       </div>
@@ -357,13 +353,13 @@ const HackathonApply = () => {
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="px-5 py-2.5 text-xs font-semibold text-gray-300 hover:text-white bg-[#041801] rounded-xl transition-colors cursor-pointer"
+                      className="px-5 py-2.5 text-xs font-semibold text-gray-300 hover:text-white bg-[#041801] rounded transition-colors cursor-pointer"
                     >
                       Back
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl transition-all shadow-md cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded transition-all shadow-md cursor-pointer"
                     >
                       <span>Proceed to Project Pitch</span>
                       <ArrowRight className="w-4 h-4" />
@@ -390,7 +386,7 @@ const HackathonApply = () => {
                       placeholder="e.g. PayCampus: Decentralized Dues & Micro-Grant Protocol"
                       value={formData.projectTitle}
                       onChange={(e) => setFormData({ ...formData, projectTitle: e.target.value })}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                      className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                     />
                   </div>
 
@@ -404,7 +400,7 @@ const HackathonApply = () => {
                       placeholder="Explain the pain point, who is affected, and why current solutions are inadequate..."
                       value={formData.problemStatement}
                       onChange={(e) => setFormData({ ...formData, problemStatement: e.target.value })}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                      className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                     ></textarea>
                   </div>
 
@@ -418,7 +414,7 @@ const HackathonApply = () => {
                       placeholder="Describe your technical approach, core features, and intended user journey..."
                       value={formData.proposedSolution}
                       onChange={(e) => setFormData({ ...formData, proposedSolution: e.target.value })}
-                      className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                      className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                     ></textarea>
                   </div>
 
@@ -432,7 +428,7 @@ const HackathonApply = () => {
                         placeholder="e.g. React, FastApi, PostgreSQL, TensorFlow"
                         value={formData.techStack}
                         onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
-                        className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                        className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                       />
                     </div>
                     <div>
@@ -444,7 +440,7 @@ const HackathonApply = () => {
                         placeholder="https://github.com/username/project"
                         value={formData.githubRepo}
                         onChange={(e) => setFormData({ ...formData, githubRepo: e.target.value })}
-                        className="w-full px-4 py-2.5 text-sm rounded-xl border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
+                        className="w-full px-4 py-2.5 text-sm rounded border border-[#138601]/30 bg-[#041801] text-white focus:outline-none focus:ring-2 focus:ring-[#138601]"
                       />
                     </div>
                   </div>
@@ -453,14 +449,14 @@ const HackathonApply = () => {
                     <button
                       type="button"
                       onClick={() => setStep(2)}
-                      className="px-5 py-2.5 text-xs font-semibold text-gray-300 hover:text-white bg-[#041801] rounded-xl transition-colors cursor-pointer"
+                      className="px-5 py-2.5 text-xs font-semibold text-gray-300 hover:text-white bg-[#041801] rounded transition-colors cursor-pointer"
                     >
                       Back
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl transition-all shadow-nacos-glow disabled:opacity-50 cursor-pointer"
+                      className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded transition-all shadow-nacos-glow disabled:opacity-50 cursor-pointer"
                     >
                       {isSubmitting ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

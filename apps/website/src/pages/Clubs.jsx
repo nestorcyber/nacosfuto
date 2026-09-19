@@ -58,12 +58,9 @@ const Clubs = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                TECH GUILDS & SOCIETIES
-              </div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-[#083002] dark:text-white tracking-tight leading-tight">
                 Student <span className="text-[#138601] dark:text-[#4bd043]">Clubs & Chapters</span>
               </h1>
@@ -90,7 +87,7 @@ const Clubs = () => {
 
       {/* Technical Clubs Grid */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               Technical <span className="text-[#138601] dark:text-[#4bd043]">Guilds</span>
@@ -126,7 +123,7 @@ const Clubs = () => {
 
       {/* Starting a Club & Resources */}
       <section className="py-20 bg-white dark:bg-[#041801]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm border border-[#138601]/20 dark:border-[#138601]/30">
               <h2 className="text-2xl font-bold text-[#083002] dark:text-white mb-4 tracking-tight">

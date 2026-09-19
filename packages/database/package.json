@@ -1,0 +1,15 @@
+{
+  "name": "@nacos/database",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./src/client.js",
+    "./schema": "./src/schema.sql"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  }
+}

@@ -207,11 +207,8 @@ const YellowPages = () => {
       )}
 
       {/* Hero Section */}
-      <section className="relative py-20 px-6 text-center bg-gradient-to-b from-[#138601]/10 via-transparent to-transparent">
+      <section className="relative py-20 padding-global text-center bg-gradient-to-b from-[#138601]/10 via-transparent to-transparent">
         <div className="max-w-4xl mx-auto relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded bg-[#138601]/10 text-[#138601] dark:text-[#4bd043] font-bold text-xs uppercase tracking-wider mb-6 border border-[#138601]/20">
-            <FiTrendingUp /> Indigenous Commerce
-          </span>
           <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight leading-tight">
             FUTO CSC <span className="text-[#138601] dark:text-[#4bd043]">Yellow Pages</span>
           </h1>
@@ -242,7 +239,7 @@ const YellowPages = () => {
       </section>
 
       {/* Main Content Area */}
-      <main className="flex-grow max-w-7xl mx-auto w-full px-6 pb-24">
+      <main className="flex-grow site-container w-full pb-24">
         {/* Category Filters */}
         <div className="flex items-center gap-2.5 overflow-x-auto pb-6 mb-10 scrollbar-hide">
           {categories.map((cat) => (
@@ -279,7 +276,7 @@ const YellowPages = () => {
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-                  <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-white/10 text-white flex items-center text-xs font-bold gap-1 shadow">
+                  <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded border border-white/10 text-white flex items-center text-xs font-bold gap-1 shadow">
                     <FiStar className="text-yellow-400 fill-yellow-400" /> {biz.rating.toFixed(1)} ({biz.reviewsCount})
                   </div>
                   <div className="absolute bottom-4 left-4 z-20 flex items-center text-white text-xs font-black uppercase tracking-wide gap-1">
@@ -349,7 +346,7 @@ const YellowPages = () => {
       {/* Register Business Modal Overlay */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className={`relative w-full max-w-2xl rounded-2xl shadow-2xl border overflow-hidden animate-zoom-in ${
+          <div className={`relative w-full max-w-2xl rounded shadow-2xl border overflow-hidden animate-zoom-in ${
             theme === 'dark' ? 'bg-[#083002] border-[#138601]/40 text-white' : 'bg-white border-gray-150 text-gray-900'
           }`}>
             {/* Modal Header */}

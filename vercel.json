@@ -3,11 +3,23 @@
   "cleanUrls": false,
   "rewrites": [
     {
-      "source": "/portal",
-      "destination": "/portal/index.html"
+      "source": "/portal-admin",
+      "destination": "/portal-admin/index.html"
     },
     {
-      "source": "/portal/",
+      "source": "/portal-admin/:path*",
+      "destination": "/portal-admin/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/portal",
       "destination": "/portal/index.html"
     },
     {
@@ -15,7 +27,7 @@
       "destination": "/portal/index.html"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]

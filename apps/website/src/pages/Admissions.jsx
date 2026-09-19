@@ -92,7 +92,7 @@ const Admissions = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1
@@ -132,7 +132,7 @@ const Admissions = () => {
 
       {/* Admission Pathways */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2
               ref={addToRefs}
@@ -182,7 +182,7 @@ const Admissions = () => {
 
       {/* Admission Timeline */}
       <section className="py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2
               ref={addToRefs}
@@ -222,7 +222,7 @@ const Admissions = () => {
 
       {/* Tuition and International Students */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm border border-[#138601]/20 dark:border-[#138601]/30">
               <h2 className="text-2xl font-bold text-[#083002] dark:text-white mb-6">

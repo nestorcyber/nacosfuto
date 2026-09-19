@@ -83,7 +83,7 @@ export function getLocalStudentsDatabase() {
   const seeded = [
     {
       id: 'student-seed-a',
-      registration_number: '20241029481',
+      registration_number: '20241429481',
       full_name: 'Nestor Anyanwu',
       email: 'nestor.anyanwu@futo.edu.ng',
       phone_number: '+234 801 234 5678',
@@ -101,7 +101,7 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-b',
-      registration_number: '20251145321',
+      registration_number: '20251545321',
       full_name: 'Chioma Eze',
       email: 'chioma.eze@futo.edu.ng',
       phone_number: '+234 809 876 5432',
@@ -119,7 +119,7 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-c',
-      registration_number: '20261099999',
+      registration_number: '20261699999',
       full_name: 'Emeka Okoro',
       email: 'emeka.okoro@futo.edu.ng',
       phone_number: '+234 812 345 6789',
@@ -137,7 +137,7 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-david',
-      registration_number: '20221139481',
+      registration_number: '20221239481',
       full_name: 'David Okonkwo',
       email: 'david.okonkwo@futo.edu.ng',
       phone_number: '+234 814 592 0184',
@@ -155,11 +155,13 @@ export function getLocalStudentsDatabase() {
     },
     {
       id: 'student-seed-pres',
-      registration_number: '20201112948',
-      full_name: 'Chapter President (FUTO)',
+      registration_number: '20201012948',
+      full_name: 'Emmanuel Irechukwu',
+      first_name: 'Emmanuel',
+      surname: 'Irechukwu',
       email: 'president.futo@nacos.org.ng',
       phone_number: '+234 803 112 3456',
-      admission_year: 2020,
+      admission_year: 2021,
       programme: 'B.Tech Computer Science',
       department: 'Computer Science',
       faculty: 'School of Information & Communication Tech (SICT)',
@@ -167,9 +169,28 @@ export function getLocalStudentsDatabase() {
       password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
       role: 'Chapter President',
       is_active: true,
-      created_at: '2020-10-10T09:00:00Z'
+      created_at: '2021-10-10T09:00:00Z'
     }
   ];
+
+  // Auto-migrate legacy Chapter President (FUTO) name if present in localStorage
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      let updated = false;
+      const migrated = parsed.map(s => {
+        if (s.registration_number === '20201012948' && (s.full_name?.includes('President') || s.name?.includes('President'))) {
+          updated = true;
+          return { ...s, full_name: 'Emmanuel Irechukwu', first_name: 'Emmanuel', surname: 'Irechukwu', admission_year: 2021 };
+        }
+        return s;
+      });
+      if (updated) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+        return migrated;
+      }
+    } catch (e) {}
+  }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
   return seeded;

@@ -67,12 +67,9 @@ const StudentLife = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                CAMPUS EXPERIENCE
-              </div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-[#083002] dark:text-white tracking-tight leading-tight">
                 Student <span className="text-[#138601] dark:text-[#4bd043]">Life & Community</span>
               </h1>
@@ -86,7 +83,7 @@ const StudentLife = () => {
                 Explore Clubs & Activities
               </ScrollToTopLink>
             </div>
-            <div className="rounded-2xl overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
+            <div className="rounded overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
               <img
                 src={studentLifeImage}
                 alt="FUTO Student Life"
@@ -99,7 +96,7 @@ const StudentLife = () => {
 
       {/* Campus Clubs */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               Campus <span className="text-[#138601] dark:text-[#4bd043]">Clubs & Societies</span>
@@ -113,7 +110,7 @@ const StudentLife = () => {
             {clubs.map((club, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
+                className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="mb-4">{club.icon}</div>
@@ -132,7 +129,7 @@ const StudentLife = () => {
 
       {/* Annual Events */}
       <section className="py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               Annual <span className="text-[#138601] dark:text-[#4bd043]">Events</span>
@@ -146,7 +143,7 @@ const StudentLife = () => {
             {events.map((event, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#083002] p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-t-4 border-t-[#138601] transform hover:-translate-y-1.5 transition-all duration-300"
+                className="bg-white dark:bg-[#083002] p-6 rounded shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-t-4 border-t-[#138601] transform hover:-translate-y-1.5 transition-all duration-300"
               >
                 <div className="text-[#138601] dark:text-[#4bd043] font-bold text-xl mb-2">
                   {event.month}
@@ -165,7 +162,7 @@ const StudentLife = () => {
 
       {/* Support and Facilities */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#083002] dark:text-white mb-4 tracking-tight">
@@ -175,7 +172,7 @@ const StudentLife = () => {
                 We provide comprehensive academic mentoring, career placement guidance, and wellness resources to help students thrive throughout their university journey.
               </p>
               <div className="space-y-4">
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                     Academic Advising
                   </h4>
@@ -183,7 +180,7 @@ const StudentLife = () => {
                     Dedicated faculty advisors to guide course registration and academic standing.
                   </p>
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                     Career & Internship Guidance
                   </h4>
@@ -191,7 +188,7 @@ const StudentLife = () => {
                     Resume reviews, mock interviews, and SIWES industrial training placements.
                   </p>
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                     Mentorship & Welfare
                   </h4>
@@ -207,7 +204,7 @@ const StudentLife = () => {
                 Department <span className="text-[#138601] dark:text-[#4bd043]">Facilities</span>
               </h2>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                     24/7 Software Labs
                   </h4>
@@ -215,7 +212,7 @@ const StudentLife = () => {
                     High-speed internet and workstation workstations.
                   </p>
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                     Innovation Sandbox
                   </h4>
@@ -223,7 +220,7 @@ const StudentLife = () => {
                     Collaborative space for hackathons and projects.
                   </p>
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                     Seminar Hall
                   </h4>
@@ -231,7 +228,7 @@ const StudentLife = () => {
                     Equipped with projectors for technical seminars.
                   </p>
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                     Department Library
                   </h4>
@@ -240,7 +237,7 @@ const StudentLife = () => {
                   </p>
                 </div>
               </div>
-              <div className="mt-4 bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+              <div className="mt-4 bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                 <h4 className="font-bold text-sm text-[#083002] dark:text-white">
                   University Student Housing
                 </h4>

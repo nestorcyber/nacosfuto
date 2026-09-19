@@ -5,24 +5,40 @@ import {
   parseAdmissionYear, 
   calculateCurrentLevel, 
   calculateExpectedGraduation, 
-  getAcademicSession 
+  getAcademicSession,
+  validateRegistrationNumberFormat 
 } from '@nacos/config/academic';
+import {
+  createOTPVerification,
+  verifyOTP,
+  createVerificationSession,
+  consumeVerificationSession,
+  maskEmail as otpMaskEmail,
+  maskPhone as otpMaskPhone,
+  cleanupExpiredOTPs,
+  submitAccountRecoveryRequest,
+  getRecoveryRequests,
+  reviewRecoveryRequest,
+  checkRateLimit
+} from './otpService.js';
+import { sendVerificationEmail } from './emailService.js';
+import { sendVerificationSMS } from './smsService.js';
 
 const VERIFIED_STORAGE_KEY = 'nacos_verified_students_db';
-const CODES_STORAGE_KEY = 'nacos_verification_codes_db';
+const RESEND_COOLDOWN_KEY = 'nacos_resend_cooldown';
 
 /**
- * Mask an email address for safe display in UI: e.g. "n••••u@futo.edu.ng"
+ * Mask an email address for safe display in UI: e.g. "n***@futo.edu.ng"
  */
 export function maskEmail(email) {
-  if (!email || !email.includes('@')) return email;
-  const [local, domain] = email.split('@');
-  if (local.length <= 2) {
-    return `${local.charAt(0)}••@${domain}`;
-  }
-  const first = local.charAt(0);
-  const last = local.charAt(local.length - 1);
-  return `${first}••••${last}@${domain}`;
+  return otpMaskEmail(email);
+}
+
+/**
+ * Mask a phone number for safe display: e.g. "******5678"
+ */
+export function maskPhone(phone) {
+  return otpMaskPhone(phone);
 }
 
 /**
@@ -41,8 +57,8 @@ export function getLocalVerifiedStudents() {
   // Pre-seed with authoritative canonical departmental roster
   const seeded = [
     {
-      id: 'vs-seed-20241029481',
-      registration_number: '20241029481',
+      id: 'vs-seed-20241429481',
+      registration_number: '20241429481',
       full_name: 'Nestor Anyanwu',
       email: 'nestor.anyanwu@futo.edu.ng',
       phone_number: '+234 801 234 5678',
@@ -60,8 +76,8 @@ export function getLocalVerifiedStudents() {
       created_at: '2024-10-01T08:00:00Z'
     },
     {
-      id: 'vs-seed-20251145321',
-      registration_number: '20251145321',
+      id: 'vs-seed-20251545321',
+      registration_number: '20251545321',
       full_name: 'Chioma Eze',
       email: 'chioma.eze@futo.edu.ng',
       phone_number: '+234 809 876 5432',
@@ -79,8 +95,8 @@ export function getLocalVerifiedStudents() {
       created_at: '2025-10-01T08:00:00Z'
     },
     {
-      id: 'vs-seed-20261099999',
-      registration_number: '20261099999',
+      id: 'vs-seed-20261699999',
+      registration_number: '20261699999',
       full_name: 'Emeka Okoro',
       email: 'emeka.okoro@futo.edu.ng',
       phone_number: '+234 812 345 6789',
@@ -98,8 +114,8 @@ export function getLocalVerifiedStudents() {
       created_at: '2026-08-01T08:00:00Z'
     },
     {
-      id: 'vs-seed-20221139481',
-      registration_number: '20221139481',
+      id: 'vs-seed-20221239481',
+      registration_number: '20221239481',
       full_name: 'David Okonkwo',
       email: 'david.okonkwo@futo.edu.ng',
       phone_number: '+234 814 592 0184',
@@ -117,8 +133,8 @@ export function getLocalVerifiedStudents() {
       created_at: '2022-10-01T08:00:00Z'
     },
     {
-      id: 'vs-seed-20231184920',
-      registration_number: '20231184920',
+      id: 'vs-seed-20231384920',
+      registration_number: '20231384920',
       full_name: 'Amarachi Blessing Nwosu',
       email: 'amarachi.nwosu@futo.edu.ng',
       phone_number: '+234 802 998 7711',
@@ -136,8 +152,8 @@ export function getLocalVerifiedStudents() {
       created_at: '2023-10-01T08:00:00Z'
     },
     {
-      id: 'vs-seed-20211048201',
-      registration_number: '20211048201',
+      id: 'vs-seed-20211248201',
+      registration_number: '20211248201',
       full_name: 'Somtochukwu Michael Obi',
       email: 'somto.obi@futo.edu.ng',
       phone_number: '+234 806 332 1980',
@@ -155,25 +171,46 @@ export function getLocalVerifiedStudents() {
       created_at: '2021-10-01T08:00:00Z'
     },
     {
-      id: 'vs-seed-20201112948',
-      registration_number: '20201112948',
-      full_name: 'Chapter President (FUTO)',
+      id: 'vs-seed-20201012948',
+      registration_number: '20201012948',
+      full_name: 'Emmanuel Irechukwu',
+      first_name: 'Emmanuel',
+      surname: 'Irechukwu',
       email: 'president.futo@nacos.org.ng',
       phone_number: '+234 803 112 3456',
       department: 'Computer Science',
       faculty: 'School of Information & Communication Tech (SICT)',
       level: '500 Level',
-      admission_year: 2020,
+      admission_year: 2021,
       programme: 'B.Tech Computer Science',
       programme_duration: 5,
-      academic_session: '2024/2025',
+      academic_session: '2025/2026',
       status: 'active',
       has_registered: true,
       auth_user_id: 'student-seed-pres',
-      registered_at: '2020-10-10T09:00:00Z',
-      created_at: '2020-10-01T08:00:00Z'
+      registered_at: '2021-10-10T09:00:00Z',
+      created_at: '2021-10-01T08:00:00Z'
     }
   ];
+
+  // Auto-migrate legacy Chapter President (FUTO) in verified roster
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      let updated = false;
+      const migrated = parsed.map(s => {
+        if (s.registration_number === '20201012948' && (s.full_name?.includes('President') || s.name?.includes('President'))) {
+          updated = true;
+          return { ...s, full_name: 'Emmanuel Irechukwu', first_name: 'Emmanuel', surname: 'Irechukwu', admission_year: 2021, level: '500 Level' };
+        }
+        return s;
+      });
+      if (updated) {
+        localStorage.setItem(VERIFIED_STORAGE_KEY, JSON.stringify(migrated));
+        return migrated;
+      }
+    } catch (e) {}
+  }
 
   localStorage.setItem(VERIFIED_STORAGE_KEY, JSON.stringify(seeded));
   return seeded;
@@ -184,7 +221,8 @@ export function saveLocalVerifiedStudents(list) {
 }
 
 /**
- * Step 1: Lookup student in verified roster by registration number
+ * Step 1: Find student record by registration number
+ * Uses generic error messages to prevent enumeration attacks
  */
 export async function lookupVerifiedStudentRecord(regNo) {
   if (!regNo || !regNo.trim()) {
@@ -194,7 +232,16 @@ export async function lookupVerifiedStudentRecord(regNo) {
     };
   }
 
+  const formatCheck = validateRegistrationNumberFormat(regNo.trim());
+  if (!formatCheck.valid) {
+    return {
+      found: false,
+      error: { message: formatCheck.error }
+    };
+  }
+
   const cleanReg = regNo.trim().toUpperCase();
+  const GENERIC_ERROR = 'Unable to verify these details. Please check your information and try again.';
 
   // 1. Try Supabase lookup if connected
   try {
@@ -206,15 +253,12 @@ export async function lookupVerifiedStudentRecord(regNo) {
 
     if (!error && data) {
       if (data.status !== 'active') {
-        return {
-          found: false,
-          error: { message: 'Your student record is currently inactive or suspended. Please contact the department.' }
-        };
+        return { found: false, error: { message: GENERIC_ERROR } };
       }
       if (data.has_registered) {
         return {
           found: false,
-          error: { message: 'An account has already been registered for this registration number. Please sign in or contact an administrator to reset.' }
+          error: { message: 'An account has already been registered for this student. Please sign in or recover your account.' }
         };
       }
 
@@ -222,7 +266,8 @@ export async function lookupVerifiedStudentRecord(regNo) {
         found: true,
         data: {
           ...data,
-          masked_email: maskEmail(data.email)
+          masked_email: maskEmail(data.email),
+          masked_phone: maskPhone(data.phone_number)
         },
         error: null
       };
@@ -236,23 +281,17 @@ export async function lookupVerifiedStudentRecord(regNo) {
   const record = roster.find(s => s.registration_number.toUpperCase() === cleanReg);
 
   if (!record) {
-    return {
-      found: false,
-      error: { message: 'User not found, contact admin.' }
-    };
+    return { found: false, error: { message: GENERIC_ERROR } };
   }
 
   if (record.status !== 'active') {
-    return {
-      found: false,
-      error: { message: 'Your student record is currently marked inactive or suspended. Please contact the department.' }
-    };
+    return { found: false, error: { message: GENERIC_ERROR } };
   }
 
   if (record.has_registered) {
     return {
       found: false,
-      error: { message: 'An account has already been registered for this registration number. Please sign in or contact an administrator to reset.' }
+      error: { message: 'An account has already been registered for this student. Please sign in or recover your account.' }
     };
   }
 
@@ -260,192 +299,288 @@ export async function lookupVerifiedStudentRecord(regNo) {
     found: true,
     data: {
       ...record,
-      masked_email: maskEmail(record.email)
+      masked_email: maskEmail(record.email),
+      masked_phone: maskPhone(record.phone_number)
     },
     error: null
   };
 }
 
 /**
- * Step 2: Send a 6-digit verification code (OTP) to the student-provided school email
+ * Step 2: Validate contact information and start OTP verification
+ * The submitted email/phone must match the student record exactly
  */
-export async function sendStudentVerificationCode(regNo, studentEmail = '') {
+export async function startRegistrationVerification(regNo, submittedEmail, submittedPhone, channel) {
+  const GENERIC_ERROR = 'Unable to verify these details. Please check your information and try again.';
+
+  // 1. Validate input
+  if (!submittedEmail?.trim() && !submittedPhone?.trim()) {
+    return { success: false, error: { message: 'Please provide an email address or phone number.' } };
+  }
+
+  if (channel !== 'email' && channel !== 'phone') {
+    return { success: false, error: { message: 'Invalid verification method.' } };
+  }
+
+  // 2. Find student record
   const lookup = await lookupVerifiedStudentRecord(regNo);
   if (!lookup.found) {
     return { success: false, error: lookup.error };
   }
 
   const student = lookup.data;
-  const cleanEmail = (studentEmail || student.email || '').trim().toLowerCase();
-
-  if (!cleanEmail) {
-    return { success: false, error: { message: 'Please enter your email address.' } };
-  }
-
-  // Validate standard email format (e.g. gmail, yahoo, outlook, futo, etc.)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return { success: false, error: { message: 'Please enter a valid email address.' } };
-  }
-
-  // Check if email already belongs to another registered student account
-  const accounts = getLocalStudentsDatabase();
   const cleanReg = regNo.trim().toUpperCase();
-  const emailInUse = accounts.some(a => 
-    a.email?.toLowerCase() === cleanEmail && 
-    a.registration_number?.toUpperCase() !== cleanReg
-  );
-  if (emailInUse) {
-    return { success: false, error: { message: 'This email is already in use by another student account.' } };
+
+  // 3. Verify contact information matches the student record exactly
+  if (channel === 'email') {
+    const cleanEmail = submittedEmail.trim().toLowerCase();
+    const recordEmail = (student.email || '').trim().toLowerCase();
+    
+    if (!cleanEmail) {
+      return { success: false, error: { message: 'Please enter your email address.' } };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return { success: false, error: { message: 'Please enter a valid email address.' } };
+    }
+
+    if (cleanEmail !== recordEmail) {
+      return { success: false, error: { message: GENERIC_ERROR } };
+    }
+
+    // 4. Check rate limit
+    const rateCheck = await checkRateLimit(cleanReg, 'email');
+    if (!rateCheck.allowed) {
+      return { success: false, error: { message: 'Please wait before requesting another code.' }, retryAfterSeconds: rateCheck.retryAfterSeconds };
+    }
+
+    // 5. Generate OTP and store hashed
+    const otpResult = await createOTPVerification(cleanReg, 'email', student.masked_email, cleanEmail);
+    if (!otpResult.success) {
+      return { success: false, error: otpResult.error };
+    }
+
+    // 6. Send OTP via email
+    const emailResult = await sendVerificationEmail(cleanEmail, otpResult.code);
+    if (!emailResult.success) {
+      return { success: false, error: { message: "We couldn't send your verification code right now. Please try again later." } };
+    }
+
+    // 7. Set cooldown
+    setResendCooldownTimestamp(cleanReg, 'email');
+
+    return {
+      success: true,
+      channel: 'email',
+      maskedDestination: student.masked_email,
+      expiresAt: otpResult.expiresAt
+    };
   }
 
-  // Generate a random 6-digit OTP code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 mins expiry
+  if (channel === 'phone') {
+    const cleanPhone = submittedPhone.trim().replace(/[\s\-()]/g, '');
+    const recordPhone = (student.phone_number || '').trim().replace(/[\s\-()]/g, '');
+    
+    if (!cleanPhone) {
+      return { success: false, error: { message: 'Please enter your phone number.' } };
+    }
 
-  // Try Supabase insert
-  try {
-    await supabase.from('student_verification_codes').insert([{
-      registration_number: student.registration_number,
-      email: cleanEmail,
-      code,
-      expires_at: expiresAt,
-      is_used: false
-    }]);
-  } catch (e) {
-    // Supabase offline/fallback
+    if (cleanPhone.length < 10) {
+      return { success: false, error: { message: 'Please enter a valid phone number.' } };
+    }
+
+    // Normalize phone numbers for comparison
+    const normalizeForCompare = (p) => p.replace(/\D/g, '').slice(-10);
+    if (normalizeForCompare(cleanPhone) !== normalizeForCompare(recordPhone)) {
+      return { success: false, error: { message: GENERIC_ERROR } };
+    }
+
+    const rateCheck = await checkRateLimit(cleanReg, 'phone');
+    if (!rateCheck.allowed) {
+      return { success: false, error: { message: 'Please wait before requesting another code.' }, retryAfterSeconds: rateCheck.retryAfterSeconds };
+    }
+
+    const otpResult = await createOTPVerification(cleanReg, 'phone', student.masked_phone, cleanPhone);
+    if (!otpResult.success) {
+      return { success: false, error: otpResult.error };
+    }
+
+    const smsResult = await sendVerificationSMS(cleanPhone, otpResult.code);
+    if (!smsResult.success) {
+      return { success: false, error: { message: "We couldn't send your verification code right now. Please try again later." } };
+    }
+
+    setResendCooldownTimestamp(cleanReg, 'phone');
+
+    return {
+      success: true,
+      channel: 'phone',
+      maskedDestination: student.masked_phone,
+      expiresAt: otpResult.expiresAt
+    };
   }
 
-  // Save to local storage for instant verification and demo support
-  let storedCodes = [];
-  try {
-    const raw = localStorage.getItem(CODES_STORAGE_KEY);
-    if (raw) storedCodes = JSON.parse(raw);
-  } catch (e) {}
+  return { success: false, error: { message: 'Invalid verification method.' } };
+}
 
-  storedCodes = storedCodes.filter(c => c.registration_number !== student.registration_number);
-  storedCodes.push({
-    registration_number: student.registration_number,
-    email: cleanEmail,
-    code,
-    expires_at: expiresAt,
-    is_used: false,
-    created_at: new Date().toISOString()
-  });
-  localStorage.setItem(CODES_STORAGE_KEY, JSON.stringify(storedCodes));
+/**
+ * Resend OTP for registration
+ */
+export async function resendRegistrationOTP(regNo, channel) {
+  const GENERIC_ERROR = 'Unable to verify these details. Please check your information and try again.';
 
-  console.info(`[NACOS Auth] Verification code for ${student.registration_number} (${cleanEmail}): ${code}`);
+  // Check cooldown
+  const cleanReg = regNo.trim().toUpperCase();
+  const cooldownKey = `${RESEND_COOLDOWN_KEY}_${cleanReg}_${channel}`;
+  const cooldownExpiry = localStorage.getItem(cooldownKey);
+  if (cooldownExpiry && new Date(cooldownExpiry) > new Date()) {
+    const remaining = Math.ceil((new Date(cooldownExpiry) - new Date()) / 1000);
+    return { success: false, error: { message: 'Please wait before requesting another code.' }, retryAfterSeconds: remaining };
+  }
+
+  // Find student record to get contact info
+  const lookup = await lookupVerifiedStudentRecord(regNo);
+  if (!lookup.found) {
+    return { success: false, error: lookup.error };
+  }
+
+  const student = lookup.data;
+  const fullDestination = channel === 'email' ? (student.email || '').trim().toLowerCase() : (student.phone_number || '').trim();
+
+  const rateCheck = await checkRateLimit(cleanReg, channel);
+  if (!rateCheck.allowed) {
+    return { success: false, error: { message: 'Please wait before requesting another code.' }, retryAfterSeconds: rateCheck.retryAfterSeconds };
+  }
+
+  const otpResult = await createOTPVerification(cleanReg, channel, channel === 'email' ? student.masked_email : student.masked_phone, fullDestination);
+  if (!otpResult.success) {
+    return { success: false, error: otpResult.error };
+  }
+
+  if (channel === 'email') {
+    const emailResult = await sendVerificationEmail(fullDestination, otpResult.code);
+    if (!emailResult.success) {
+      return { success: false, error: { message: "We couldn't send your verification code right now. Please try again later." } };
+    }
+  } else {
+    const smsResult = await sendVerificationSMS(fullDestination, otpResult.code);
+    if (!smsResult.success) {
+      return { success: false, error: { message: "We couldn't send your verification code right now. Please try again later." } };
+    }
+  }
+
+  setResendCooldownTimestamp(cleanReg, channel);
 
   return {
     success: true,
-    code, // Returned for dev preview banner
-    email: cleanEmail,
-    maskedEmail: maskEmail(cleanEmail),
-    expiresAt,
-    message: `A 6-digit verification code has been dispatched to ${cleanEmail}.`
+    channel,
+    maskedDestination: channel === 'email' ? student.masked_email : student.masked_phone,
+    expiresAt: otpResult.expiresAt
   };
 }
 
 /**
- * Step 2b: Verify 6-digit OTP code entered by student
+ * Verify OTP code and create a verification session
  */
-export async function verifyStudentRegistrationCode(regNo, code) {
+export async function verifyRegistrationOTP(regNo, channel, code) {
   if (!code || code.trim().length !== 6) {
     return { success: false, error: { message: 'Please enter a valid 6-digit verification code.' } };
   }
 
-  const cleanReg = regNo.trim().toUpperCase();
-  const cleanCode = code.trim();
+  const result = await verifyOTP(regNo, channel, code);
+  if (!result.success) {
+    return result;
+  }
 
-  // Check local codes
-  let storedCodes = [];
-  try {
-    const raw = localStorage.getItem(CODES_STORAGE_KEY);
-    if (raw) storedCodes = JSON.parse(raw);
-  } catch (e) {}
-
-  const match = storedCodes.find(c => 
-    c.registration_number.toUpperCase() === cleanReg && 
-    c.code === cleanCode && 
-    !c.is_used
+  const sessionResult = await createVerificationSession(
+    regNo,
+    channel,
+    null,
+    result.destination
   );
 
-  // Also accept master bypass code in development if needed
-  const isMasterDevCode = cleanCode === '123456';
-
-  if (!match && !isMasterDevCode) {
-    return { success: false, error: { message: 'Invalid verification code. Please check your email or request a new code.' } };
+  if (!sessionResult.success) {
+    return { success: false, error: { message: 'Failed to create verification session. Please try again.' } };
   }
 
-  if (match) {
-    const isExpired = new Date(match.expires_at) < new Date();
-    if (isExpired) {
-      return { success: false, error: { message: 'This verification code has expired. Please request a new code.' } };
-    }
-  }
-
-  return { success: true };
+  return {
+    success: true,
+    sessionToken: sessionResult.sessionToken,
+    channel
+  };
 }
 
 /**
- * Step 3: Complete registration - create auth profile, set has_registered=true, auto-fill profile fields
+ * Complete registration with verified session
  */
-export async function completeVerifiedStudentRegistration(regNo, code, password, phone = '', customEmail = '', customFullName = '') {
-  // 1. Verify code again
-  const verifyRes = await verifyStudentRegistrationCode(regNo, code);
-  if (!verifyRes.success) {
-    return { data: null, error: verifyRes.error };
+export async function completeSecureRegistration(sessionToken, regNo, password, fullName) {
+  const GENERIC_ERROR = 'Unable to verify these details. Please check your information and try again.';
+
+  // 1. Validate session
+  const sessionValidation = await consumeVerificationSession(sessionToken, regNo);
+  if (!sessionValidation.valid) {
+    return { data: null, error: sessionValidation.error };
   }
 
+  // 2. Validate password
   if (!password || password.length < 6) {
     return { data: null, error: { message: 'Password must be at least 6 characters long.' } };
   }
 
-  // 2. Fetch authoritative student record
-  const roster = getLocalVerifiedStudents();
+  if (password.length > 128) {
+    return { data: null, error: { message: 'Password must not exceed 128 characters.' } };
+  }
+
+  // 3. Fetch authoritative student record
   const cleanReg = regNo.trim().toUpperCase();
-  const index = roster.findIndex(s => s.registration_number.toUpperCase() === cleanReg);
+  let verifiedRecord = null;
 
-  if (index === -1) {
-    return { data: null, error: { message: 'Verified student record not found.' } };
-  }
-
-  const verifiedRecord = roster[index];
-  if (verifiedRecord.has_registered) {
-    return { data: null, error: { message: 'An account has already been registered for this student.' } };
-  }
-
-  const studentEmail = (customEmail || verifiedRecord.email || '').trim().toLowerCase();
-  if (!studentEmail) {
-    return { data: null, error: { message: 'Please provide a valid email address.' } };
-  }
-
-  const resolvedFullName = (customFullName || verifiedRecord.full_name || '').trim();
-
-  // 3. Mark code as used
   try {
-    const raw = localStorage.getItem(CODES_STORAGE_KEY);
-    if (raw) {
-      const storedCodes = JSON.parse(raw);
-      const codeIndex = storedCodes.findIndex(c => c.registration_number.toUpperCase() === cleanReg && c.code === code.trim());
-      if (codeIndex !== -1) {
-        storedCodes[codeIndex].is_used = true;
-        localStorage.setItem(CODES_STORAGE_KEY, JSON.stringify(storedCodes));
-      }
-    }
+    const { data } = await supabase
+      .from('verified_students')
+      .select('*')
+      .eq('registration_number', cleanReg)
+      .maybeSingle();
+    if (data) verifiedRecord = data;
   } catch (e) {}
 
-  // 4. Hash password
+  if (!verifiedRecord) {
+    const roster = getLocalVerifiedStudents();
+    verifiedRecord = roster.find(s => s.registration_number.toUpperCase() === cleanReg);
+  }
+
+  if (!verifiedRecord) {
+    return { data: null, error: { message: GENERIC_ERROR } };
+  }
+
+  if (verifiedRecord.has_registered) {
+    return { data: null, error: { message: 'An account has already been registered for this student. Please sign in or recover your account.' } };
+  }
+
+  if (verifiedRecord.status !== 'active') {
+    return { data: null, error: { message: GENERIC_ERROR } };
+  }
+
+  // 4. Use the full name from the verified record (don't allow custom override for security)
+  const resolvedFullName = (verifiedRecord.full_name || '').trim();
+  const studentEmail = (verifiedRecord.email || '').trim().toLowerCase();
+  const studentPhone = (verifiedRecord.phone_number || '').trim();
+
+  // 5. Hash password
   const passwordHash = await hashPassword(password);
 
-  // 5. Create new student auth profile
+  // 6. Create new student auth profile
   const userId = 'student-auth-' + Date.now();
   const newProfile = {
     id: userId,
     registration_number: verifiedRecord.registration_number,
     full_name: resolvedFullName,
+    first_name: verifiedRecord.full_name?.split(' ')[0] || '',
+    middle_name: verifiedRecord.full_name?.split(' ').slice(1, -1).join(' ') || '',
+    last_name: verifiedRecord.full_name?.split(' ').slice(-1)[0] || '',
     email: studentEmail,
-    phone_number: phone.trim() || verifiedRecord.phone_number || '',
+    phone_number: studentPhone,
     admission_year: verifiedRecord.admission_year,
     programme: verifiedRecord.programme,
     department: verifiedRecord.department,
@@ -459,32 +594,35 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
     updated_at: new Date().toISOString()
   };
 
-  // Add to local student accounts store
+  // 7. Add to local student accounts store
   const allAccounts = getLocalStudentsDatabase();
-  // Remove any stale demo account with the same matric
   const filteredAccounts = allAccounts.filter(a => a.registration_number.toUpperCase() !== cleanReg);
   filteredAccounts.push(newProfile);
   localStorage.setItem('nacos_students_db', JSON.stringify(filteredAccounts));
 
-  // 6. Update verified_students table (mark has_registered = true and save email, full name & phone)
-  roster[index] = {
-    ...verifiedRecord,
-    full_name: resolvedFullName,
-    email: studentEmail,
-    phone_number: newProfile.phone_number,
-    has_registered: true,
-    registered_at: new Date().toISOString(),
-    auth_user_id: userId,
-    updated_at: new Date().toISOString()
-  };
-  saveLocalVerifiedStudents(roster);
+  // 8. Update verified_students table
+  const roster = getLocalVerifiedStudents();
+  const index = roster.findIndex(s => s.registration_number.toUpperCase() === cleanReg);
+  if (index !== -1) {
+    roster[index] = {
+      ...roster[index],
+      full_name: resolvedFullName,
+      email: studentEmail,
+      phone_number: studentPhone,
+      has_registered: true,
+      registered_at: new Date().toISOString(),
+      auth_user_id: userId,
+      updated_at: new Date().toISOString()
+    };
+    saveLocalVerifiedStudents(roster);
+  }
 
-  // Sync to Supabase if available
+  // 9. Sync to Supabase if available
   try {
     await supabase.from('verified_students').update({
       full_name: resolvedFullName,
       email: studentEmail,
-      phone_number: newProfile.phone_number,
+      phone_number: studentPhone,
       has_registered: true,
       registered_at: new Date().toISOString(),
       auth_user_id: userId
@@ -495,7 +633,7 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
       registration_number: verifiedRecord.registration_number,
       full_name: resolvedFullName,
       email: studentEmail,
-      phone_number: newProfile.phone_number,
+      phone_number: studentPhone,
       admission_year: verifiedRecord.admission_year,
       programme: verifiedRecord.programme,
       department: verifiedRecord.department,
@@ -508,11 +646,41 @@ export async function completeVerifiedStudentRegistration(regNo, code, password,
     // Local fallback maintained
   }
 
-  // Enrich profile & log in user
+  // 10. Enrich profile and log in
   const enriched = enrichStudentProfile(newProfile);
   localStorage.setItem('nacos_user', JSON.stringify(enriched));
 
   return { data: { user: enriched }, error: null };
+}
+
+// =========================================================================
+// RESEND COOLDOWN HELPERS
+// =========================================================================
+
+function setResendCooldownTimestamp(regNumber, channel) {
+  const key = `${RESEND_COOLDOWN_KEY}_${regNumber.trim().toUpperCase()}_${channel}`;
+  const expiry = new Date(Date.now() + 60 * 1000).toISOString();
+  localStorage.setItem(key, expiry);
+}
+
+export function getResendCooldownSeconds(regNumber, channel) {
+  const key = `${RESEND_COOLDOWN_KEY}_${regNumber.trim().toUpperCase()}_${channel}`;
+  const expiry = localStorage.getItem(key);
+  if (!expiry) return 0;
+  const remaining = Math.max(0, Math.ceil((new Date(expiry) - new Date()) / 1000));
+  return remaining;
+}
+
+// =========================================================================
+// ACCOUNT RECOVERY (exported from otpService.js via index.js)
+// =========================================================================
+
+// =========================================================================
+// CLEANUP
+// =========================================================================
+
+export function cleanupExpiredData() {
+  cleanupExpiredOTPs();
 }
 
 // =========================================================================

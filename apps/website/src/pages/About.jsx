@@ -60,12 +60,9 @@ const About = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                DEPARTMENT PROFILE
-              </div>
               <h1
                 ref={addToRefs}
                 className="text-4xl md:text-5xl font-extrabold mb-6 text-[#083002] dark:text-white tracking-tight leading-tight"
@@ -83,7 +80,7 @@ const About = () => {
                 Explore Our Programs
               </ScrollToTopLink>
             </div>
-            <div className="rounded-2xl overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
+            <div className="rounded overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
               <img
                 src={departmentImage}
                 alt="FUTO Computer Science Department"
@@ -96,7 +93,7 @@ const About = () => {
 
       {/* 1. About Department Section (Department Overview & Startup) */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2
               ref={addToRefs}
@@ -128,13 +125,13 @@ const About = () => {
 
               {/* Department Startup & Milestones */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-white dark:bg-[#083002] p-6 rounded-2xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-6 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-[#083002] dark:text-white mb-2 text-base">School of ICT Integration (2018)</h4>
                   <p className="text-xs text-[#083002]/75 dark:text-green-100/75 leading-relaxed">
                     Integrated into the newly created School of Information and Communication Technology (SICT) to foster interdisciplinary tech innovation and specialized computing research.
                   </p>
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-6 rounded-2xl border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-6 rounded border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h4 className="font-bold text-[#083002] dark:text-white mb-2 text-base">Full NUC Accreditation (2021)</h4>
                   <p className="text-xs text-[#083002]/75 dark:text-green-100/75 leading-relaxed">
                     Awarded top-tier full accreditation by the National Universities Commission (NUC), certifying high academic quality, modern laboratory facilities, and outstanding faculty standards.
@@ -148,7 +145,7 @@ const About = () => {
 
       {/* 2. Why Study Computer Science at FUTO */}
       <section className="py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2
               ref={addToRefs}
@@ -165,7 +162,7 @@ const About = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-l-4 border-l-[#138601] transform hover:-translate-y-1.5 transition-all duration-300"
+                className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-l-4 border-l-[#138601] transform hover:-translate-y-1.5 transition-all duration-300"
               >
                 <div className="mb-4">{feature.icon}</div>
                 <h3 className="text-lg font-bold text-[#083002] dark:text-white mb-2 leading-snug">
@@ -183,7 +180,7 @@ const About = () => {
 
       {/* 4. FUTO History & University Details */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2
               ref={addToRefs}
@@ -207,7 +204,7 @@ const About = () => {
                 <div className="flex-shrink-0 w-10 h-10 rounded bg-[#138601]/10 dark:bg-[#138601]/25 flex items-center justify-center text-[#138601] dark:text-[#4bd043]">
                   <FaCalendarAlt />
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 flex-1 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 flex-1 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white mb-1">November 28, 1980</h4>
                   <p className="text-xs text-[#083002]/75 dark:text-green-100/75 leading-relaxed">
                     On the premises of the Old Government Technical College (GTC), FUTO opened its doors to staff and inaugural students.
@@ -218,7 +215,7 @@ const About = () => {
                 <div className="flex-shrink-0 w-10 h-10 rounded bg-[#138601]/10 dark:bg-[#138601]/25 flex items-center justify-center text-[#138601] dark:text-[#4bd043]">
                   <FaCalendarAlt />
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 flex-1 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 flex-1 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white mb-1">January 1982</h4>
                   <p className="text-xs text-[#083002]/75 dark:text-green-100/75 leading-relaxed">
                     The permanent site was approved by the government, and the comprehensive physical masterplan was commissioned.
@@ -229,7 +226,7 @@ const About = () => {
                 <div className="flex-shrink-0 w-10 h-10 rounded bg-[#138601]/10 dark:bg-[#138601]/25 flex items-center justify-center text-[#138601] dark:text-[#4bd043]">
                   <FaMapMarkerAlt />
                 </div>
-                <div className="bg-white dark:bg-[#083002] p-4 rounded-xl border border-[#138601]/20 dark:border-[#138601]/30 flex-1 shadow-sm">
+                <div className="bg-white dark:bg-[#083002] p-4 rounded border border-[#138601]/20 dark:border-[#138601]/30 flex-1 shadow-sm">
                   <h4 className="font-bold text-sm text-[#083002] dark:text-white mb-1">The Permanent Site (Ihiagwa / Eziobodo)</h4>
                   <p className="text-xs text-[#083002]/75 dark:text-green-100/75 leading-relaxed">
                     Spanning over 4,000 hectares along the scenic Otamiri River basin, situated 25 kilometers south of Owerri metropolis.
@@ -243,14 +240,14 @@ const About = () => {
 
       {/* 5. FUTO Mission & Vision */}
       <section className="py-20 bg-white dark:bg-[#041801]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               FUTO <span className="text-[#138601] dark:text-[#4bd043]">Mission & Vision</span>
             </h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm border border-[#138601]/20 dark:border-[#138601]/30 border-t-4 border-t-[#138601]">
+            <div className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm border border-[#138601]/20 dark:border-[#138601]/30 border-t-4 border-t-[#138601]">
               <h3 className="text-xl font-bold text-[#083002] dark:text-white mb-3 flex items-center">
                 <span className="w-7 h-7 bg-[#138601] rounded flex items-center justify-center text-white text-xs font-black mr-3">
                   V
@@ -261,7 +258,7 @@ const About = () => {
                 To re-engineer and re-position the Federal University of Technology Owerri to be a truly world class university through nurturing uniquely promising students and exceptional staff in Science, Technology, and enterprise.
               </p>
             </div>
-            <div className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm border border-[#138601]/20 dark:border-[#138601]/30 border-t-4 border-t-[#138601]">
+            <div className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm border border-[#138601]/20 dark:border-[#138601]/30 border-t-4 border-t-[#138601]">
               <h3 className="text-xl font-bold text-[#083002] dark:text-white mb-3 flex items-center">
                 <span className="w-7 h-7 bg-[#138601] rounded flex items-center justify-center text-white text-xs font-black mr-3">
                   M

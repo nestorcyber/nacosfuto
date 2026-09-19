@@ -43,7 +43,7 @@ const UPSKILL_COURSES = [
 const UpskillSection = () => {
   return (
     <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         <div className="text-center mb-12 max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
             <span className="text-[#138601] dark:text-[#4bd043]">
@@ -61,7 +61,7 @@ const UpskillSection = () => {
             <ScrollToTopLink
               key={course.slug}
               to={`/upskill/${course.slug}`}
-              className="group rounded-2xl bg-white dark:bg-[#083002] overflow-hidden border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full"
+              className="group rounded bg-white dark:bg-[#083002] overflow-hidden border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full"
             >
               {/* Image Container */}
               <div className="relative h-48 overflow-hidden bg-[#083002]">

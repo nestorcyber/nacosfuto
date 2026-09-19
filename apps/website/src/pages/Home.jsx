@@ -16,8 +16,9 @@ import Footer from "../components/Footer";
 
 import alumniHomeImg from "../assets/alumni_home.jpg";
 
+const HERO_IMAGE_URL = "https://res.cloudinary.com/z3wgqisj/image/upload/v1789824604/20250304_223205_Destiny_Eke_ce1a4da154_hxay39.jpg";
+
 const Home = () => {
-  const liveHeaderImg = getCloudinaryAssetUrl('header') || headerImg;
   const liveAlumniHomeImg = getCloudinaryAssetUrl('alumni_home') || alumniHomeImg;
 
   useEffect(() => {
@@ -32,17 +33,18 @@ const Home = () => {
       <main className="flex-grow">
         {/* Desktop hero image */}
         <section
-          className="relative hidden md:flex h-[80vh] min-h-[540px] items-center justify-center overflow-hidden bg-gray-900"
-          style={{
-            backgroundImage: `url(${liveHeaderImg})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
+          className="relative hidden md:flex h-[80vh] min-h-[540px] items-center justify-center overflow-hidden bg-gray-950"
         >
-          {/* High-tech gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#041801] via-[#083002]/80 to-[#138601]/40" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(19,134,1,0.25),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(75,208,67,0.18),transparent_40%)]" />
+          {/* Real hero photo */}
+          <img
+            src={HERO_IMAGE_URL}
+            alt="Department of Computer Science FUTO"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+
+          {/* Clean dark gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#041801]/95 via-[#041801]/60 to-black/35" />
+          <div className="absolute inset-0 bg-black/20" />
 
           <div className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 drop-shadow-lg tracking-tight leading-[1.15]">
@@ -94,10 +96,10 @@ const Home = () => {
 
         {/* 7. Alumni Section */}
         <section className="py-20 bg-[#f2fbf1] dark:bg-[#083002] text-[#083002] dark:text-white transition-colors duration-300">
-          <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="site-container text-center">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3 text-[#083002] dark:text-white">Our Alumni Network</h2>
             <p className="mb-10 text-[#083002]/80 dark:text-green-100/80 max-w-xl mx-auto text-base leading-relaxed">Join a network of successful graduates making waves across top global tech companies.</p>
-            <div className="rounded-2xl overflow-hidden shadow-lg h-64 md:h-96 bg-gray-200 dark:bg-gray-700 relative border border-[#138601]/20 dark:border-[#138601]/30 group">
+            <div className="rounded overflow-hidden shadow-lg h-64 md:h-96 bg-gray-200 dark:bg-gray-700 relative border border-[#138601]/20 dark:border-[#138601]/30 group">
               <img src={liveAlumniHomeImg} alt="FUTO CSC Alumni Group" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                 <ScrollToTopLink to="/about/alumni" className="inline-flex items-center justify-center px-7 py-2.5 bg-white text-[#083002] hover:bg-[#f1f3f5] font-semibold text-sm rounded shadow-md transition-colors cursor-pointer min-h-[42px]">

@@ -43,7 +43,7 @@ const AcademicPrograms = () => {
     return (
         <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
             <Navbar />
-            <div className="flex-grow max-w-7xl mx-auto px-6 py-16 w-full">
+            <div className="flex-grow site-container py-16 w-full">
                 <header className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-blue-600">
                         Academic Programs

@@ -271,12 +271,9 @@ const Events = () => {
     <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-[#041801] text-white' : 'bg-white text-[#083002]'} transition-colors duration-300`}>
       <Navbar />
       
-      <div className="flex-grow max-w-7xl mx-auto px-6 py-16 w-full">
+      <div className="flex-grow site-container py-16 w-full">
         {/* Page Header */}
         <header className="text-center mb-16">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider mb-4 border border-green-500/20">
-            Cloudinary CDN Optimized Flyers
-          </span>
           <h1 className="text-4xl md:text-5xl font-black mb-4">
             Department <span className="text-[#138601] dark:text-[#4bd043]">Events</span>
           </h1>
@@ -296,13 +293,13 @@ const Events = () => {
             {upcomingEvents.map(event => (
               <div 
                 key={event.id || event.slug}
-                className={`group flex flex-col lg:flex-row rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 ${
+                className={`group flex flex-col lg:flex-row rounded overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 ${
                   theme === 'dark' ? 'bg-[#083002] border-[#138601]/30' : 'bg-white border-gray-200'
                 }`}
               >
                 <div className="lg:w-2/5 h-56 lg:h-auto overflow-hidden relative">
                   <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow">
+                  <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1.5 rounded font-bold text-xs shadow">
                      UPCOMING
                   </div>
                 </div>
@@ -339,7 +336,7 @@ const Events = () => {
             {recentEvents.map(event => (
               <div 
                 key={event.id || event.slug}
-                className={`group flex flex-col lg:flex-row rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 ${
+                className={`group flex flex-col lg:flex-row rounded overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 ${
                   theme === 'dark' ? 'bg-[#083002] border-[#138601]/30' : 'bg-white border-gray-200'
                 }`}
               >
@@ -382,13 +379,13 @@ const Events = () => {
             {pastEvents.map(event => (
               <div 
                 key={event.id || event.slug}
-                className={`group flex flex-col lg:flex-row rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 ${
+                className={`group flex flex-col lg:flex-row rounded overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 ${
                   theme === 'dark' ? 'bg-[#083002] border-[#138601]/30' : 'bg-white border-gray-200'
                 }`}
               >
                 <div className="lg:w-2/5 h-56 lg:h-auto overflow-hidden relative">
                   <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute top-4 left-4 bg-gray-500 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow">
+                  <div className="absolute top-4 left-4 bg-gray-500 text-white px-3 py-1.5 rounded font-bold text-xs shadow">
                      PAST
                   </div>
                 </div>

@@ -166,11 +166,8 @@ const Gallery = () => {
     return (
         <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}>
             <Navbar />
-            <div className="flex-grow max-w-7xl mx-auto px-6 py-16 w-full">
+            <div className="flex-grow site-container py-16 w-full">
                 <header className="text-center mb-12">
-                    <span className="inline-block px-4 py-1.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider mb-4 border border-green-500/20">
-                        Campus Life & Events • {images.length} Moments
-                    </span>
                     <h1 className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-500">
                         Campus Life Gallery
                     </h1>

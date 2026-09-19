@@ -23,13 +23,10 @@ const Resources = () => {
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#041801] text-gray-900 dark:text-white transition-colors duration-300">
       <Navbar />
 
-      <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-12">
+      <main className="flex-grow site-container w-full py-12">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-[#138601]/20 dark:border-[#138601]/30">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-bold uppercase tracking-wider mb-3">
-              STUDY VAULT
-            </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white">
               Academic Resources & Study Hub
             </h1>

@@ -10,9 +10,6 @@ import Dues from './pages/Dues';
 import Courses from './pages/Courses';
 import Profile from './pages/Profile';
 import IdCard from './pages/IdCard';
-import AdminStudents from './pages/AdminStudents';
-import AdminMedia from './pages/AdminMedia';
-import AdminIdCards from './pages/AdminIdCards';
 import IdVerification from './pages/IdVerification';
 import HackathonDetail from './pages/HackathonDetail';
 import HackathonApply from './pages/HackathonApply';
@@ -37,11 +34,6 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/id-card" element={<IdCard />} />
-
-          {/* Admin Student Registry & Academic Management */}
-          <Route path="/admin/students" element={<AdminStudents />} />
-          <Route path="/admin/id-cards" element={<AdminIdCards />} />
-          <Route path="/admin/media" element={<AdminMedia />} />
 
           {/* Public Verification Route */}
           <Route path="/verify/id/:id" element={<IdVerification />} />

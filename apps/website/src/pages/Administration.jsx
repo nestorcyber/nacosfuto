@@ -62,7 +62,7 @@ const Administration = () => {
     return (
         <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-[#041801] text-white' : 'bg-white text-[#083002]'} transition-colors duration-300`}>
             <Navbar />
-            <div className="flex-grow max-w-7xl mx-auto px-6 py-16 w-full">
+            <div className="flex-grow site-container py-16 w-full">
                 <header className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-black mb-4">
                         Departmental <span className="text-[#138601] dark:text-[#4bd043]">Administration</span>

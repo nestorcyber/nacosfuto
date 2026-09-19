@@ -2,6 +2,12 @@
   "cloudName": "z3wgqisj",
   "syncedAt": "2026-09-05T00:47:47.819Z",
   "assets": {
+    "header": {
+      "publicId": "20250304_223205_Destiny_Eke_ce1a4da154_hxay39",
+      "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1789824604/20250304_223205_Destiny_Eke_ce1a4da154_hxay39.jpg",
+      "folder": "nacos/homepage",
+      "category": "homepage"
+    },
     "asg_chinecherem": {
       "publicId": "nacos/executives/asg_chinecherem",
       "url": "https://res.cloudinary.com/z3wgqisj/image/upload/v1788569268/nacos/executives/asg_chinecherem.jpg",

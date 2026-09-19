@@ -33,23 +33,66 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
 
-/* Webflow-Standard Responsive Layout Container */
+/* ─── Webflow Standard Root & Layout CSS Resets ─── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* ─── Standard Web Development Responsive Layout Container ─── */
+:root {
+  --container-max-width: 90rem; /* 90rem */
+  --gutter-mobile: 16px;        /* Mobile gutter standard (16px) */
+  --gutter-tablet: 20px;        /* Tablet gutter standard (20px) */
+  --gutter-desktop: 24px;       /* Desktop gutter standard (24px) */
+}
+
+.padding-global,
+.page-gutter {
+  padding-inline: var(--gutter-mobile);
+}
+
+@media (min-width: 640px) {
+  .padding-global,
+  .page-gutter {
+    padding-inline: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .padding-global,
+  .page-gutter {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
 .site-container,
 .container-site,
 .container-webflow,
-.webflow-container {
+.webflow-container,
+.container-large {
   width: 100%;
-  max-width: 90rem;
+  max-width: var(--container-max-width);
   margin-inline: auto;
-  padding-inline: 16px;
+  padding-inline: var(--gutter-mobile);
 }
 
 @media (min-width: 640px) {
   .site-container,
   .container-site,
   .container-webflow,
-  .webflow-container {
-    padding-inline: 20px;
+  .webflow-container,
+  .container-large {
+    padding-inline: var(--gutter-tablet);
   }
 }
 
@@ -57,8 +100,28 @@
   .site-container,
   .container-site,
   .container-webflow,
-  .webflow-container {
-    padding-inline: 24px;
+  .webflow-container,
+  .container-large {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
+.container-webflow-wide {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter-mobile);
+}
+
+@media (min-width: 640px) {
+  .container-webflow-wide {
+    padding-inline: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-webflow-wide {
+    padding-inline: var(--gutter-desktop);
   }
 }
 
@@ -74,8 +137,8 @@ body {
   background-color: #ffffff;
   color: #083002;
   font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 1.0625rem; /* 17px default base size */
+  line-height: 1.7;
   letter-spacing: -0.011em;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -104,8 +167,37 @@ h3, h4, h5, h6, .font-heading, .font-display {
 
 p {
   font-family: var(--font-sans);
+  font-size: 1.0625rem;
   letter-spacing: -0.011em;
-  line-height: 1.62;
+  line-height: 1.75;
+}
+
+/* Mobile typographic enhancement */
+@media (max-width: 640px) {
+  html {
+    font-size: 17px; /* Scales rem-based utilities up on mobile */
+  }
+
+  body {
+    font-size: 1.0625rem; /* Effective 18px on mobile screen */
+    line-height: 1.75;
+  }
+
+  p {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  /* Prevent tiny text classes on mobile */
+  .text-xs {
+    font-size: 0.875rem !important; /* 14px instead of 12px */
+    line-height: 1.4 !important;
+  }
+
+  .text-sm {
+    font-size: 0.9375rem !important; /* 15px instead of 14px */
+    line-height: 1.5 !important;
+  }
 }
 
 [data-theme="dark"] body,

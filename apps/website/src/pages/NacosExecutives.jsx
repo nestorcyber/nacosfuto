@@ -158,7 +158,7 @@ const NacosExecutives = () => {
                     
                     {/* Text content overlaid on the bottom - aligned with the content container */}
                     <div className="absolute bottom-0 left-0 right-0 w-full p-8 md:p-12 text-white">
-                        <div className="max-w-7xl mx-auto px-6 w-full text-left flex flex-col items-start">
+                        <div className="site-container w-full text-left flex flex-col items-start">
                             <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4 drop-shadow-md">
                                 NACOS EXECUTIVES <span className="text-green-400">2026</span>
                             </h1>
@@ -170,7 +170,7 @@ const NacosExecutives = () => {
                 </div>
 
                 {/* Grid Content Container */}
-                <div className="max-w-7xl mx-auto px-6 pb-20 w-full">
+                <div className="site-container pb-20 w-full">
                     
                     {/* Section 1: Current Executives */}
                     <div className="mb-20">

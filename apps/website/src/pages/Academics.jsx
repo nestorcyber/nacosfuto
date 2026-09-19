@@ -146,7 +146,7 @@ const Academics = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1
@@ -173,7 +173,7 @@ const Academics = () => {
                 </ScrollToTopLink>
               </div>
             </div>
-            <div className="rounded-2xl overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
+            <div className="rounded overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
               <img
                 src={academicsImage}
                 alt="FUTO Academics"
@@ -186,7 +186,7 @@ const Academics = () => {
 
       {/* Programs List */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2
               ref={addToRefs}
@@ -203,7 +203,7 @@ const Academics = () => {
             {programs.map((program, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-l-4 border-l-[#138601] transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
+                className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-l-4 border-l-[#138601] transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="mb-4">{program.icon}</div>
@@ -230,7 +230,7 @@ const Academics = () => {
 
       {/* Curriculum Overview */}
       <section className="py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2
               ref={addToRefs}
@@ -247,7 +247,7 @@ const Academics = () => {
             {curriculum.map((year, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#083002] p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 transform hover:-translate-y-1.5 transition-all duration-300"
+                className="bg-white dark:bg-[#083002] p-6 rounded shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 transform hover:-translate-y-1.5 transition-all duration-300"
               >
                 <div className="text-[#138601] dark:text-[#4bd043] font-black text-xl mb-1">{year.year}</div>
                 <h3 className="text-xs font-bold text-[#083002] dark:text-white mb-3">
@@ -269,7 +269,7 @@ const Academics = () => {
 
       {/* Requirements & Calendar */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div>
               <h2
@@ -280,7 +280,7 @@ const Academics = () => {
               </h2>
               
               {admissionRequirements.map((program, index) => (
-                <div key={index} className="mb-6 p-5 rounded-2xl bg-white dark:bg-[#083002] border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
+                <div key={index} className="mb-6 p-5 rounded bg-white dark:bg-[#083002] border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm">
                   <h3 className="text-base font-bold text-[#083002] dark:text-white mb-3">
                     {program.program}
                   </h3>
@@ -303,7 +303,7 @@ const Academics = () => {
               >
                 Academic <span className="text-[#138601] dark:text-[#4bd043]">Calendar</span>
               </h2>
-              <div className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm border border-[#138601]/20 dark:border-[#138601]/30">
+              <div className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm border border-[#138601]/20 dark:border-[#138601]/30">
                 <div className="flex items-center mb-6">
                   <FaCalendarAlt className="text-[#138601] dark:text-[#4bd043] text-xl mr-3" />
                   <h3 className="text-lg font-bold text-[#083002] dark:text-white">

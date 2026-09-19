@@ -9,9 +9,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Avenir Next"', '"Avenir"', '"AvenirNext"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        heading: ['"Circular"', '"Circular Std"', '"CircularStd"', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['"Circular"', '"Circular Std"', '"CircularStd"', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Inter"', '"Plus Jakarta Sans"', '"Avenir Next"', '"Avenir"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        heading: ['"Plus Jakarta Sans"', '"Circular"', '"Circular Std"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Circular"', '"Circular Std"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
         nacos: {

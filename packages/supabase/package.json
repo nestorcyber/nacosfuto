@@ -11,7 +11,10 @@
     "./adminAuth": "./src/adminAuth.js",
     "./idCard": "./src/idCard.js",
     "./media": "./src/media.js",
-    "./verifiedStudents": "./src/verifiedStudents.js"
+    "./verifiedStudents": "./src/verifiedStudents.js",
+    "./otpService": "./src/otpService.js",
+    "./emailService": "./src/emailService.js",
+    "./smsService": "./src/smsService.js"
   },
   "dependencies": {
     "@nacos/media": "*",

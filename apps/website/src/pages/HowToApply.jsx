@@ -13,9 +13,6 @@ const HowToApply = () => {
             <Navbar />
             <div className="flex-grow max-w-4xl mx-auto px-6 py-16 w-full">
                 <header className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                        ADMISSIONS ADVISORY
-                    </div>
                     <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#083002] dark:text-white tracking-tight">
                         How To <span className="text-[#138601] dark:text-[#4bd043]">Apply</span>
                     </h1>

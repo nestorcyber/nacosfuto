@@ -8,6 +8,141 @@ function cloudinaryDevPlugin() {
     name: 'cloudinary-dev-server',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
+        if (req.url === '/api/email/send' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => { body += chunk; });
+          req.on('end', async () => {
+            try {
+              const rootEnv = loadEnv('development', path.resolve(__dirname, '../../'), '');
+              const localEnv = loadEnv('development', process.cwd(), '');
+              const env = { ...process.env, ...rootEnv, ...localEnv };
+
+              const data = JSON.parse(body || '{}');
+              const resendApiKey = env.RESEND_API_KEY;
+              const from = env.RESEND_FROM || env.EMAIL_FROM || 'NACOS FUTO <onboarding@resend.dev>';
+
+              console.log('\x1b[36m[NACOS Email (Resend)]\x1b[0m Sending verification email to:', data.to);
+              if (data.subject) console.log('\x1b[36m[NACOS Email (Resend)]\x1b[0m Subject:', data.subject);
+
+              if (resendApiKey) {
+                const resendRes = await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${resendApiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    from,
+                    to: Array.isArray(data.to) ? data.to : [data.to],
+                    subject: data.subject,
+                    html: data.html,
+                    text: data.text
+                  })
+                });
+
+                const resendData = await resendRes.json().catch(() => ({}));
+                if (!resendRes.ok) {
+                  console.error('\x1b[31m[Resend API Error]\x1b[0m', resendData);
+                  res.statusCode = resendRes.status;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ error: resendData.message || 'Resend error', details: resendData }));
+                  return;
+                }
+
+                console.log('\x1b[32m[Resend Success]\x1b[0m Email ID:', resendData.id);
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: true, provider: 'resend', id: resendData.id }));
+                return;
+              }
+
+              // Fallback / simulated console mode
+              if (data.text) console.log('\x1b[33m[Simulated Resend Body]\x1b[0m:\n', data.text);
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({
+                success: true,
+                provider: 'simulated_resend',
+                message: 'RESEND_API_KEY not configured. Verification email logged to console.'
+              }));
+            } catch (e) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: e.message }));
+            }
+          });
+          return;
+        }
+        if (req.url === '/api/sms/send' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => { body += chunk; });
+          req.on('end', async () => {
+            try {
+              const rootEnv = loadEnv('development', path.resolve(__dirname, '../../'), '');
+              const localEnv = loadEnv('development', process.cwd(), '');
+              const env = { ...process.env, ...rootEnv, ...localEnv };
+
+              const data = JSON.parse(body || '{}');
+              const termiiApiKey = env.TERMII_API_KEY;
+              const senderId = env.TERMII_SENDER_ID || 'N-Alert';
+              const channel = env.TERMII_CHANNEL || 'dnd';
+
+              // Normalize phone for Termii: 234...
+              let termiiTo = String(data.to || '').replace(/\D/g, '');
+              if (termiiTo.startsWith('0') && termiiTo.length === 11) {
+                termiiTo = '234' + termiiTo.slice(1);
+              } else if (termiiTo.length === 10) {
+                termiiTo = '234' + termiiTo;
+              }
+
+              console.log('\x1b[35m[NACOS SMS (Termii)]\x1b[0m Sending verification SMS to:', termiiTo);
+              console.log('\x1b[35m[NACOS SMS (Termii)]\x1b[0m Message:', data.message);
+
+              if (termiiApiKey) {
+                const termiiRes = await fetch('https://api.termii.com/api/sms/send', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    api_key: termiiApiKey,
+                    to: termiiTo,
+                    from: senderId,
+                    sms: data.message,
+                    type: 'plain',
+                    channel
+                  })
+                });
+
+                const termiiData = await termiiRes.json().catch(() => ({}));
+                if (!termiiRes.ok || (termiiData.code && termiiData.code !== 'ok' && !termiiData.message_id)) {
+                  console.error('\x1b[31m[Termii API Error]\x1b[0m', termiiData);
+                  res.statusCode = termiiRes.status || 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ error: termiiData.message || 'Termii error', details: termiiData }));
+                  return;
+                }
+
+                console.log('\x1b[32m[Termii Success]\x1b[0m Message ID:', termiiData.message_id || 'ok');
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: true, provider: 'termii', messageId: termiiData.message_id }));
+                return;
+              }
+
+              // Fallback / simulated console mode
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({
+                success: true,
+                provider: 'simulated_termii',
+                message: 'TERMII_API_KEY not configured. SMS code logged to console.'
+              }));
+            } catch (e) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: e.message }));
+            }
+          });
+          return;
+        }
         if (req.url === '/api/cloudinary/sign' && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => { body += chunk; });
@@ -161,6 +296,17 @@ export default defineConfig({
       '@nacos/config/idCardTemplate': path.resolve(__dirname, '../../packages/config/idCardTemplate.js'),
       '@nacos/config': path.resolve(__dirname, '../../packages/config/tailwind.preset.js')
     }
+  },
+  esbuild: {
+    target: 'esnext'
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    }
+  },
+  build: {
+    target: 'esnext'
   },
   server: {
     port: 5174,

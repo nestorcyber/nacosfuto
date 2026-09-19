@@ -6,13 +6,13 @@ import { FaTwitter, FaLinkedinIn, FaGithub } from 'react-icons/fa';
 const Footer = () => {
   return (
     <footer className="w-full bg-[#041801] border-t border-[#138601]/25 text-green-100/80 text-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div className="site-container py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           
           {/* Col 1: Brand */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-[#138601]/25 border border-[#138601]/40 flex items-center justify-center p-1.5 shadow-sm">
+              <div className="w-9 h-9 rounded bg-[#138601]/25 border border-[#138601]/40 flex items-center justify-center p-1.5 shadow-sm">
                 <img src="/nacos-logo.svg" alt="NACOS Logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-extrabold text-white text-lg tracking-tight">NACOS Portal</span>
@@ -21,13 +21,13 @@ const Footer = () => {
               Nigeria Association of Computing Students (NACOS). Federal University of Technology, Owerri Chapter.
             </p>
             <div className="flex items-center space-x-3 text-gray-400">
-              <a href="https://twitter.com/nacosnational" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[#083002] border border-[#138601]/30 hover:bg-[#138601] hover:text-white flex items-center justify-center transition-colors">
+              <a href="https://twitter.com/nacosnational" target="_blank" rel="noreferrer" className="w-8 h-8 rounded bg-[#083002] border border-[#138601]/30 hover:bg-[#138601] hover:text-white flex items-center justify-center transition-colors">
                 <FaTwitter className="w-3.5 h-3.5" />
               </a>
-              <a href="https://linkedin.com/company/nacosnational" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[#083002] border border-[#138601]/30 hover:bg-[#138601] hover:text-white flex items-center justify-center transition-colors">
+              <a href="https://linkedin.com/company/nacosnational" target="_blank" rel="noreferrer" className="w-8 h-8 rounded bg-[#083002] border border-[#138601]/30 hover:bg-[#138601] hover:text-white flex items-center justify-center transition-colors">
                 <FaLinkedinIn className="w-3.5 h-3.5" />
               </a>
-              <a href="https://github.com/nacosnational" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[#083002] border border-[#138601]/30 hover:bg-[#138601] hover:text-white flex items-center justify-center transition-colors">
+              <a href="https://github.com/nacosnational" target="_blank" rel="noreferrer" className="w-8 h-8 rounded bg-[#083002] border border-[#138601]/30 hover:bg-[#138601] hover:text-white flex items-center justify-center transition-colors">
                 <FaGithub className="w-3.5 h-3.5" />
               </a>
             </div>

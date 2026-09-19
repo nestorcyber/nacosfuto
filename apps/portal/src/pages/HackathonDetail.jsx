@@ -56,7 +56,7 @@ const HackathonDetail = () => {
 
       {/* Hero Section */}
       <section className="relative pt-12 pb-16 md:pt-16 md:pb-24 border-b border-gray-200 dark:border-[#138601]/25">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
             {/* Left Hero Content */}
@@ -90,7 +90,7 @@ const HackathonDetail = () => {
               <div className="pt-2 flex flex-wrap items-center gap-3">
                 <Link
                   to="/hackathons/BuildXNACOS/apply"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-sm transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Apply with Team</span>
@@ -100,7 +100,7 @@ const HackathonDetail = () => {
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium text-gray-700 dark:text-green-100 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-[#083002] hover:bg-gray-50 dark:hover:bg-[#083002]/80 rounded-xl border border-gray-200 dark:border-[#138601]/30 transition-colors shadow-sm cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium text-gray-700 dark:text-green-100 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-[#083002] hover:bg-gray-50 dark:hover:bg-[#083002]/80 rounded border border-gray-200 dark:border-[#138601]/30 transition-colors shadow-sm cursor-pointer"
                 >
                   {copied ? (
                     <>
@@ -130,20 +130,20 @@ const HackathonDetail = () => {
               <CountdownTimer targetDate={hackathon.startDate} label="Registration Closes In" />
 
               {/* Participation Metrics */}
-              <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 rounded-2xl p-5 shadow-sm">
+              <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 rounded p-5 shadow-sm">
                 <div className="text-xs font-semibold text-gray-700 dark:text-[#4bd043] mb-3 flex items-center justify-between">
                   <span>Participation Metrics</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="p-3 bg-gray-50 dark:bg-[#041801] rounded-xl border border-gray-200 dark:border-[#138601]/20">
+                  <div className="p-3 bg-gray-50 dark:bg-[#041801] rounded border border-gray-200 dark:border-[#138601]/20">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">{hackathon.stats.registeredStudents}+</div>
                     <div className="text-xs text-gray-500 dark:text-green-200/80 font-normal">Students</div>
                   </div>
-                  <div className="p-3 bg-gray-50 dark:bg-[#041801] rounded-xl border border-gray-200 dark:border-[#138601]/20">
+                  <div className="p-3 bg-gray-50 dark:bg-[#041801] rounded border border-gray-200 dark:border-[#138601]/20">
                     <div className="text-xl font-bold text-[#138601] dark:text-[#4bd043]">{hackathon.stats.activeTeams}</div>
                     <div className="text-xs text-gray-500 dark:text-green-200/80 font-normal">Teams</div>
                   </div>
-                  <div className="p-3 bg-gray-50 dark:bg-[#041801] rounded-xl border border-gray-200 dark:border-[#138601]/20">
+                  <div className="p-3 bg-gray-50 dark:bg-[#041801] rounded border border-gray-200 dark:border-[#138601]/20">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">{hackathon.stats.submissionsCount}</div>
                     <div className="text-xs text-gray-500 dark:text-green-200/80 font-normal">Submissions</div>
                   </div>
@@ -156,11 +156,11 @@ const HackathonDetail = () => {
       </section>
 
       {/* Key Stats Grid */}
-      <section className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-8 site-container">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           
-          <div className="rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
+          <div className="rounded p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
+            <div className="w-10 h-10 rounded bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
@@ -169,8 +169,8 @@ const HackathonDetail = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
+          <div className="rounded p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
+            <div className="w-10 h-10 rounded bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
@@ -179,8 +179,8 @@ const HackathonDetail = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
+          <div className="rounded p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
+            <div className="w-10 h-10 rounded bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
               <Trophy className="w-5 h-5" />
             </div>
             <div>
@@ -189,8 +189,8 @@ const HackathonDetail = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
+          <div className="rounded p-4 sm:p-5 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex items-center space-x-3 sm:space-x-4 shadow-sm">
+            <div className="w-10 h-10 rounded bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center shrink-0 text-[#138601] dark:text-[#4bd043]">
               <Timer className="w-5 h-5" />
             </div>
             <div>
@@ -203,7 +203,7 @@ const HackathonDetail = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="about" className="py-16 md:py-20 site-container">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
           <div className="lg:col-span-6 space-y-4">
@@ -234,24 +234,24 @@ const HackathonDetail = () => {
           </div>
 
           <div className="lg:col-span-6">
-            <div className="p-6 md:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 shadow-sm space-y-4">
+            <div className="p-6 md:p-8 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 shadow-sm space-y-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Award className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
                 Why You Should Participate
               </h3>
 
               <div className="space-y-3 text-xs sm:text-sm">
-                <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
+                <div className="p-3.5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
                   <div className="font-semibold text-gray-900 dark:text-[#4bd043] mb-0.5">Industry Exposure</div>
                   <p className="text-gray-600 dark:text-green-100/80 font-normal">Showcase your technical skills to potential hiring teams and collaborators.</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
+                <div className="p-3.5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
                   <div className="font-semibold text-gray-900 dark:text-[#4bd043] mb-0.5">Team Collaboration</div>
                   <p className="text-gray-600 dark:text-green-100/80 font-normal">Team up with peers across universities to build full-stack solutions.</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
+                <div className="p-3.5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20">
                   <div className="font-semibold text-gray-900 dark:text-[#4bd043] mb-0.5">Cash Grants & Recognition</div>
                   <p className="text-gray-600 dark:text-green-100/80 font-normal">₦1,000,000 equity-free prize pool to support further project development.</p>
                 </div>
@@ -264,7 +264,7 @@ const HackathonDetail = () => {
 
       {/* Prizes Section */}
       <section id="prizes" className="py-16 bg-gray-100/60 dark:bg-[#083002]/40 border-y border-gray-200 dark:border-[#138601]/25">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           
           <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
             <span className="text-xs font-semibold text-[#138601] dark:text-[#4bd043]">Rewards & Recognition</span>
@@ -280,7 +280,7 @@ const HackathonDetail = () => {
             {hackathon.prizes.map((prize, idx) => (
               <div 
                 key={idx}
-                className="relative rounded-2xl p-6 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 flex flex-col justify-between transition-all shadow-sm"
+                className="relative rounded p-6 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 flex flex-col justify-between transition-all shadow-sm"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -309,7 +309,7 @@ const HackathonDetail = () => {
                 <div className="mt-6 pt-3">
                   <Link
                     to="/hackathons/BuildXNACOS/apply"
-                    className="w-full inline-flex items-center justify-center py-2 px-4 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors shadow-sm"
+                    className="w-full inline-flex items-center justify-center py-2 px-4 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors shadow-sm"
                   >
                     Compete for this Prize
                   </Link>
@@ -322,7 +322,7 @@ const HackathonDetail = () => {
       </section>
 
       {/* Challenge Tracks */}
-      <section id="tracks" className="py-16 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="tracks" className="py-16 md:py-20 site-container">
         <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
           <span className="text-xs font-semibold text-[#138601] dark:text-[#4bd043]">Problem Statements</span>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
@@ -337,10 +337,10 @@ const HackathonDetail = () => {
           {hackathon.tracks.map((track) => (
             <div
               key={track.id}
-              className="rounded-2xl p-6 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 transition-all flex flex-col justify-between shadow-sm"
+              className="rounded p-6 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 transition-all flex flex-col justify-between shadow-sm"
             >
               <div>
-                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center text-[#138601] dark:text-[#4bd043] mb-4">
+                <div className="w-10 h-10 rounded bg-gray-100 dark:bg-[#138601]/20 border border-gray-200 dark:border-[#138601]/40 flex items-center justify-center text-[#138601] dark:text-[#4bd043] mb-4">
                   {getTrackIcon(track.icon)}
                 </div>
 
@@ -392,9 +392,9 @@ const HackathonDetail = () => {
             {hackathon.timeline.map((step, idx) => (
               <div 
                 key={idx}
-                className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm flex items-start gap-4"
+                className="p-4 sm:p-5 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm flex items-start gap-4"
               >
-                <div className="w-7 h-7 rounded-lg bg-[#138601] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded bg-[#138601] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                   {idx + 1}
                 </div>
                 <div>
@@ -424,7 +424,7 @@ const HackathonDetail = () => {
           {hackathon.faqs.map((faq, idx) => (
             <div 
               key={idx}
-              className="rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 overflow-hidden shadow-sm"
+              className="rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 overflow-hidden shadow-sm"
             >
               <button
                 type="button"

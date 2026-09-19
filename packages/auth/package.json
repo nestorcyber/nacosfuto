@@ -1,0 +1,17 @@
+{
+  "name": "@nacos/auth",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./website": "./src/websiteAuth.js",
+    "./portal": "./src/portalAuth.js",
+    "./permissions": "./src/permissions.js"
+  },
+  "dependencies": {
+    "@nacos/database": "*",
+    "@supabase/supabase-js": "^2.49.1"
+  }
+}

@@ -1,19 +1,22 @@
 import React from 'react';
 import headerImage from '../../assets/header.jpg';
+import { getCloudinaryAssetUrl } from "@nacos/media";
 import { ReactTyped } from "react-typed";
 
 const Hero = () => {
+  const heroImg = getCloudinaryAssetUrl('header') || "https://res.cloudinary.com/z3wgqisj/image/upload/v1789824604/20250304_223205_Destiny_Eke_ce1a4da154_hxay39.jpg";
+
   return (
     <section className="relative h-fit flex items-center justify-center bg-gray-900 text-white overflow-hidden">
       {/* Background Image */}
       <img 
-        src={headerImage} 
+        src={heroImg} 
         alt="Computer Science Department" 
         className="absolute inset-0 w-full h-120 object-cover opacity-85"
       />
       
       {/* Content */}
-      <div className="relative z-10 max-w-7xl px-4 text-center">
+      <div className="relative z-10 site-container text-center">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">
           <span className='text-green-500 dark:text-white'>Department of </span><span className="text-white dark:text-green-500">Computer Science</span>
         </h1>

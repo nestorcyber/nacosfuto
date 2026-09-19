@@ -26,7 +26,7 @@ const Cards = () => {
 
   return (
     <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="site-container">
         <div className="flex flex-col items-center mb-12 text-center">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
             Academic & Community <span className="text-[#138601] dark:text-[#4bd043]">Gateways</span>
@@ -41,11 +41,11 @@ const Cards = () => {
             <ScrollToTopLink
               key={index}
               to={item.link}
-              className="group relative bg-white dark:bg-[#083002] rounded-2xl p-8 border border-[#138601]/20 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden shadow-sm"
+              className="group relative bg-white dark:bg-[#083002] rounded p-8 border border-[#138601]/20 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden shadow-sm"
             >
               {/* Icon Container with smooth hover pulse */}
               <div className="mb-6 relative">
-                <div className="w-12 h-12 rounded-xl bg-[#138601] group-hover:bg-[#0f6c01] flex items-center justify-center text-white text-xl shadow-md transition-all duration-300 group-hover:scale-105">
+                <div className="w-12 h-12 rounded bg-[#138601] group-hover:bg-[#0f6c01] flex items-center justify-center text-white text-xl shadow-md transition-all duration-300 group-hover:scale-105">
                   {item.icon}
                 </div>
               </div>

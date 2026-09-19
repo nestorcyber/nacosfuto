@@ -14,9 +14,77 @@ export function getAcademicSession(yearStart = CURRENT_ACADEMIC_YEAR_START) {
 }
 
 /**
+ * FUTO Registration Number Year-Code Mapping
+ * Each admission year has a specific 2-digit department code.
+ * Format: YYYY + CODE + 5 digits = 11 digits total
+ * e.g. 2024 + 14 + 29481 = 20241429481
+ */
+export const FUTO_YEAR_CODES = {
+  2020: '10',
+  2021: '12',
+  2022: '12',
+  2023: '13',
+  2024: '14',
+  2025: '15',
+  2026: '16',
+};
+
+/**
+ * Validate FUTO registration number format.
+ * Expected format: YYYY + 2-digit year code + 5-digit serial = 11 digits total.
+ * Returns { valid: true } or { valid: false, error: '...' }
+ */
+export function validateRegistrationNumberFormat(regNumber) {
+  if (!regNumber || typeof regNumber !== 'string') {
+    return { valid: false, error: 'Registration number is required.' };
+  }
+
+  const cleaned = regNumber.trim();
+
+  // Must be exactly 11 digits
+  if (!/^\d{11}$/.test(cleaned)) {
+    return {
+      valid: false,
+      error: 'Registration number must be exactly 11 digits (e.g. 20241429481).'
+    };
+  }
+
+  const yearPrefix = cleaned.substring(0, 4);
+  const year = parseInt(yearPrefix, 10);
+  const codePrefix = cleaned.substring(4, 6);
+
+  // Check year is within valid range
+  if (year < 2010 || year > CURRENT_ACADEMIC_YEAR_START) {
+    return {
+      valid: false,
+      error: `Invalid admission year ${year}. Must be between 2010 and ${CURRENT_ACADEMIC_YEAR_START}.`
+    };
+  }
+
+  // Check if we have a known code mapping for this year
+  const expectedCode = FUTO_YEAR_CODES[year];
+  if (!expectedCode) {
+    return {
+      valid: false,
+      error: `Admission year ${year} is not recognized. Please contact the department if this is correct.`
+    };
+  }
+
+  // Validate the department code matches expected
+  if (codePrefix !== expectedCode) {
+    return {
+      valid: false,
+      error: `Invalid registration number format. Year ${year} should have code ${expectedCode}, but got ${codePrefix}.`
+    };
+  }
+
+  return { valid: true, year, code: codePrefix };
+}
+
+/**
  * Extract and validate 4-digit admission year from student registration number
- * e.g. '2024CS12345' -> 2024, '2022/139481' -> 2022
- * Rejects invalid prefixes like 'ABC12345' or future years > CURRENT_ACADEMIC_YEAR_START
+ * e.g. '20241429481' -> 2024
+ * Also validates FUTO registration number format (YYYY + code + 5 digits = 11 digits)
  */
 export function parseAdmissionYear(regNumber, currentYearStart = CURRENT_ACADEMIC_YEAR_START) {
   if (!regNumber || typeof regNumber !== 'string') {
@@ -32,15 +100,18 @@ export function parseAdmissionYear(regNumber, currentYearStart = CURRENT_ACADEMI
   if (!/^\d+$/.test(cleaned)) {
     return {
       valid: false,
-      error: 'Registration number must contain digits only without any letters (e.g. 20241029481).'
+      error: 'Registration number must contain digits only without any letters (e.g. 20241429481).'
     };
+  }
+
+  // Validate full FUTO format (11 digits with correct year code)
+  const formatCheck = validateRegistrationNumberFormat(cleaned);
+  if (!formatCheck.valid) {
+    return { valid: false, error: formatCheck.error };
   }
 
   const yearPrefix = cleaned.substring(0, 4);
   const year = parseInt(yearPrefix, 10);
-  if (year < 1980) {
-    return { valid: false, error: `Admission year ${year} is invalid (must be 1980 or later).` };
-  }
 
   if (year > currentYearStart) {
     return { 

@@ -68,12 +68,9 @@ const Research = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#f2fbf1] dark:bg-[#083002] border border-[#138601]/30 text-[#138601] dark:text-[#4bd043] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                RESEARCH EXCELLENCE
-              </div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-[#083002] dark:text-white tracking-tight leading-tight">
                 Research & <span className="text-[#138601] dark:text-[#4bd043]">Innovation Hub</span>
               </h1>
@@ -87,7 +84,7 @@ const Research = () => {
                 Collaborate With Us
               </ScrollToTopLink>
             </div>
-            <div className="rounded-2xl overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
+            <div className="rounded overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
               <img
                 src={researchImage}
                 alt="FUTO Computer Science Research"
@@ -100,7 +97,7 @@ const Research = () => {
 
       {/* Research Areas */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               Research <span className="text-[#138601] dark:text-[#4bd043]">Clusters</span>
@@ -114,7 +111,7 @@ const Research = () => {
             {researchAreas.map((area, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
+                className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="mb-4">{area.icon}</div>
@@ -133,7 +130,7 @@ const Research = () => {
 
       {/* Research Impact Stats */}
       <section className="py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
               Research <span className="text-[#138601] dark:text-[#4bd043]">Impact & Metrics</span>
@@ -147,7 +144,7 @@ const Research = () => {
             {researchStats.map((stat, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-[#083002] p-6 rounded-2xl text-center shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-b-4 border-b-[#138601] transform hover:-translate-y-1.5 transition-all duration-300"
+                className="bg-white dark:bg-[#083002] p-6 rounded text-center shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] border border-[#138601]/20 dark:border-[#138601]/30 border-b-4 border-b-[#138601] transform hover:-translate-y-1.5 transition-all duration-300"
               >
                 {stat.icon}
                 <h4 className="text-3xl font-extrabold text-[#138601] dark:text-[#4bd043] mt-3 mb-1">
@@ -162,7 +159,7 @@ const Research = () => {
 
       {/* Facilities and Opportunities */}
       <section className="py-20 bg-[#f4faf3] dark:bg-[#041801]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#083002] dark:text-white mb-4 tracking-tight">
@@ -191,7 +188,7 @@ const Research = () => {
               </ul>
             </div>
 
-            <div className="bg-white dark:bg-[#083002] p-8 rounded-2xl shadow-sm border border-[#138601]/20 dark:border-[#138601]/30">
+            <div className="bg-white dark:bg-[#083002] p-8 rounded shadow-sm border border-[#138601]/20 dark:border-[#138601]/30">
               <h3 className="text-xl font-bold text-[#083002] dark:text-white mb-4">
                 Research Pathways & Opportunities
               </h3>

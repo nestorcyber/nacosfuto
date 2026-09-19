@@ -48,7 +48,7 @@ const NewsSlider = () => {
 
   return (
     <section className="relative dark:bg-[#041801] py-12 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="site-container">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
           Department <span className="text-[#138601] dark:text-[#4bd043]">News & Events</span>
         </h2>

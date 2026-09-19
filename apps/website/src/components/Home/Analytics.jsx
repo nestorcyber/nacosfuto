@@ -5,7 +5,7 @@ import ScrollToTopLink from '../ScrollToTopLink';
 const Analytics = () => {
   return (
     <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
+      <div className="site-container grid md:grid-cols-2 gap-12 items-center">
         <div>
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-3 text-[#083002] dark:text-white tracking-tight leading-tight">
             Comprehensive <span className="text-[#138601] dark:text-[#4bd043]">Academic Framework</span>

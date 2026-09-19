@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCloudinaryAssetUrl } from '@nacos/media';
 import studentPhoto from '../assets/gallery_student_group.jpg';
@@ -13,44 +13,59 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  Phone
+  Phone,
+  Shield,
+  MessageSquare,
+  ArrowRight,
+  Clock,
+  UserCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   lookupVerifiedStudentRecord, 
-  sendStudentVerificationCode, 
-  verifyStudentRegistrationCode, 
-  completeVerifiedStudentRegistration 
+  startRegistrationVerification,
+  resendRegistrationOTP,
+  verifyRegistrationOTP,
+  completeSecureRegistration,
+  getResendCooldownSeconds,
+  submitAccountRecoveryRequest
 } from '@nacos/supabase';
+import { validateRegistrationNumberFormat } from '@nacos/config/academic';
+
+const GENERIC_ERROR = 'Unable to verify these details. Please check your information and try again.';
 
 const Register = () => {
   const navigate = useNavigate();
-  // Step 1: Registration Check, Step 2: Personal Details, Step 3: Verify Code, Step 4: Password Creation
+  // Steps: 1=find account, 2=choose method, 3=enter OTP, 4=create password, 5=success
   const [step, setStep] = useState(1);
+  const [totalSteps] = useState(4);
 
-  // Form states
-  const [matricNumber, setMatricNumber] = useState('');
-  const [verifiedRecord, setVerifiedRecord] = useState(null);
-  const [firstName, setFirstName] = useState('');
-  const [middleName, setMiddleName] = useState('');
-  const [lastName, setLastName] = useState('');
+  // Step 1: Registration lookup
+  const [regNumber, setRegNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [studentEmail, setStudentEmail] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
+  const [verifiedRecord, setVerifiedRecord] = useState(null);
+
+  // Step 2: Verification method
+  const [selectedChannel, setSelectedChannel] = useState('');
+  const [maskedDestination, setMaskedDestination] = useState('');
+
+  // Step 3: OTP
+  const [otpCode, setOtpCode] = useState('');
   const [devTestCode, setDevTestCode] = useState('');
+  const [sessionToken, setSessionToken] = useState('');
+
+  // Step 4: Password
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [agreeTerms, setAgreeTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // UI status states
-  const [isLookingUp, setIsLookingUp] = useState(false);
-  const [isSendingCode, setIsSendingCode] = useState(false);
-  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // UI states
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [accountRecovered, setAccountRecovered] = useState(false);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -61,57 +76,40 @@ const Register = () => {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
+  const checkCooldown = useCallback(() => {
+    if (regNumber && selectedChannel) {
+      const remaining = getResendCooldownSeconds(regNumber, selectedChannel);
+      setResendCooldown(remaining);
+    }
+  }, [regNumber, selectedChannel]);
+
   // =========================================================================
-  // STEP 1: Verify Registration Number against Verified Roster
+  // STEP 1: FIND ACCOUNT
   // =========================================================================
-  const handleVerifyRegistrationNumber = async (e) => {
+  const handleFindAccount = async (e) => {
     e.preventDefault();
     setError('');
 
-    const cleanMatric = matricNumber.trim();
-    if (!cleanMatric) {
+    const cleanReg = regNumber.trim();
+    if (!cleanReg) {
       setError('Please enter your registration number.');
       return;
     }
 
-    setIsLookingUp(true);
-    try {
-      const lookup = await lookupVerifiedStudentRecord(cleanMatric);
-      if (!lookup.found) {
-        setError(lookup.error?.message || 'User not found, contact admin.');
-        setIsLookingUp(false);
-        return;
-      }
-
-      setVerifiedRecord(lookup.data);
-      // Move to Step 2 for personal details
-      setStep(2);
-    } catch (err) {
-      setError('An error occurred during verification lookup. Please try again.');
-    } finally {
-      setIsLookingUp(false);
-    }
-  };
-
-  // =========================================================================
-  // STEP 2: Validate Personal Details & Dispatch Verification Code
-  // =========================================================================
-  const handleStep2Continue = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!lastName.trim()) {
-      setError('Please enter your surname / last name.');
+    const formatCheck = validateRegistrationNumberFormat(cleanReg);
+    if (!formatCheck.valid) {
+      setError(formatCheck.error);
       return;
     }
 
-    if (!firstName.trim()) {
-      setError('Please enter your first name.');
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Please enter your email address.');
       return;
     }
-
-    if (!middleName.trim()) {
-      setError('Please enter your middle name.');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -120,105 +118,142 @@ const Register = () => {
       setError('Please enter your phone number.');
       return;
     }
-
     if (cleanPhone.length < 10) {
       setError('Please enter a valid phone number (at least 10 digits).');
       return;
     }
 
-    const cleanEmail = studentEmail.trim().toLowerCase();
-    if (!cleanEmail) {
-      setError('Please enter your email address.');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(cleanEmail)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-
-    setIsSendingCode(true);
+    setIsLoading(true);
     try {
-      const dispatch = await sendStudentVerificationCode(matricNumber.trim(), cleanEmail);
-      if (dispatch.success) {
-        setDevTestCode(dispatch.code || '');
+      const lookup = await lookupVerifiedStudentRecord(cleanReg);
+      if (!lookup.found) {
+        setError(lookup.error?.message || GENERIC_ERROR);
+        return;
+      }
+
+      const record = lookup.data;
+      const recordEmail = (record.email || '').trim().toLowerCase();
+      const recordPhone = (record.phone_number || '').trim().replace(/[\s\-()]/g, '');
+      const normalizeForCompare = (p) => p.replace(/\D/g, '').slice(-10);
+
+      if (cleanEmail !== recordEmail) {
+        setError(GENERIC_ERROR);
+        return;
+      }
+
+      if (normalizeForCompare(cleanPhone) !== normalizeForCompare(recordPhone)) {
+        setError(GENERIC_ERROR);
+        return;
+      }
+
+      setVerifiedRecord(record);
+      setStep(2);
+    } catch (err) {
+      setError('An error occurred during verification. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // =========================================================================
+  // STEP 2: CHOOSE VERIFICATION METHOD & SEND OTP
+  // =========================================================================
+  const handleSendOTP = async (channel) => {
+    setError('');
+    setIsLoading(true);
+    setSelectedChannel(channel);
+
+    try {
+      const result = await startRegistrationVerification(
+        regNumber.trim(),
+        email.trim(),
+        phone.trim(),
+        channel
+      );
+
+      if (result.success) {
+        setMaskedDestination(result.maskedDestination);
         setResendCooldown(60);
-        setCodeSent(true);
         setStep(3);
       } else {
-        setError(dispatch.error?.message || 'Failed to dispatch verification code. Please check your email and try again.');
+        setError(result.error?.message || "We couldn't send your verification code right now. Please try again later.");
       }
     } catch (err) {
       setError('Failed to send verification code. Please try again.');
     } finally {
-      setIsSendingCode(false);
+      setIsLoading(false);
     }
   };
 
-  const handleResendCode = async () => {
-    if (resendCooldown > 0 || !matricNumber || !studentEmail || isSendingCode) return;
+  const handleResendOTP = async () => {
+    if (resendCooldown > 0 || isLoading) return;
     setError('');
-    setIsSendingCode(true);
+    setIsLoading(true);
+
     try {
-      const cleanEmail = studentEmail.trim().toLowerCase();
-      const dispatch = await sendStudentVerificationCode(matricNumber.trim(), cleanEmail);
-      if (dispatch.success) {
-        setDevTestCode(dispatch.code || '');
+      const result = await resendRegistrationOTP(regNumber.trim(), selectedChannel);
+      if (result.success) {
         setResendCooldown(60);
       } else {
-        setError(dispatch.error?.message || 'Failed to dispatch verification code. Please try again.');
+        setError(result.error?.message || 'Failed to resend verification code. Please try again.');
       }
     } catch (err) {
       setError('Failed to resend verification code. Please try again.');
     } finally {
-      setIsSendingCode(false);
+      setIsLoading(false);
     }
   };
 
   // =========================================================================
-  // STEP 3: Validate 6-digit Verification Code
+  // STEP 3: VERIFY OTP CODE
   // =========================================================================
-  const handleVerifyCode = async (e) => {
+  const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!verificationCode.trim() || verificationCode.trim().length !== 6) {
-      setError('Please enter the 6-digit verification code sent to your email.');
+    if (!otpCode.trim() || otpCode.trim().length !== 6) {
+      setError('Please enter the 6-digit verification code.');
       return;
     }
 
-    setIsVerifyingCode(true);
+    setIsLoading(true);
     try {
-      const verifyRes = await verifyStudentRegistrationCode(matricNumber.trim(), verificationCode.trim());
-      if (!verifyRes.success) {
-        setError(verifyRes.error?.message || 'Invalid or expired verification code.');
-        setIsVerifyingCode(false);
-        return;
-      }
+      const result = await verifyRegistrationOTP(
+        regNumber.trim(),
+        selectedChannel,
+        otpCode.trim()
+      );
 
-      // Code valid -> Proceed to Step 4 (Set Password)
-      setStep(4);
+      if (result.success) {
+        setSessionToken(result.sessionToken);
+        setStep(4);
+      } else {
+        setError(result.error?.message || 'Incorrect verification code. Please try again.');
+      }
     } catch (err) {
       setError('Code verification failed. Please try again.');
     } finally {
-      setIsVerifyingCode(false);
+      setIsLoading(false);
     }
   };
 
   // =========================================================================
-  // STEP 4: Complete Registration & Create Account
+  // STEP 4: CREATE PASSWORD & COMPLETE REGISTRATION
   // =========================================================================
-  const handleCompleteRegistration = async (e) => {
+  const handleCreateAccount = async (e) => {
     e.preventDefault();
     setError('');
 
     if (!password) {
-      setError('Please create an account password.');
+      setError('Please create a password.');
       return;
     }
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (password.length > 128) {
+      setError('Password must not exceed 128 characters.');
       return;
     }
     if (password !== confirmPassword) {
@@ -226,45 +261,82 @@ const Register = () => {
       return;
     }
 
-    setIsSubmitting(true);
+    setIsLoading(true);
     try {
-      const fullName = [lastName.trim(), firstName.trim(), middleName.trim()].filter(Boolean).join(' ');
-      const res = await completeVerifiedStudentRegistration(
-        matricNumber.trim(),
-        verificationCode.trim(),
+      const result = await completeSecureRegistration(
+        sessionToken,
+        regNumber.trim(),
         password,
-        phone.trim(),
-        studentEmail.trim(),
-        fullName
+        verifiedRecord?.full_name
       );
 
-      if (res.error) {
-        setError(res.error.message || 'Registration failed. Please contact administrator.');
-        setIsSubmitting(false);
-      } else {
-        setIsSuccess(true);
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1600);
+      if (result.error) {
+        setError(result.error.message || 'Registration failed. Please contact an administrator.');
+        return;
       }
+
+      setIsSuccess(true);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
-      setIsSubmitting(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // =========================================================================
+  // ACCOUNT RECOVERY
+  // =========================================================================
+  const handleAccountRecovery = async () => {
+    setError('');
+    const reason = window.prompt('Please explain why you cannot access the email/phone on your record (e.g., "lost access to email", "phone number changed"):');
+    if (!reason || !reason.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const result = await submitAccountRecoveryRequest(
+        regNumber.trim(),
+        email.trim(),
+        phone.trim(),
+        reason.trim()
+      );
+      if (result.success) {
+        setAccountRecovered(true);
+      } else {
+        setError(result.error?.message || 'Failed to submit recovery request.');
+      }
+    } catch (err) {
+      setError('Failed to submit recovery request.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // =========================================================================
+  // RENDER
+  // =========================================================================
+  const getStepLabel = () => {
+    switch (step) {
+      case 1: return 'Find Your Account';
+      case 2: return 'Verify Your Identity';
+      case 3: return 'Enter Verification Code';
+      case 4: return 'Create Password';
+      default: return '';
     }
   };
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-white text-gray-900 font-sans selection:bg-black selection:text-white">
       
-      {/* LEFT HALF (50%): Authentic Department Group Photo & Portal Branding */}
+      {/* LEFT HALF: Branding & Photo */}
       <div 
-        className="md:w-1/2 min-h-[360px] md:min-h-screen relative flex flex-col justify-between p-8 sm:p-12 md:p-14 lg:p-16 bg-cover bg-center"
+        className="md:w-1/2 min-h-[320px] md:min-h-screen relative flex flex-col justify-between p-8 sm:p-12 md:p-14 lg:p-16 bg-cover bg-center"
         style={{ backgroundImage: `url(${getCloudinaryAssetUrl('gallery_student_group') || studentPhoto})` }}
       >
-        {/* Subtle dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30 pointer-events-none"></div>
 
-        {/* Top Left NACOS Brand Logo */}
         <div className="relative z-10">
           <img 
             src={getCloudinaryAssetUrl('full-logo-dark') || logoDark} 
@@ -273,55 +345,53 @@ const Register = () => {
           />
         </div>
 
-        {/* Authentic NACOS Brand Text */}
         <div className="relative z-10 max-w-lg space-y-2 mt-auto pt-16">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-snug tracking-tight">
             Your NACOS account unlocks a world of computing excellence
           </h2>
           <p className="text-xs sm:text-sm text-gray-200 font-normal">
-            Department of Computer Science • Federal University of Technology, Owerri
+            Department of Computer Science &bull; Federal University of Technology, Owerri
           </p>
         </div>
       </div>
 
-      {/* RIGHT HALF (50%): Controlled 4-Step Verification & Registration Form */}
+      {/* RIGHT HALF: Multi-Step Registration Form */}
       <div className="md:w-1/2 flex items-center justify-center p-6 sm:p-10 md:p-14 lg:p-16 bg-white overflow-y-auto">
         <div className="w-full max-w-md space-y-5 my-auto">
           
           {/* Header & Step Indicator */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#138601]">
-                Step {step} of 4
-              </span>
-              <span className="text-xs text-gray-500">
-                {step === 1 && 'Registration Check'}
-                {step === 2 && 'Personal Details'}
-                {step === 3 && 'Email Verification'}
-              </span>
-            </div>
+          {!isSuccess && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#138601]">
+                  {step <= totalSteps ? `Step ${step} of ${totalSteps}` : 'Complete'}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {getStepLabel()}
+                </span>
+              </div>
 
-            {/* Step Progress Bar */}
-            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-4">
-              <div 
-                className="h-full bg-[#138601] transition-all duration-300 rounded-full"
-                style={{ width: `${(step / 4) * 100}%` }}
-              ></div>
-            </div>
+              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-4">
+                <div 
+                  className="h-full bg-[#138601] transition-all duration-300 rounded-full"
+                  style={{ width: `${(step / totalSteps) * 100}%` }}
+                ></div>
+              </div>
 
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-              {step === 1 && 'Student Registration'}
-              {step === 2 && 'Personal Details'}
-              {step === 3 && 'Verify Email Address'}
-              {step === 4 && 'Create Password'}
-            </h1>
-            <p className="mt-1 text-xs text-gray-600">
-              Already have an account?{' '}
-              <Link to="/login" className="text-[#138601] font-semibold hover:underline">
-                Sign in here
-              </Link>
-            </p>
-          </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+                {step === 1 && 'Find Your NACOS Account'}
+                {step === 2 && 'Verify Your Identity'}
+                {step === 3 && (selectedChannel === 'email' ? 'Check Your Email' : 'Check Your Phone')}
+                {step === 4 && 'Create Your Password'}
+              </h1>
+              <p className="mt-1 text-xs text-gray-600">
+                Already have an account?{' '}
+                <Link to="/login" className="text-[#138601] font-semibold hover:underline">
+                  Sign in here
+                </Link>
+              </p>
+            </div>
+          )}
 
           {/* Error Banner */}
           {error && (
@@ -337,19 +407,31 @@ const Register = () => {
               <div className="w-16 h-16 rounded-full bg-green-100 text-[#138601] flex items-center justify-center mx-auto shadow-inner">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Registration Complete!</h2>
+              <h2 className="text-xl font-bold text-gray-900">Account Created!</h2>
               <p className="text-xs text-gray-600 max-w-sm mx-auto">
-                Welcome to NACOS FUTO, <strong>{[firstName, lastName].filter(Boolean).join(' ') || 'Student'}</strong>. Redirecting you to your student dashboard...
+                Welcome to NACOS FUTO, <strong>{verifiedRecord?.full_name || 'Student'}</strong>. Redirecting you to your student dashboard...
               </p>
+            </div>
+          ) : accountRecovered ? (
+            <div className="text-center py-10 space-y-3">
+              <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto shadow-inner">
+                <Shield className="w-8 h-8" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Recovery Request Submitted</h2>
+              <p className="text-xs text-gray-600 max-w-sm mx-auto">
+                Your account recovery request has been submitted. A NACOS administrator will review it and contact you. You can sign in once your request is approved.
+              </p>
+              <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-[#138601] hover:underline">
+                Go to Sign In
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           ) : (
             <div>
 
-              {/* ========================================================
-                  STEP 1: REGISTRATION NUMBER LOOKUP
-                  ======================================================== */}
+              {/* STEP 1: FIND ACCOUNT */}
               {step === 1 && (
-                <form onSubmit={handleVerifyRegistrationNumber} className="space-y-4">
+                <form onSubmit={handleFindAccount} className="space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       FUTO Registration Number *
@@ -358,83 +440,30 @@ const Register = () => {
                       type="text"
                       required
                       autoFocus
-                      placeholder="e.g. 20241029481"
-                      value={matricNumber}
-                      onChange={(e) => setMatricNumber(e.target.value)}
+                      placeholder="e.g. 20241429481"
+                      value={regNumber}
+                      onChange={(e) => setRegNumber(e.target.value.replace(/\D/g, ''))}
                       className="w-full px-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-mono font-medium transition-all"
                     />
                   </div>
 
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={isLookingUp}
-                      className="w-full px-7 py-3 min-h-[44px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-60"
-                    >
-                      {isLookingUp ? (
-                        <>
-                          <RotateCw className="w-4 h-4 animate-spin" />
-                          <span>Please wait...</span>
-                        </>
-                      ) : (
-                        <span>Continue</span>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* ========================================================
-                  STEP 2: STUDENT PERSONAL DETAILS
-                  ======================================================== */}
-              {step === 2 && verifiedRecord && (
-                <form onSubmit={handleStep2Continue} className="space-y-4">
-                  {/* Surname / Last Name (First) */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Surname *
+                      Email Address *
                     </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Okonkwo"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
-                    />
-                  </div>
-
-                  {/* First Name & Middle Name */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        First Name *
-                      </label>
+                    <div className="relative">
                       <input
-                        type="text"
+                        type="email"
                         required
-                        placeholder="e.g. Chukwuemeka"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                        placeholder="e.g. student@futo.edu.ng"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Middle Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Emmanuel"
-                        value={middleName}
-                        onChange={(e) => setMiddleName(e.target.value)}
-                        className="w-full px-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
-                      />
+                      <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                     </div>
                   </div>
 
-                  {/* Phone Number */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       Phone Number *
@@ -446,52 +475,22 @@ const Register = () => {
                         placeholder="e.g. 08012345678"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
+                        className="w-full pl-10 pr-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
                       />
-                      <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
+                      <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                     </div>
                   </div>
 
-                  {/* Email Address */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Email Address *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        required
-                        placeholder="e.g. yourname@gmail.com"
-                        value={studentEmail}
-                        onChange={(e) => setStudentEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-medium transition-all"
-                      />
-                      <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="pt-2 flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep(1);
-                        setError('');
-                      }}
-                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>Back</span>
-                    </button>
+                  <div className="pt-2">
                     <button
                       type="submit"
-                      disabled={isSendingCode}
-                      className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      disabled={isLoading}
+                      className="w-full px-7 py-3 min-h-[44px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-60"
                     >
-                      {isSendingCode ? (
+                      {isLoading ? (
                         <>
                           <RotateCw className="w-4 h-4 animate-spin" />
-                          <span>Sending Code...</span>
+                          <span>Verifying...</span>
                         </>
                       ) : (
                         <span>Continue</span>
@@ -501,29 +500,105 @@ const Register = () => {
                 </form>
               )}
 
-              {/* ========================================================
-                  STEP 3: ENTER VERIFICATION CODE
-                  ======================================================== */}
-              {step === 3 && verifiedRecord && (
-                <form onSubmit={handleVerifyCode} className="space-y-4">
-                  {/* Sent Notice */}
+              {/* STEP 2: CHOOSE VERIFICATION METHOD */}
+              {step === 2 && verifiedRecord && (
+                <div className="space-y-4">
                   <div className="p-3.5 rounded bg-green-50 border border-green-200 text-xs text-green-900 flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-[#138601] mt-0.5 shrink-0" />
+                    <UserCheck className="w-4 h-4 text-[#138601] mt-0.5 shrink-0" />
                     <div className="leading-relaxed">
-                      A 6-digit verification code has been sent to <strong>{studentEmail}</strong>. Please enter the code below to verify your email.
+                      We found a record for <strong>{verifiedRecord.full_name}</strong>. 
+                      Choose how you would like to verify your identity.
                     </div>
                   </div>
 
-                  {/* Development Mode Helper Banner */}
+                  <p className="text-xs text-gray-600 font-medium">
+                    Send verification code to:
+                  </p>
+
+                  <div className="space-y-3">
+                    {verifiedRecord.masked_email && (
+                      <button
+                        onClick={() => handleSendOTP('email')}
+                        disabled={isLoading}
+                        className="w-full p-4 rounded-lg border-2 border-gray-200 hover:border-[#138601] hover:bg-green-50 transition-all cursor-pointer text-left inline-flex items-center gap-4 disabled:opacity-60 group"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-200">
+                          <Mail className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-gray-900">Email Verification</p>
+                            <span className="text-[10px] font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded">Resend</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">{verifiedRecord.masked_email}</p>
+                        </div>
+                        {isLoading ? (
+                          <RotateCw className="w-4 h-4 animate-spin text-gray-400" />
+                        ) : (
+                          <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-[#138601]" />
+                        )}
+                      </button>
+                    )}
+
+                    {verifiedRecord.masked_phone && (
+                      <button
+                        onClick={() => handleSendOTP('phone')}
+                        disabled={isLoading}
+                        className="w-full p-4 rounded-lg border-2 border-gray-200 hover:border-[#138601] hover:bg-green-50 transition-all cursor-pointer text-left inline-flex items-center gap-4 disabled:opacity-60 group"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 group-hover:bg-green-200">
+                          <Phone className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-gray-900">SMS Verification</p>
+                            <span className="text-[10px] font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded">Termii</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">{verifiedRecord.masked_phone}</p>
+                        </div>
+                        {isLoading ? (
+                          <RotateCw className="w-4 h-4 animate-spin text-gray-400" />
+                        ) : (
+                          <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-[#138601]" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => { setStep(1); setError(''); }}
+                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Back</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: ENTER OTP CODE */}
+              {step === 3 && (
+                <form onSubmit={handleVerifyOTP} className="space-y-4">
+                  <div className="p-3.5 rounded bg-green-50 border border-green-200 text-xs text-green-900 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#138601] mt-0.5 shrink-0" />
+                    <div className="leading-relaxed">
+                      A 6-digit verification code has been dispatched via <strong>{selectedChannel === 'email' ? 'Resend Email' : 'Termii SMS'}</strong> to <strong>{maskedDestination}</strong>. 
+                      Enter the code below to complete verification.
+                    </div>
+                  </div>
+
+                  {/* Dev Test Code Banner */}
                   {devTestCode && (
                     <div className="p-2.5 rounded bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <KeyRound className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Development Test Code: <strong className="font-mono font-bold tracking-wider">{devTestCode}</strong></span>
+                        <span>Dev Code: <strong className="font-mono font-bold tracking-wider">{devTestCode}</strong></span>
                       </div>
                       <button
                         type="button"
-                        onClick={() => setVerificationCode(devTestCode)}
+                        onClick={() => setOtpCode(devTestCode)}
                         className="text-[11px] text-emerald-700 underline font-semibold hover:text-emerald-900 cursor-pointer"
                       >
                         Auto-fill
@@ -531,74 +606,78 @@ const Register = () => {
                     </div>
                   )}
 
-                  {/* 6-Digit Code Input */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Enter 6-Digit Verification Code *
+                      6-Digit Verification Code *
                     </label>
                     <input
                       type="text"
                       required
                       autoFocus
                       maxLength={6}
-                      placeholder="e.g. 123456"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                      placeholder="000000"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                       className="w-full px-4 py-3 text-base text-center tracking-widest font-mono font-bold rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-black transition-all"
                     />
                   </div>
 
-                  {/* Resend Code Option */}
                   <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
                     <span>Didn't receive the code?</span>
                     <button
                       type="button"
-                      onClick={handleResendCode}
-                      disabled={resendCooldown > 0 || isSendingCode}
+                      onClick={handleResendOTP}
+                      disabled={resendCooldown > 0 || isLoading}
                       className="text-[#138601] hover:underline font-semibold disabled:opacity-50 disabled:no-underline cursor-pointer inline-flex items-center gap-1"
                     >
-                      {isSendingCode && <RotateCw className="w-3 h-3 animate-spin" />}
+                      {isLoading && <RotateCw className="w-3 h-3 animate-spin" />}
                       {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
                     </button>
                   </div>
 
-                  {/* Buttons */}
                   <div className="pt-2 flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => {
-                        setStep(2);
-                        setError('');
-                      }}
-                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+                      onClick={() => { setStep(2); setError(''); setOtpCode(''); }}
+                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center gap-1.5"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" />
                       <span>Back</span>
                     </button>
                     <button
                       type="submit"
-                      disabled={isVerifyingCode || verificationCode.trim().length !== 6}
+                      disabled={isLoading || otpCode.trim().length !== 6}
                       className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {isVerifyingCode ? (
+                      {isLoading ? (
                         <>
                           <RotateCw className="w-4 h-4 animate-spin" />
-                          <span>Verifying Code...</span>
+                          <span>Verifying...</span>
                         </>
                       ) : (
-                        <span>Continue</span>
+                        <span>Verify Code</span>
                       )}
                     </button>
                   </div>
                 </form>
               )}
 
-              {/* ========================================================
-                  STEP 4: CREATE PASSWORD & COMPLETE ONBOARDING
-                  ======================================================== */}
-              {step === 4 && verifiedRecord && (
-                <form onSubmit={handleCompleteRegistration} className="space-y-4">
-                  {/* Create Password */}
+              {/* STEP 4: CREATE PASSWORD */}
+              {step === 4 && (
+                <form onSubmit={handleCreateAccount} className="space-y-4">
+                  <div className="p-3.5 rounded bg-green-50 border border-green-200 text-xs text-green-900 flex items-start gap-2.5">
+                    <Shield className="w-4 h-4 text-[#138601] mt-0.5 shrink-0" />
+                    <div className="leading-relaxed">
+                      Your identity has been verified. Create a password to secure your NACOS portal account.
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded bg-gray-50 border border-gray-200">
+                    <p className="text-xs text-gray-500 mb-1">Registering as:</p>
+                    <p className="text-sm font-semibold text-gray-900">{verifiedRecord?.full_name}</p>
+                    <p className="text-xs text-gray-600 font-mono">{verifiedRecord?.registration_number}</p>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
                       Create Password *
@@ -623,7 +702,6 @@ const Register = () => {
                     </div>
                   </div>
 
-                  {/* Confirm Password */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
                       Confirm Password *
@@ -638,37 +716,49 @@ const Register = () => {
                     />
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="pt-2 flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => {
-                        setStep(3);
-                        setError('');
-                      }}
-                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+                      onClick={() => { setStep(3); setError(''); }}
+                      className="px-4 py-2.5 min-h-[42px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer inline-flex items-center gap-1.5"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" />
                       <span>Back</span>
                     </button>
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isLoading}
                       className="flex-1 px-6 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {isSubmitting ? (
+                      {isLoading ? (
                         <>
                           <RotateCw className="w-4 h-4 animate-spin" />
                           <span>Activating Account...</span>
                         </>
                       ) : (
-                        <span>Continue</span>
+                        <span>Create Account</span>
                       )}
                     </button>
                   </div>
                 </form>
               )}
 
+            </div>
+          )}
+
+          {/* Account Recovery Link */}
+          {!isSuccess && !accountRecovered && step >= 2 && (
+            <div className="text-center pt-2 border-t border-gray-100">
+              <p className="text-[11px] text-gray-500">
+                Can't access these contact details?{' '}
+                <button
+                  onClick={handleAccountRecovery}
+                  disabled={isLoading}
+                  className="text-[#138601] font-semibold hover:underline cursor-pointer disabled:opacity-50"
+                >
+                  Request Manual Verification
+                </button>
+              </p>
             </div>
           )}
 

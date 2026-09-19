@@ -38,9 +38,6 @@ const CampusTour = () => {
       {/* Hero Section */}
       <section className="relative py-20 px-6 text-center bg-gradient-to-b from-[#138601]/10 via-transparent to-transparent">
         <div className="max-w-4xl mx-auto z-10 relative">
-          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#138601]/10 text-[#138601] dark:text-[#4bd043] font-bold text-xs uppercase tracking-wider mb-6 border border-[#138601]/20">
-            <FiCompass /> Explore Campus
-          </span>
           <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
             FUTO Virtual <span className="text-[#138601] dark:text-[#4bd043]">Campus Tour</span>
           </h1>

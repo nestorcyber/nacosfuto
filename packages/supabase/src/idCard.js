@@ -93,7 +93,7 @@ export function getLocalPaymentsDatabase() {
   const initialPayments = [
     {
       id: 'pay-seed-1',
-      student_matric: '20241029481',
+      student_matric: '20241429481',
       session: '2026/2027',
       amount: 2500,
       payment_type: 'id_card',
@@ -104,7 +104,7 @@ export function getLocalPaymentsDatabase() {
     },
     {
       id: 'pay-seed-b',
-      student_matric: '20251145321',
+      student_matric: '20251545321',
       session: '2026/2027',
       amount: 2500,
       payment_type: 'id_card',
@@ -115,7 +115,7 @@ export function getLocalPaymentsDatabase() {
     },
     {
       id: 'pay-seed-c',
-      student_matric: '20261099999',
+      student_matric: '20261699999',
       session: '2026/2027',
       amount: 2500,
       payment_type: 'id_card',
@@ -164,15 +164,15 @@ export function getLocalIdApplicationsDatabase() {
     {
       id: 'app-seed-1',
       student_id: 'student-seed-1',
-      matric_number: '20241029481',
+      matric_number: '20241429481',
       application_number: 'APP-2026-000001',
-      id_card_number: '20241029481',
+      id_card_number: '20241429481',
       status: 'generated',
       payment_status: 'verified',
       payment_reference: 'NACOS-FUTO-2026-PAY-98124',
       amount: 2500,
       passport_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-      cloudinary_public_id: 'nacos/students/20241029481_passport',
+      cloudinary_public_id: 'nacos/students/20241429481_passport',
       submitted_at: '2026-08-20T11:00:00Z',
       approved_at: '2026-08-21T09:30:00Z',
       generated_at: '2026-08-21T10:00:00Z',
@@ -182,7 +182,7 @@ export function getLocalIdApplicationsDatabase() {
     {
       id: 'app-seed-2',
       student_id: 'student-seed-b',
-      matric_number: '20251145321',
+      matric_number: '20251545321',
       application_number: 'APP-2026-000002',
       id_card_number: null,
       status: 'photo_required',
@@ -197,7 +197,7 @@ export function getLocalIdApplicationsDatabase() {
     {
       id: 'app-seed-3',
       student_id: 'student-seed-c',
-      matric_number: '20261099999',
+      matric_number: '20261699999',
       application_number: 'APP-2026-000003',
       id_card_number: null,
       status: 'pending_payment',

@@ -4,4 +4,7 @@ export * from './adminAuth.js';
 export * from './idCard.js';
 export * from './media.js';
 export * from './verifiedStudents.js';
+export * from './otpService.js';
+export * from './emailService.js';
+export * from './smsService.js';
 export { default } from './client.js';

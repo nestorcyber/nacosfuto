@@ -3,12 +3,15 @@ import { useTheme } from "../../context/ThemeContext";
 import { useState, useEffect } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import headerImage from "../../assets/header.jpg";
+import { getCloudinaryAssetUrl } from "@nacos/media";
 import SearchBar from "../SearchBar";
 import ScrollToTopLink from "../ScrollToTopLink";
 
+const heroImg = getCloudinaryAssetUrl('header') || "https://res.cloudinary.com/z3wgqisj/image/upload/v1789824604/20250304_223205_Destiny_Eke_ce1a4da154_hxay39.jpg";
+
 const slides = [
   {
-    image: headerImage,
+    image: heroImg,
     title: "Department of Computer Science",
     description: "Federal University of Technology Owerri",
     button: { text: "Check Your Results", link: "/results" },
@@ -57,7 +60,7 @@ const HeroCarousel = () => {
   };
 
   return (
-    <section className="w-full relative pb-1 px-0 md:px-0 max-w-7xl mx-auto">
+    <section className="w-full relative pb-1 site-container">
       {/* Mobile: full-width carousel, Desktop: grid */}
       <div className="block md:hidden w-full">
         <div

@@ -44,31 +44,86 @@ body {
   min-height: 100%;
 }
 
+/* ─── Standard Web Development Responsive Layout Container ─── */
+:root {
+  --container-max-width: 90rem; /* 90rem */
+  --gutter-mobile: 16px;        /* Mobile gutter standard (16px) */
+  --gutter-tablet: 20px;        /* Tablet gutter standard (20px) */
+  --gutter-desktop: 24px;       /* Desktop gutter standard (24px) */
+}
+
+.padding-global,
+.page-gutter {
+  padding-inline: var(--gutter-mobile);
+}
+
+@media (min-width: 640px) {
+  .padding-global,
+  .page-gutter {
+    padding-inline: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .padding-global,
+  .page-gutter {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
 .site-container,
-.container-site {
+.container-site,
+.container-webflow,
+.webflow-container,
+.container-large {
   width: 100%;
-  max-width: 90rem;
+  max-width: var(--container-max-width);
   margin-inline: auto;
-  padding-inline: 16px;
+  padding-inline: var(--gutter-mobile);
 }
 
 @media (min-width: 640px) {
   .site-container,
-  .container-site {
-    padding-inline: 20px;
+  .container-site,
+  .container-webflow,
+  .webflow-container,
+  .container-large {
+    padding-inline: var(--gutter-tablet);
   }
 }
 
 @media (min-width: 1024px) {
   .site-container,
-  .container-site {
-    padding-inline: 24px;
+  .container-site,
+  .container-webflow,
+  .webflow-container,
+  .container-large {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
+.container-webflow-wide {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter-mobile);
+}
+
+@media (min-width: 640px) {
+  .container-webflow-wide {
+    padding-inline: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-webflow-wide {
+    padding-inline: var(--gutter-desktop);
   }
 }
 
 :root {
-  --font-sans: "Inter", "Avenir Next", "Avenir", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Circular", "Circular Std", "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", "Plus Jakarta Sans", "Avenir Next", "Avenir", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Circular", "Circular Std", "Inter", system-ui, -apple-system, sans-serif;
   --btn-height: 42px;
   --btn-height-sm: 36px;
   --btn-height-lg: 48px;
@@ -88,9 +143,9 @@ body {
     background-color: #f8fafc;
     color: #0f172a;
     font-family: var(--font-sans);
-    font-size: 1rem;
-    line-height: 1.6;
-    letter-spacing: -0.011em;
+    font-size: 0.875rem; /* Standard 14px dashboard body size */
+    line-height: 1.5;
+    letter-spacing: -0.01em;
     font-weight: 400;
     @apply antialiased selection:bg-[#138601] selection:text-white;
   }
@@ -102,30 +157,29 @@ body {
 
   h1, .h1 {
     font-family: var(--font-heading);
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    font-weight: 700;
-  }
-
-  h2, .h2 {
-    font-family: var(--font-heading);
     letter-spacing: -0.025em;
     line-height: 1.2;
     font-weight: 700;
   }
 
-  h3, h4, h5, h6, .font-heading, .font-display {
+  h2, .h2 {
     font-family: var(--font-heading);
     letter-spacing: -0.02em;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
+  h3, h4, h5, h6, .font-heading, .font-display {
+    font-family: var(--font-heading);
+    letter-spacing: -0.015em;
     line-height: 1.3;
     font-weight: 600;
   }
 
   p {
     font-family: var(--font-sans);
-    letter-spacing: -0.011em;
-    line-height: 1.62;
-    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.6;
   }
 }
 
@@ -147,3 +201,26 @@ body {
 .dark ::-webkit-scrollbar-thumb {
   background: #138601;
 }
+
+/* Sleek independent sidebar scrollbar */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+.dark .sidebar-scroll {
+  scrollbar-color: rgba(19, 134, 1, 0.4) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 4px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(19, 134, 1, 0.7);
+}
+

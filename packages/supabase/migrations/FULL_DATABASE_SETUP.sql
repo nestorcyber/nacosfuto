@@ -226,18 +226,19 @@ CREATE INDEX IF NOT EXISTS idx_dues_payments_status ON public.dues_payments (sta
 -- 6. DEDICATED ADMIN AUTH & SCOPES (MAIN WEBSITE VS PORTAL ISOLATION)
 -- =========================================================================
 CREATE TABLE IF NOT EXISTS public.admin_scopes (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  email TEXT NOT NULL,
+  id TEXT PRIMARY KEY,
+  user_id UUID,
+  email TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
-  scope TEXT NOT NULL CHECK (scope IN ('main_website', 'student_portal', 'finance', 'super_admin')),
+  password_hash TEXT,
+  scope TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'website_admin',
-  permissions TEXT[] NOT NULL DEFAULT ARRAY['main_website.view', 'main_website.media', 'main_website.gallery', 'main_website.news', 'main_website.events', 'main_website.homepage'],
+  permissions JSONB DEFAULT '[]'::jsonb,
   is_active BOOLEAN DEFAULT true NOT NULL,
-  granted_by UUID REFERENCES auth.users(id),
+  granted_by UUID,
+  last_login_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  UNIQUE(user_id, scope)
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_admin_scopes_user ON public.admin_scopes (user_id);

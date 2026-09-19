@@ -116,7 +116,7 @@ const DepartmentStats = () => {
             ref={sectionRef}
             className="py-20 transition-colors duration-300 bg-gray-50 dark:bg-[#041801] text-gray-800 dark:text-white"
         >
-            <div className="max-w-7xl mx-auto px-6">
+            <div className="site-container">
                 {/* Section Header */}
                 <div className="text-center mb-12">
                     <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-[#083002] dark:text-white">

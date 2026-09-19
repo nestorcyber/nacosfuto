@@ -55,7 +55,7 @@ const UpcomingEvents = () => {
 
   return (
     <section className="py-20 bg-white dark:bg-[#041801] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         <div className="text-center mb-12 max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
             Upcoming <span className="text-[#138601] dark:text-[#4bd043]">Events</span>
@@ -69,7 +69,7 @@ const UpcomingEvents = () => {
           {displayedEvents.map((event) => (
             <div
               key={event.id}
-              className="group flex flex-col sm:flex-row rounded-2xl overflow-hidden border border-[#138601]/20 dark:border-[#138601]/30 bg-[#f8fdf7] dark:bg-[#083002] shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 transition-all duration-300"
+              className="group flex flex-col sm:flex-row rounded overflow-hidden border border-[#138601]/20 dark:border-[#138601]/30 bg-[#f8fdf7] dark:bg-[#083002] shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 transition-all duration-300"
             >
               {/* Image Container */}
               <div className="sm:w-2/5 h-52 sm:h-auto overflow-hidden relative bg-[#041801]">

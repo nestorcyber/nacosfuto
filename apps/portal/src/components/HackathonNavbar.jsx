@@ -14,7 +14,7 @@ const HackathonNavbar = () => {
     <header className={`sticky top-0 z-50 w-full border-b transition-all duration-200 ${
       isDark ? 'bg-[#083002] border-[#138601]/30 text-white shadow-md' : 'bg-white border-[#138601]/15 text-[#083002] shadow-sm'
     }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="site-container h-16 flex items-center justify-between">
         
         {/* Left: Brand / Logo */}
         <div className="flex items-center space-x-3">
@@ -78,7 +78,7 @@ const HackathonNavbar = () => {
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
-            className={`p-2 rounded-full text-lg transition-all cursor-pointer ${
+            className={`p-2 rounded text-lg transition-all cursor-pointer ${
               theme === 'light'
                 ? 'text-[#083002] bg-[#f2fbf1] hover:bg-[#e4f7e2] hover:text-[#138601]'
                 : 'text-yellow-300 bg-[#0d4603] hover:bg-[#138601]/40'
@@ -90,7 +90,7 @@ const HackathonNavbar = () => {
 
           <Link
             to="/login"
-            className={`hidden sm:inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
+            className={`hidden sm:inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-semibold rounded border transition-colors ${
               isDark ? 'text-green-100 hover:text-white bg-[#041801] hover:bg-[#083002] border-[#138601]/30' : 'text-[#083002] hover:text-[#138601] bg-[#f2fbf1] border-[#138601]/20'
             }`}
           >
@@ -98,7 +98,7 @@ const HackathonNavbar = () => {
           </Link>
           <Link
             to="/hackathons/BuildXNACOS/apply"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs md:text-sm font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs md:text-sm font-bold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <Sparkles className="w-4 h-4" />
             <span>Apply Now</span>

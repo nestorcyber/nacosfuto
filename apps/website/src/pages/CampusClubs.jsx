@@ -159,9 +159,6 @@ const CampusClubs = () => {
       {/* Hero Section */}
       <div className="relative py-20 px-6 text-center overflow-hidden">
         <div className="max-w-4xl mx-auto relative z-10">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-[#138601]/10 text-[#138601] dark:text-[#4bd043] font-bold text-xs uppercase tracking-wider mb-6 border border-[#138601]/20">
-            Student Life & Synergy
-          </span>
           <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">
             Find Your <span className="text-[#138601] dark:text-[#4bd043]">Community</span>
           </h1>
@@ -184,7 +181,7 @@ const CampusClubs = () => {
       </div>
 
       {/* Clubs Grid */}
-      <main className="flex-grow px-6 pb-20 max-w-7xl mx-auto w-full">
+      <main className="flex-grow site-container pb-20 w-full">
         {filteredClubs.length > 0 ? (
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              {filteredClubs.map(club => (

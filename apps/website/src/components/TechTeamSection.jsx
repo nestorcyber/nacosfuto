@@ -43,7 +43,7 @@ const TechTeamSection = () => {
 
     return (
         <section className="py-20 bg-white dark:bg-[#041801] border-t border-[#138601]/20 dark:border-[#138601]/30 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="site-container text-center">
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white mb-3 tracking-tight leading-tight">
                     Developed by the <span className="text-[#138601] dark:text-[#4bd043]">ICT Team</span>
                 </h2>

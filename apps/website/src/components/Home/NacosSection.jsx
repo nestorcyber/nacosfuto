@@ -227,7 +227,7 @@ const NacosSection = () => {
 
   return (
     <section className="py-24 bg-[#083002] dark:bg-[#021200] border-t border-b border-[#138601]/20 text-white overflow-hidden transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="site-container">
         {/* Centered Introduction Header (Prevents blocking or overlapping with carousel) */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-6 text-white">

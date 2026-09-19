@@ -55,7 +55,7 @@ const DepartmentSlider = () => {
 
   return (
     <section className="py-16 bg-[#f4faf3] dark:bg-[#041801] section-content">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="site-container">
         <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">
           Department Highlights
         </h2>

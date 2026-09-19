@@ -1,0 +1,11 @@
+{
+  "name": "@nacos/validation",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./student": "./src/studentValidation.js"
+  }
+}

@@ -53,7 +53,7 @@ const FAQsPage = () => {
       <Navbar />
 
       <section className={`relative py-20 ${theme === 'dark' ? 'bg-[#041801]' : 'bg-white'} border-b border-[#138601]/20 dark:border-[#138601]/30`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
               Frequently Asked <span className="text-[#138601] dark:text-[#4bd043]">Questions</span>
@@ -66,7 +66,7 @@ const FAQsPage = () => {
       </section>
 
       <section className={`py-16 ${theme === 'dark' ? 'bg-[#041801]' : 'bg-[#f4faf3]'}`}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto padding-global">
           <div className="space-y-4">
             {faqs.map((faq, index) => (
               <div
