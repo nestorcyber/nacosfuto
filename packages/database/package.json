@@ -6,8 +6,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.js",
-    "./client": "./src/client.js",
-    "./schema": "./src/schema.sql"
+    "./client": "./src/client.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1"
