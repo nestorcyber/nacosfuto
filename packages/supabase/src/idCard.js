@@ -1431,47 +1431,6 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(regNo, t.registrationNumber.centerX, t.registrationNumber.y); // (331, 940-956)
-
-  // ---------------------------------------------------------------------------
-  // 5. Render Official ID Card Number (Rendered Prominently with Verification Pill)
-  // ---------------------------------------------------------------------------
-  const rawIdCardNum = cardInfo?.id_card_number || student?.id_card_number || cardInfo?.application_number || `NACOS-${regNo}`;
-  const officialId = String(rawIdCardNum).trim().toUpperCase();
-
-  ctx.save();
-  const idBadgeW = 360;
-  const idBadgeH = 40;
-  const idBadgeX = 331 - idBadgeW / 2;
-  const idBadgeY = 992;
-  const idBadgeR = 20;
-
-  // Render Pill Background
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.roundRect ? ctx.roundRect(idBadgeX, idBadgeY, idBadgeW, idBadgeH, idBadgeR) : ctx.rect(idBadgeX, idBadgeY, idBadgeW, idBadgeH);
-  ctx.fill();
-
-  // Green Border
-  ctx.strokeStyle = '#138601';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  // ID Card Text
-  ctx.fillStyle = '#083002';
-  ctx.font = 'bold 17px "Aeonik Black", "Montserrat", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`CARD ID: ${officialId}`, 331, idBadgeY + idBadgeH / 2);
-  ctx.restore();
-
-  // 6. Render Bottom Verification Footer
-  ctx.save();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-  ctx.font = '600 11px -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText('OFFICIAL DIGITAL STUDENT ID • VERIFIABLE AT NACOSFUTO.ORG.NG', 331, 1060);
-  ctx.restore();
 }
 
 /**

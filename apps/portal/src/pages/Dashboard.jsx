@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   GraduationCap, 
   CreditCard, 
@@ -32,7 +32,9 @@ const Dashboard = () => {
     return {};
   });
 
+  const navigate = useNavigate();
   const [isPaid, setIsPaid] = useState(false);
+  const [verified, setVerified] = useState(false); // true once DB confirms student exists
 
   const checkPaymentStatus = async (currentUser) => {
     const matric = currentUser?.registration_number || currentUser?.matric || currentUser?.matricNumber || '';
@@ -68,31 +70,21 @@ const Dashboard = () => {
         console.warn('Local payment check error:', e);
       }
 
-      // 3. Supabase check
+      // 3. Supabase check — use student_id (UUID), NOT matric_number (column doesn't exist)
       try {
-        const cleanMatric = String(matric).trim().toUpperCase();
-        const { data: duesPay } = await supabase
-          .from('dues_payments')
-          .select('id, status')
-          .eq('matric_number', cleanMatric)
-          .in('status', ['successful', 'verified', 'cleared', 'paid'])
-          .maybeSingle();
+        const userId = currentUser?.id;
+        if (userId) {
+          const { data: duesPay } = await supabase
+            .from('dues_payments')
+            .select('id, status')
+            .eq('student_id', userId)
+            .in('status', ['successful', 'verified', 'cleared', 'paid'])
+            .maybeSingle();
 
-        if (duesPay) {
-          setIsPaid(true);
-          return;
-        }
-
-        const { data: deptDues } = await supabase
-          .from('departmental_dues')
-          .select('id, status')
-          .eq('registration_number', cleanMatric)
-          .in('status', ['successful', 'verified', 'cleared', 'paid'])
-          .maybeSingle();
-
-        if (deptDues) {
-          setIsPaid(true);
-          return;
+          if (duesPay) {
+            setIsPaid(true);
+            return;
+          }
         }
       } catch (err) {
         console.warn('Supabase dues check error:', err);
@@ -102,17 +94,71 @@ const Dashboard = () => {
     setIsPaid(false);
   };
 
+  // Verify student exists in Supabase database
+  const verifyStudentInDatabase = async (currentUser) => {
+    const regNo = currentUser?.registration_number || currentUser?.matric || currentUser?.matricNumber;
+    const userId = currentUser?.id;
+
+    if (!regNo && !userId) {
+      // No identifier at all — clear session
+      localStorage.removeItem('nacos_user');
+      localStorage.removeItem('nacos_last_activity');
+      navigate('/login?reason=not_registered', { replace: true });
+      return false;
+    }
+
+    try {
+      let query = supabase.from('profiles').select('id, registration_number, is_active').limit(1);
+      if (userId) {
+        query = query.eq('id', userId);
+      } else {
+        query = query.ilike('registration_number', regNo);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error || !data) {
+        // Student not found in Supabase profiles — revoke session
+        localStorage.removeItem('nacos_user');
+        localStorage.removeItem('nacos_last_activity');
+        navigate('/login?reason=not_registered', { replace: true });
+        return false;
+      }
+
+      if (data.is_active === false) {
+        // Account exists but has been deactivated
+        localStorage.removeItem('nacos_user');
+        localStorage.removeItem('nacos_last_activity');
+        navigate('/login?reason=deactivated', { replace: true });
+        return false;
+      }
+
+      setVerified(true);
+      return true;
+    } catch (err) {
+      // Network error — if user was previously verified allow them in (offline grace)
+      console.warn('DB verification network error:', err);
+      setVerified(true);
+      return true;
+    }
+  };
+
   useEffect(() => {
-    const handleUserUpdate = () => {
+    const handleUserUpdate = async () => {
       const stored = localStorage.getItem('nacos_user');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
+      if (!stored) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      try {
+        const parsed = JSON.parse(stored);
+        const ok = await verifyStudentInDatabase(parsed);
+        if (ok) {
           setUser(parsed);
           checkPaymentStatus(parsed);
-        } catch (e) {
-          console.error(e);
         }
+      } catch (e) {
+        console.error(e);
       }
     };
 
@@ -123,6 +169,7 @@ const Dashboard = () => {
       window.removeEventListener('storage', handleUserUpdate);
       window.removeEventListener('nacos_user_updated', handleUserUpdate);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getFirstName = () => {

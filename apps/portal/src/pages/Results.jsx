@@ -469,31 +469,31 @@ const Results = () => {
                 </div>
 
                 {/* Course Grade Breakdown Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                <div className="overflow-x-auto -mx-px">
+                  <table className="w-full text-left text-xs" style={{minWidth: '560px'}}>
                     <thead className="bg-[#f8fafc] dark:bg-[#041801]/60 text-gray-600 dark:text-green-200 font-semibold border-b border-gray-200 dark:border-[#138601]/30">
                       <tr>
-                        <th className="py-3 px-4">Course Code</th>
-                        <th className="py-3 px-4">Course Description</th>
-                        <th className="py-3 px-4 text-center">Units</th>
-                        <th className="py-3 px-4 text-center">Test (30)</th>
-                        <th className="py-3 px-4 text-center">Exam (70)</th>
-                        <th className="py-3 px-4 text-center">Total (100)</th>
-                        <th className="py-3 px-4 text-center">Grade</th>
-                        <th className="py-3 px-4 text-right">Points</th>
+                        <th className="py-3 px-3 sm:px-4 whitespace-nowrap">Code</th>
+                        <th className="py-3 px-3 sm:px-4">Course Title</th>
+                        <th className="py-3 px-3 sm:px-4 text-center whitespace-nowrap">Units</th>
+                        <th className="py-3 px-3 sm:px-4 text-center whitespace-nowrap">Test</th>
+                        <th className="py-3 px-3 sm:px-4 text-center whitespace-nowrap">Exam</th>
+                        <th className="py-3 px-3 sm:px-4 text-center whitespace-nowrap">Total</th>
+                        <th className="py-3 px-3 sm:px-4 text-center whitespace-nowrap">Grade</th>
+                        <th className="py-3 px-3 sm:px-4 text-right whitespace-nowrap">GP</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-[#138601]/15 font-normal">
                       {sem.courses.map((course, idx) => (
                         <tr key={idx} className="hover:bg-gray-50/70 dark:hover:bg-[#041801]/40 transition-colors">
-                          <td className="py-3 px-4 font-semibold text-gray-900 dark:text-white">{course.code}</td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-green-100">{course.title}</td>
-                          <td className="py-3 px-4 text-center text-gray-600 dark:text-green-100">{course.units}</td>
-                          <td className="py-3 px-4 text-center text-gray-600 dark:text-green-100">{course.test}</td>
-                          <td className="py-3 px-4 text-center text-gray-600 dark:text-green-100">{course.exam}</td>
-                          <td className="py-3 px-4 text-center font-semibold text-gray-900 dark:text-white">{course.score}%</td>
-                          <td className="py-3 px-4 text-center">
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                          <td className="py-3 px-3 sm:px-4 font-semibold text-gray-900 dark:text-white whitespace-nowrap">{course.code}</td>
+                          <td className="py-3 px-3 sm:px-4 text-gray-600 dark:text-green-100 min-w-[160px]">{course.title}</td>
+                          <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-green-100">{course.units}</td>
+                          <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-green-100">{course.test}</td>
+                          <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-green-100">{course.exam}</td>
+                          <td className="py-3 px-3 sm:px-4 text-center font-semibold text-gray-900 dark:text-white">{course.score}%</td>
+                          <td className="py-3 px-3 sm:px-4 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                               course.grade === 'A' 
                                 ? 'bg-[#ebf3ff] text-[#138601] dark:bg-[#138601]/30 dark:text-[#4bd043]' 
                                 : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
@@ -501,7 +501,7 @@ const Results = () => {
                               {course.grade}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-right font-semibold text-gray-900 dark:text-white">{course.gp}</td>
+                          <td className="py-3 px-3 sm:px-4 text-right font-semibold text-gray-900 dark:text-white">{course.gp}</td>
                         </tr>
                       ))}
                     </tbody>

@@ -297,25 +297,29 @@ const PortalLayout = ({ children }) => {
       }`}>
         <div className="site-container h-16 flex items-center justify-between">
           
-          {/* Brand */}
-          <div className="flex items-center space-x-4">
+          {/* Brand: on mobile when drawer open, hide logo here (it shows in drawer) */}
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className={`md:hidden p-2 rounded cursor-pointer ${
-                isDark ? 'text-gray-200 hover:text-white bg-[#041801] border border-[#138601]/30' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+              className={`md:hidden p-2.5 rounded-xl cursor-pointer transition-colors ${
+                mobileOpen
+                  ? isDark ? 'text-white bg-[#138601] border border-[#138601]' : 'text-white bg-[#138601]'
+                  : isDark ? 'text-gray-200 hover:text-white bg-[#041801] border border-[#138601]/30' : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200'
               }`}
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            <Link to="/dashboard" className="flex items-center space-x-3">
+            {/* Logo: hide on mobile when drawer open */}
+            <Link to="/dashboard" className={`flex items-center gap-3 ${mobileOpen ? 'hidden md:flex' : 'flex'}`}>
               <img src={isDark ? logoDark : logoLight} alt="NACOS FUTO Logo" className="h-8 md:h-9 w-auto object-contain" />
               <div className="hidden sm:block border-l border-gray-200 dark:border-[#138601]/30 pl-3">
                 <span className="text-xs font-semibold text-[#138601] dark:text-[#4bd043] block leading-none">
                   Student Portal
                 </span>
-                <span className="text-[12px] font-normal text-gray-500 dark:text-green-200/80 block mt-0.5 leading-tight">
+                <span className="text-[11px] font-normal text-gray-500 dark:text-green-200/80 block mt-0.5 leading-tight">
                   Department of Computer Science
                 </span>
               </div>
@@ -620,7 +624,7 @@ const PortalLayout = ({ children }) => {
         </div>
       )}
 
-      <div className="flex-1 flex site-container w-full gap-6 lg:gap-8 min-h-0 print:p-0 print:m-0 print:max-w-none print:w-full">
+      <div className="flex-1 flex site-container w-full gap-5 lg:gap-8 min-h-0 print:p-0 print:m-0 print:max-w-none print:w-full overflow-x-hidden">
         
         {/* DESKTOP SIDEBAR: Sticky, Independent Scroll & Spacious */}
         <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-6 pr-1.5 justify-between sidebar-scroll print:hidden">
@@ -635,11 +639,11 @@ const PortalLayout = ({ children }) => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded text-sm font-medium transition-all ${
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       active
                         ? 'bg-[#138601] text-white shadow-xs font-semibold'
                         : isDark
-                        ? 'text-green-100/90 hover:text-white hover:bg-[#083002] border border-transparent'
+                        ? 'text-green-100/90 hover:text-white hover:bg-[#083002]/80 border border-transparent hover:border-[#138601]/20'
                         : 'text-gray-700 hover:text-gray-900 hover:bg-[#f1f3f5] border border-transparent'
                     }`}
                   >
@@ -673,22 +677,44 @@ const PortalLayout = ({ children }) => {
 
         </aside>
 
-        {/* MOBILE NAVIGATION DRAWER */}
+        {/* MOBILE NAVIGATION DRAWER – Full-screen overlay */}
         {mobileOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-[#041801]/95 flex flex-col p-6 text-white print:hidden">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-2">
-                <img src={logoDark} alt="NACOS Logo" className="h-7 w-auto object-contain" />
-              </div>
+          <div className="md:hidden fixed inset-0 z-50 flex flex-col text-white print:hidden" style={{background: isDark ? '#041801' : '#0a2800'}}>
+            
+            {/* Drawer Header: close icon on left, logo on right */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+              {/* Close button on LEFT */}
               <button
                 onClick={() => setMobileOpen(false)}
-                className="p-2 rounded text-gray-400 hover:text-white bg-[#083002]"
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                aria-label="Close navigation"
               >
                 <X className="w-5 h-5" />
               </button>
+
+              {/* Logo on RIGHT */}
+              <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5">
+                <img src={logoDark} alt="NACOS Logo" className="h-8 w-auto object-contain" />
+                <div className="border-l border-white/20 pl-2.5">
+                  <span className="text-xs font-bold text-[#4bd043] block leading-none">Student Portal</span>
+                  <span className="text-[10px] text-white/60 block mt-0.5">Computer Science • FUTO</span>
+                </div>
+              </Link>
             </div>
 
-            <nav className="space-y-3 flex-1">
+            {/* User greeting strip */}
+            <div className="px-5 py-4 border-b border-white/10 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#138601] flex items-center justify-center text-white font-bold text-sm shrink-0">
+                {displayInitials}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white truncate">{displayName}</p>
+                <p className="text-[11px] text-white/50 truncate">{displayMatric}</p>
+              </div>
+            </div>
+
+            {/* Nav Links */}
+            <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
               {navItems.map((item) => {
                 const active = location.pathname === item.path;
                 const Icon = item.icon;
@@ -697,28 +723,42 @@ const PortalLayout = ({ children }) => {
                     key={item.path}
                     to={item.path}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded text-sm font-semibold ${
-                      active ? 'bg-[#138601] text-white' : 'text-green-100 bg-[#083002]'
+                    className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${
+                      active 
+                        ? 'bg-[#138601] text-white shadow-sm' 
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-[#4bd043]'}`} />
                     <span>{item.label}</span>
+                    {active && <ChevronRight className="w-4 h-4 ml-auto text-white/60" />}
                   </Link>
                 );
               })}
             </nav>
 
-            <button
-              onClick={handleLogout}
-              className="w-full py-3 text-center text-sm font-semibold text-red-400 bg-red-950/40 rounded border border-red-900/50 mt-4 cursor-pointer"
-            >
-              Sign Out
-            </button>
+            {/* Bottom actions */}
+            <div className="px-4 pb-6 pt-2 space-y-2 border-t border-white/10">
+              <button
+                onClick={toggleTheme}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                {isDark ? <Sun className="w-4.5 h-4.5 text-amber-400" /> : <Moon className="w-4.5 h-4.5 text-white/60" />}
+                <span>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+              </button>
+              <button
+                onClick={() => { setMobileOpen(false); handleLogout(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-950/40 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4.5 h-4.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
         )}
 
         {/* MAIN BODY VIEW */}
-        <main className="flex-1 min-w-0 py-6 print:py-0 print:m-0 print:w-full">
+        <main className="flex-1 min-w-0 py-5 sm:py-6 overflow-x-hidden print:py-0 print:m-0 print:w-full">
           {children}
         </main>
 

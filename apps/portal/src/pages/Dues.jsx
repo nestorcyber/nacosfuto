@@ -92,55 +92,33 @@ const Dues = () => {
         console.warn('Local payment check error:', e);
       }
 
-      // 3. Check Supabase remote tables
+      // 3. Check Supabase — use student_id (UUID), NOT matric_number (column doesn't exist)
       try {
-        const cleanMatric = String(matric).trim().toUpperCase();
-        const { data: duesPay } = await supabase
-          .from('dues_payments')
-          .select('*')
-          .eq('matric_number', cleanMatric)
-          .in('status', ['successful', 'verified', 'cleared', 'paid'])
-          .maybeSingle();
+        const userId = currentUser?.id;
+        if (userId) {
+          const { data: duesPay } = await supabase
+            .from('dues_payments')
+            .select('*')
+            .eq('student_id', userId)
+            .in('status', ['successful', 'verified', 'cleared', 'paid'])
+            .maybeSingle();
 
-        if (duesPay) {
-          setIsPaid(true);
-          const dateStr = duesPay.created_at ? new Date(duesPay.created_at).toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          }) : 'Current Session';
-          setPaymentData({
-            receiptNo: duesPay.payment_reference || `NACOS-FUTO-${cleanMatric}`,
-            paymentDate: dateStr,
-            amount: duesPay.amount ? `₦${Number(duesPay.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}` : '₦2,500.00',
-            paymentMethod: duesPay.payment_method || 'Interswitch WebPAY / Direct Card Debit',
-            status: 'Verified & Cleared'
-          });
-          return;
-        }
-
-        const { data: deptDues } = await supabase
-          .from('departmental_dues')
-          .select('*')
-          .eq('registration_number', cleanMatric)
-          .in('status', ['successful', 'verified', 'cleared', 'paid'])
-          .maybeSingle();
-
-        if (deptDues) {
-          setIsPaid(true);
-          const dateStr = (deptDues.paid_at || deptDues.created_at) ? new Date(deptDues.paid_at || deptDues.created_at).toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          }) : 'Current Session';
-          setPaymentData({
-            receiptNo: deptDues.reference || `NACOS-FUTO-${cleanMatric}`,
-            paymentDate: dateStr,
-            amount: deptDues.amount ? `₦${Number(deptDues.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}` : '₦2,500.00',
-            paymentMethod: 'Online Payment (Interswitch / WebPAY)',
-            status: 'Verified & Cleared'
-          });
-          return;
+          if (duesPay) {
+            setIsPaid(true);
+            const dateStr = duesPay.created_at ? new Date(duesPay.created_at).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }) + ' (' + new Date(duesPay.created_at).toLocaleTimeString('en-GB') + ' GMT+1)' : 'Current Session';
+            setPaymentData({
+              receiptNo: duesPay.payment_reference || `NACOS-FUTO-${matric || userId.slice(0, 8).toUpperCase()}`,
+              paymentDate: dateStr,
+              amount: duesPay.amount ? `₦${Number(duesPay.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}` : '₦2,500.00',
+              paymentMethod: duesPay.payment_method || 'Interswitch WebPAY / Direct Card Debit',
+              status: 'Verified & Cleared'
+            });
+            return;
+          }
         }
       } catch (err) {
         console.warn('Supabase dues check error:', err);
@@ -377,7 +355,7 @@ const Dues = () => {
         </div>
 
         {/* Official Printable Electronic Receipt Box */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 space-y-5 shadow-xs print:border-none print:shadow-none print:p-0">
+        <div className="p-5 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 space-y-5 shadow-xs print:border-none print:shadow-none print:p-0 overflow-hidden">
           
           {/* Receipt Header */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-[#138601]/25 text-center sm:text-left">
@@ -398,30 +376,30 @@ const Dues = () => {
                 </div>
               ) : (
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50">
-                  Payment Pending / Not Cleared
+                  Payment Pending
                 </div>
               )}
-              <div className="text-xs text-gray-500 dark:text-green-200/70 mt-1 font-mono">
+              <div className="text-[10px] text-gray-500 dark:text-green-200/70 mt-1 font-mono break-all max-w-[180px] sm:max-w-none mx-auto">
                 {isPaid ? paymentRecord.receiptNo : 'Awaiting Payment Reference'}
               </div>
             </div>
           </div>
 
           {/* Receipt Data Table */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 gap-x-6 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-xs">
             <div>
               <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Student Full Name</span>
-              <span className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white">{paymentRecord.studentName}</span>
+              <span className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white break-words">{paymentRecord.studentName}</span>
             </div>
 
             <div>
               <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Matriculation Number</span>
-              <span className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white font-mono">{paymentRecord.matricNo}</span>
+              <span className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white font-mono break-all">{paymentRecord.matricNo}</span>
             </div>
 
             <div>
-              <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Department & Level</span>
-              <span className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white">{paymentRecord.department} ({paymentRecord.level})</span>
+              <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Department &amp; Level</span>
+              <span className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white break-words">{paymentRecord.department} ({paymentRecord.level})</span>
             </div>
 
             <div>
@@ -430,8 +408,8 @@ const Dues = () => {
             </div>
 
             <div>
-              <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Payment Date & Time</span>
-              <span className={`font-semibold text-xs sm:text-sm ${
+              <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Payment Date &amp; Time</span>
+              <span className={`font-semibold text-xs sm:text-sm break-words ${
                 isPaid ? 'text-gray-900 dark:text-white' : 'text-amber-700 dark:text-amber-400 font-normal italic'
               }`}>
                 {paymentRecord.paymentDate}
@@ -440,7 +418,7 @@ const Dues = () => {
 
             <div>
               <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Payment Method</span>
-              <span className={`font-semibold text-xs sm:text-sm ${
+              <span className={`font-semibold text-xs sm:text-sm break-words ${
                 isPaid ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 font-normal italic'
               }`}>
                 {paymentRecord.paymentMethod}

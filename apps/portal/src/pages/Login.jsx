@@ -21,6 +21,10 @@ const Login = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('reason') === 'inactivity') {
       setError('You were automatically logged out after 1 hour of inactivity for your security.');
+    } else if (params.get('reason') === 'not_registered') {
+      setError('Your registration number was not found in our student database. Please create an account or contact the NACOS admin.');
+    } else if (params.get('reason') === 'deactivated') {
+      setError('Your account has been deactivated. Please contact the NACOS admin or your department to resolve this.');
     }
 
     try {
