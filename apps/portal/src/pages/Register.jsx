@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { 
   lookupVerifiedStudentRecord, 
+  checkIfStudentAccountExists,
   startRegistrationVerification,
   resendRegistrationOTP,
   verifyRegistrationOTP,
@@ -125,6 +126,13 @@ const Register = () => {
 
     setIsLoading(true);
     try {
+      // 1. Explicitly check if student account already exists before generic checks
+      const accountCheck = await checkIfStudentAccountExists(cleanReg, cleanEmail);
+      if (accountCheck.exists) {
+        setError(accountCheck.message);
+        return;
+      }
+
       const lookup = await lookupVerifiedStudentRecord(cleanReg);
       if (!lookup.found) {
         setError(lookup.error?.message || GENERIC_ERROR);
@@ -137,12 +145,12 @@ const Register = () => {
       const normalizeForCompare = (p) => p.replace(/\D/g, '').slice(-10);
 
       if (cleanEmail !== recordEmail) {
-        setError(GENERIC_ERROR);
+        setError('The email address provided does not match our departmental records for this registration number.');
         return;
       }
 
       if (normalizeForCompare(cleanPhone) !== normalizeForCompare(recordPhone)) {
-        setError(GENERIC_ERROR);
+        setError('The phone number provided does not match our departmental records for this registration number.');
         return;
       }
 
@@ -397,7 +405,17 @@ const Register = () => {
           {error && (
             <div className="p-3.5 rounded bg-red-50 border border-red-200 text-xs text-red-700 font-medium flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
-              <div className="leading-relaxed">{error}</div>
+              <div className="leading-relaxed flex-1">
+                <p>{error}</p>
+                {(error.toLowerCase().includes('already exist') || error.toLowerCase().includes('already been registered')) && (
+                  <div className="mt-2 pt-2 border-t border-red-200/80">
+                    <Link to="/login" className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline">
+                      <span>Click here to Sign In</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

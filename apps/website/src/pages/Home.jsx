@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import Navbar from "../components/Nav/Navbar";
-import HeroCarousel from "../components/Home/HeroCarousel";
 import { getCloudinaryAssetUrl } from "@nacos/media";
 import headerImg from "../assets/header.jpg";
 import ScrollToTopLink from "../components/ScrollToTopLink";
@@ -31,50 +30,43 @@ const Home = () => {
       <Navbar />
       
       <main className="flex-grow">
-        {/* Desktop hero image */}
-        <section
-          className="relative hidden md:flex h-[80vh] min-h-[540px] items-center justify-center overflow-hidden bg-gray-950"
-        >
-          {/* Real hero photo */}
+        {/* Unified Hero Section for Mobile and Desktop */}
+        <section className="relative flex min-h-[500px] sm:min-h-[540px] md:h-[80vh] items-center justify-center overflow-hidden bg-gray-950">
+          {/* Real hero photo matching desktop */}
           <img
             src={HERO_IMAGE_URL}
             alt="Department of Computer Science FUTO"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
 
-          {/* Clean dark gradient overlay for text readability */}
+          {/* Clean dark gradient overlay for text readability across devices */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#041801]/95 via-[#041801]/60 to-black/35" />
-          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-0 bg-black/25" />
 
-          <div className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 drop-shadow-lg tracking-tight leading-[1.15]">
-              Empowering the Next Generation of <br />
+          <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto flex flex-col items-center py-16 sm:py-20 md:py-0">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 sm:mb-6 drop-shadow-lg tracking-tight leading-[1.2]">
+              Empowering the Next Generation of <br className="hidden sm:inline" />
               <span className="text-[#4bd043]">Computer Scientists</span>
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-gray-100 mb-8 max-w-2xl drop-shadow-md font-normal leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-gray-100 mb-6 sm:mb-8 max-w-2xl drop-shadow font-normal leading-relaxed text-center">
               Join FUTO's vibrant CS community. Innovate, learn, and lead the future of global computing technology.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
               <ScrollToTopLink
                 to="/about"
-                className="inline-flex items-center justify-center px-7 py-2.5 bg-[#138601] hover:bg-[#0f6c01] text-white font-semibold text-sm rounded shadow-sm transition-colors cursor-pointer min-h-[42px]"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-2.5 bg-[#138601] hover:bg-[#0f6c01] text-white font-semibold text-sm rounded transition-colors cursor-pointer min-h-[42px]"
               >
                 Learn More
               </ScrollToTopLink>
               <ScrollToTopLink
                 to="/admissions"
-                className="inline-flex items-center justify-center px-7 py-2.5 bg-transparent border border-white hover:bg-white hover:text-[#083002] text-white font-semibold text-sm rounded transition-colors cursor-pointer min-h-[42px]"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-2.5 bg-transparent border border-white hover:bg-white hover:text-[#083002] text-white font-semibold text-sm rounded transition-colors cursor-pointer min-h-[42px]"
               >
                 Admissions
               </ScrollToTopLink>
             </div>
           </div>
         </section>
-
-        {/* Mobile carousel */}
-        <div className="md:hidden">
-          <HeroCarousel />
-        </div>
 
         {/* 1. Department at a Glance */}
         <DepartmentStats />

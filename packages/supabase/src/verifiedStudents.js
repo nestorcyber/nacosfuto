@@ -221,8 +221,98 @@ export function saveLocalVerifiedStudents(list) {
 }
 
 /**
+ * Explicitly check if a student account already exists in profiles, local student DB, or verified roster.
+ * Avoids showing generic errors when an account already exists.
+ */
+export async function checkIfStudentAccountExists(regNo, email) {
+  const cleanReg = (regNo || '').trim().toUpperCase();
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  // 1. Check local students database
+  try {
+    const localStudents = getLocalStudentsDatabase();
+    const localFound = localStudents.find(s => 
+      (cleanReg && s.registration_number?.toUpperCase() === cleanReg) ||
+      (cleanEmail && s.email?.toLowerCase() === cleanEmail)
+    );
+    if (localFound) {
+      return {
+        exists: true,
+        message: cleanReg && localFound.registration_number?.toUpperCase() === cleanReg
+          ? `An account for registration number "${cleanReg}" already exists. Please sign in or use forgot password.`
+          : `An account with email "${cleanEmail}" already exists. Please sign in or use forgot password.`
+      };
+    }
+  } catch (e) {}
+
+  // 2. Check Supabase profiles table
+  try {
+    if (cleanReg) {
+      const { data: regProfile } = await supabase
+        .from('profiles')
+        .select('id, registration_number, email')
+        .eq('registration_number', cleanReg)
+        .maybeSingle();
+
+      if (regProfile) {
+        return {
+          exists: true,
+          message: `An account for registration number "${cleanReg}" already exists. Please sign in or use forgot password.`
+        };
+      }
+    }
+
+    if (cleanEmail) {
+      const { data: emailProfile } = await supabase
+        .from('profiles')
+        .select('id, registration_number, email')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (emailProfile) {
+        return {
+          exists: true,
+          message: `An account with email "${cleanEmail}" already exists. Please sign in or use forgot password.`
+        };
+      }
+    }
+  } catch (e) {}
+
+  // 3. Check verified_students has_registered status in Supabase
+  try {
+    if (cleanReg) {
+      const { data: vsData } = await supabase
+        .from('verified_students')
+        .select('id, registration_number, has_registered, is_registered')
+        .eq('registration_number', cleanReg)
+        .maybeSingle();
+
+      if (vsData && (vsData.has_registered || vsData.is_registered)) {
+        return {
+          exists: true,
+          message: `An account for registration number "${cleanReg}" has already been registered. Please sign in or recover your account.`
+        };
+      }
+    }
+  } catch (e) {}
+
+  // 4. Check local verified students roster
+  try {
+    const localVerified = getLocalVerifiedStudents();
+    const verifiedRecord = localVerified.find(s => s.registration_number?.toUpperCase() === cleanReg);
+    if (verifiedRecord && (verifiedRecord.has_registered || verifiedRecord.is_registered)) {
+      return {
+        exists: true,
+        message: `An account for registration number "${cleanReg}" has already been registered. Please sign in or recover your account.`
+      };
+    }
+  } catch (e) {}
+
+  return { exists: false };
+}
+
+/**
  * Step 1: Find student record by registration number
- * Uses generic error messages to prevent enumeration attacks
  */
 export async function lookupVerifiedStudentRecord(regNo) {
   if (!regNo || !regNo.trim()) {
@@ -243,7 +333,34 @@ export async function lookupVerifiedStudentRecord(regNo) {
   const cleanReg = regNo.trim().toUpperCase();
   const GENERIC_ERROR = 'Unable to verify these details. Please check your information and try again.';
 
-  // 1. Try Supabase lookup if connected
+  // 1. Check if an account already exists in profiles
+  try {
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id, registration_number')
+      .eq('registration_number', cleanReg)
+      .maybeSingle();
+
+    if (existingProfile) {
+      return {
+        found: false,
+        error: { message: `An account for registration number "${cleanReg}" already exists. Please sign in or reset your password.`, code: 'ACCOUNT_EXISTS' }
+      };
+    }
+  } catch (e) {}
+
+  // Check local database for existing account
+  try {
+    const localDb = getLocalStudentsDatabase();
+    if (localDb.some(s => s.registration_number?.toUpperCase() === cleanReg)) {
+      return {
+        found: false,
+        error: { message: `An account for registration number "${cleanReg}" already exists. Please sign in or reset your password.`, code: 'ACCOUNT_EXISTS' }
+      };
+    }
+  } catch (e) {}
+
+  // 2. Try Supabase lookup in verified_students if connected
   try {
     const { data, error } = await supabase
       .from('verified_students')
@@ -253,12 +370,12 @@ export async function lookupVerifiedStudentRecord(regNo) {
 
     if (!error && data) {
       if (data.status && data.status !== 'active') {
-        return { found: false, error: { message: GENERIC_ERROR } };
+        return { found: false, error: { message: 'This student record is currently inactive. Please contact the department.' } };
       }
       if (data.has_registered || data.is_registered) {
         return {
           found: false,
-          error: { message: 'An account has already been registered for this student. Please sign in or recover your account.' }
+          error: { message: `An account for registration number "${cleanReg}" has already been registered. Please sign in or recover your account.`, code: 'ACCOUNT_EXISTS' }
         };
       }
 
@@ -276,7 +393,7 @@ export async function lookupVerifiedStudentRecord(regNo) {
     // Fallback to local store
   }
 
-  // 2. Local store lookup
+  // 3. Local store lookup
   const roster = getLocalVerifiedStudents();
   const record = roster.find(s => s.registration_number.toUpperCase() === cleanReg);
 
@@ -285,13 +402,13 @@ export async function lookupVerifiedStudentRecord(regNo) {
   }
 
   if (record.status !== 'active') {
-    return { found: false, error: { message: GENERIC_ERROR } };
+    return { found: false, error: { message: 'This student record is currently inactive. Please contact the department.' } };
   }
 
-  if (record.has_registered) {
+  if (record.has_registered || record.is_registered) {
     return {
       found: false,
-      error: { message: 'An account has already been registered for this student. Please sign in or recover your account.' }
+      error: { message: `An account for registration number "${cleanReg}" has already been registered. Please sign in or recover your account.`, code: 'ACCOUNT_EXISTS' }
     };
   }
 

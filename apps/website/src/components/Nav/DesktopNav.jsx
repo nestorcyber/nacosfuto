@@ -227,7 +227,7 @@ const DesktopNav = () => {
             href={import.meta.env.VITE_PORTAL_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? "http://localhost:5174/login" : "/portal")}
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-[#138601] text-[#138601] dark:text-[#4bd043] dark:border-[#4bd043] hover:bg-[#138601] hover:text-white dark:hover:bg-[#138601] dark:hover:text-white px-4 py-2 rounded-xl font-bold text-xs tracking-wider transition-all whitespace-nowrap uppercase shadow-sm"
+            className="border border-[#138601] text-[#138601] dark:text-[#4bd043] dark:border-[#4bd043] hover:bg-[#138601] hover:text-white dark:hover:bg-[#138601] dark:hover:text-white px-4 py-2 rounded font-bold text-xs tracking-wider transition-all whitespace-nowrap uppercase shadow-sm"
           >
             Portal
           </a>

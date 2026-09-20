@@ -46,7 +46,7 @@ const Navbar = () => {
               }`
         }`}
       >
-        <div className="flex items-center h-16 site-container w-full">
+        <div className="flex items-center justify-between md:justify-start h-16 site-container w-full">
           <div className="flex items-center flex-shrink-0 mr-8">
             <ScrollToTopLink to="/" className="flex items-center">
               <img
@@ -56,7 +56,7 @@ const Navbar = () => {
               />
             </ScrollToTopLink>
           </div>
-          <div className="flex-1 flex justify-center items-center gap-8">
+          <div className="flex-1 hidden md:flex justify-center items-center gap-8">
             <DesktopNav
               toggleResources={toggleDesktopResources}
               toggleDarkMode={toggleTheme}
@@ -67,7 +67,7 @@ const Navbar = () => {
           </div>
           <button
             onClick={() => setMobileNavOpen(!mobileNavOpen)}
-            className={`md:hidden p-2 rounded-lg cursor-pointer transition-colors ${
+            className={`md:hidden p-2 rounded cursor-pointer transition-colors ${
               isNacosExec
                 ? 'text-white hover:bg-white/10'
                 : theme === 'light'
@@ -87,6 +87,7 @@ const Navbar = () => {
           isResourcesOpen={mobileResourcesOpen}
           toggleDarkMode={toggleTheme}
           darkMode={theme === 'dark'}
+          isNacosExec={isNacosExec}
         />
       </header>
 
