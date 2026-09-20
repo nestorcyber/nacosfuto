@@ -28,7 +28,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await dispatchEmail({ to, subject, html, text });
+    const fallbackEnv = {
+      SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+      SMTP_PORT: process.env.SMTP_PORT || '465',
+      SMTP_SECURE: process.env.SMTP_SECURE || 'true',
+      SMTP_USER: process.env.SMTP_USER || 'ict.nacosfuto@gmail.com',
+      SMTP_PASS: process.env.SMTP_PASS || 'tpzpeggagtsokdqb',
+      SMTP_FROM: process.env.SMTP_FROM || '"NACOS FUTO" <no-reply@nacosfuto.org.ng>'
+    };
+
+    const result = await dispatchEmail({ to, subject, html, text }, fallbackEnv);
     return res.status(200).json(result);
   } catch (err) {
     console.error('[API /api/email/send Error]:', err);

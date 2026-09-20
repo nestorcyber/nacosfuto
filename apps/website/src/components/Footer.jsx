@@ -46,11 +46,11 @@ const Footer = () => {
             <h4 className="text-base font-bold mb-4 text-white uppercase tracking-wider">Quick Links</h4>
             <ul className="space-y-2.5 text-sm text-green-100/80">
               <li><ScrollToTopLink to="/about" className="hover:text-[#4bd043] transition-colors">About Department</ScrollToTopLink></li>
+              <li><ScrollToTopLink to="/about/administration" className="hover:text-[#4bd043] transition-colors">Administration</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/about/nacos-executives" className="hover:text-[#4bd043] transition-colors">NACOS Executives</ScrollToTopLink></li>
-              <li><ScrollToTopLink to="/academics" className="hover:text-[#4bd043] transition-colors">Academic Programs</ScrollToTopLink></li>
-              <li><ScrollToTopLink to="/faculty" className="hover:text-[#4bd043] transition-colors">Faculty Directory</ScrollToTopLink></li>
+              <li><ScrollToTopLink to="/news" className="hover:text-[#4bd043] transition-colors">News & Journal</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/events" className="hover:text-[#4bd043] transition-colors">Department Events</ScrollToTopLink></li>
-              <li><ScrollToTopLink to="/alumni" className="hover:text-[#4bd043] transition-colors">Alumni Network</ScrollToTopLink></li>
+              <li><ScrollToTopLink to="/about/alumni" className="hover:text-[#4bd043] transition-colors">Alumni Network</ScrollToTopLink></li>
             </ul>
           </div>
 

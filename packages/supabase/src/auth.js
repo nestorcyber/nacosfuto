@@ -377,12 +377,12 @@ export async function registerStudent(studentData) {
 
   const regExists = students.some(s => s.registration_number.toUpperCase() === cleanReg);
   if (regExists) {
-    return { data: null, error: { message: `A student with registration number "${cleanReg}" already exists.` } };
+    return { data: null, error: { message: 'User already exists. Please sign in or reset your password.' } };
   }
 
   const emailExists = students.some(s => s.email.toLowerCase() === cleanEmail);
   if (emailExists) {
-    return { data: null, error: { message: `Email "${cleanEmail}" is already registered. Please sign in or use forgot password.` } };
+    return { data: null, error: { message: 'User already exists. Please sign in or reset your password.' } };
   }
 
   // 4. Hash password
@@ -526,7 +526,7 @@ export async function requestStudentPasswordReset(identifier) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
-      .or(`registration_number.ilike.${cleanId},email.ilike.${cleanId}`)
+      .or(`registration_number.eq.${cleanId},email.eq.${cleanId},registration_number.ilike.${cleanId},email.ilike.${cleanId}`)
       .limit(1)
       .maybeSingle();
     if (profile) {
@@ -540,7 +540,7 @@ export async function requestStudentPasswordReset(identifier) {
       const { data: vs } = await supabase
         .from('verified_students')
         .select('*')
-        .or(`registration_number.ilike.${cleanId},email.ilike.${cleanId}`)
+        .or(`registration_number.eq.${cleanId},email.eq.${cleanId},registration_number.ilike.${cleanId},email.ilike.${cleanId}`)
         .limit(1)
         .maybeSingle();
       if (vs) {
@@ -580,7 +580,7 @@ export async function requestStudentPasswordReset(identifier) {
   // Send real email via SMTP
   const emailResult = await sendPasswordResetEmail(targetEmail, otpResult.code, studentName);
   if (!emailResult.success && emailResult.provider !== 'simulated') {
-    return { success: false, error: { message: "Could not send password reset email. Please try again later." } };
+    return { success: false, error: { message: emailResult.error || "Could not send password reset email. Please try again later." } };
   }
 
   return {

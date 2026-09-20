@@ -267,20 +267,37 @@ const Events = () => {
     fetchLiveEvents();
   }, []);
 
-  return (
+    return (
     <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-[#041801] text-white' : 'bg-white text-[#083002]'} transition-colors duration-300`}>
       <Navbar />
-      
-      <div className="flex-grow site-container py-16 w-full">
-        {/* Page Header */}
-        <header className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-black mb-4">
-            Department <span className="text-[#138601] dark:text-[#4bd043]">Events</span>
-          </h1>
-          <p className="text-base sm:text-lg opacity-80 max-w-2xl mx-auto leading-relaxed">
-            Explore our past tech workshops, recent coding sessions, and upcoming department-wide conferences.
-          </p>
-        </header>
+
+      <main className="flex-grow">
+        {/* Full-width Home-Style Hero Section */}
+        <section className="relative flex min-h-[460px] sm:min-h-[500px] md:h-[65vh] items-center justify-center overflow-hidden bg-gray-950">
+          <img
+            src={getCloudinaryAssetUrl('event_tech_day') || eventTechDay}
+            alt="Department Events Banner"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-[#041801]/95 via-[#041801]/60 to-black/35" />
+          <div className="absolute inset-0 bg-black/25" />
+
+          <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto flex flex-col items-center py-16 sm:py-20 md:py-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#138601]/80 text-white font-bold text-xs uppercase tracking-wider mb-4 border border-green-400/30 shadow">
+              <FaCalendarAlt className="text-xs" />
+              <span>Conferences & Gatherings</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 drop-shadow-lg tracking-tight leading-[1.2]">
+              Department <span className="text-[#4bd043]">Events</span>
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-gray-100 max-w-2xl drop-shadow font-normal leading-relaxed text-center">
+              Explore our tech workshops, hackathons, regional coding competitions, and upcoming academic conferences.
+            </p>
+          </div>
+        </section>
+
+        <div className="site-container py-16 w-full">
 
         {/* 1. Upcoming Events Section */}
         <section className="mb-20">
@@ -410,7 +427,8 @@ const Events = () => {
             ))}
           </div>
         </section>
-      </div>
+        </div>
+      </main>
 
       <Footer />
     </div>

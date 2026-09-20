@@ -27,7 +27,7 @@ import CampusTour from "./pages/CampusTour";
 import CampusClubs from "./pages/CampusClubs";
 import FAQsPage from "./pages/FAQsPage";
 import ReportIssue from "./pages/ReportIssue";
-import Faculty from "./pages/Faculty";
+import News from "./pages/News";
 import Resources from "./pages/Resources";
 import Announcements from "./pages/Announcements";
 import PlaceholderPage from "./pages/PlaceholderPage";
@@ -78,7 +78,9 @@ function App() {
             {/* Academics & Programs */}
             <Route path="/academics" element={<Academics />} />
             <Route path="/programs" element={<AcademicPrograms />} />
-            <Route path="/faculty" element={<Faculty />} />
+            <Route path="/administration" element={<Administration />} />
+            <Route path="/faculty" element={<Administration />} />
+            <Route path="/news" element={<News />} />
             <Route path="/resources" element={<Resources />} />
 
             {/* Admissions */}

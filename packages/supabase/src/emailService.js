@@ -136,12 +136,17 @@ export async function sendVerificationEmail(toEmail, otpCode) {
       })
     });
 
-    if (apiResponse.ok) {
+    const isJson = (apiResponse.headers.get('content-type') || '').includes('application/json');
+    if (apiResponse.ok && isJson) {
       const result = await apiResponse.json().catch(() => ({}));
-      console.info(`[Email Service Success] Dispatched via ${result.provider || 'smtp'} to ${toEmail}`);
-      return { success: true, provider: result.provider || 'smtp', ...result };
+      if (result.success) {
+        console.info(`[Email Service Success] Dispatched via ${result.provider || 'smtp'} to ${toEmail}`);
+        return { success: true, provider: result.provider || 'smtp', ...result };
+      }
+    } else if (apiResponse.ok && !isJson) {
+      console.warn('[API /api/email/send] Received non-JSON response (likely static rewrite fallback)');
     } else {
-      const errData = await apiResponse.json().catch(() => ({}));
+      const errData = isJson ? await apiResponse.json().catch(() => ({})) : {};
       console.warn('[API /api/email/send Non-OK]', errData);
     }
   } catch (apiErr) {
@@ -351,10 +356,15 @@ export async function sendPasswordResetEmail(toEmail, resetCode, studentName = '
       })
     });
 
-    if (apiResponse.ok) {
+    const isJson = (apiResponse.headers.get('content-type') || '').includes('application/json');
+    if (apiResponse.ok && isJson) {
       const result = await apiResponse.json().catch(() => ({}));
-      console.info(`[Email Service Success] Reset email dispatched via ${result.provider || 'smtp'} to ${toEmail}`);
-      return { success: true, provider: result.provider || 'smtp', ...result };
+      if (result.success) {
+        console.info(`[Email Service Success] Reset email dispatched via ${result.provider || 'smtp'} to ${toEmail}`);
+        return { success: true, provider: result.provider || 'smtp', ...result };
+      }
+    } else if (apiResponse.ok && !isJson) {
+      console.warn('[API /api/email/send] Received non-JSON response (likely static rewrite fallback)');
     }
   } catch (apiErr) {
     // Fallback if API endpoint unreachable

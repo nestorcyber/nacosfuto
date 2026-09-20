@@ -261,9 +261,7 @@ export async function checkIfStudentAccountExists(regNo, email) {
     if (localFound) {
       return {
         exists: true,
-        message: cleanReg && localFound.registration_number?.toUpperCase() === cleanReg
-          ? `An account for registration number "${cleanReg}" already exists. Please sign in or use forgot password.`
-          : `An account with email "${cleanEmail}" already exists. Please sign in or use forgot password.`
+        message: 'User already exists. Please sign in or use forgot password.'
       };
     }
   } catch (e) {}
@@ -280,7 +278,7 @@ export async function checkIfStudentAccountExists(regNo, email) {
       if (regProfile) {
         return {
           exists: true,
-          message: `An account for registration number "${cleanReg}" already exists. Please sign in or use forgot password.`
+          message: 'User already exists. Please sign in or use forgot password.'
         };
       }
     }
@@ -295,7 +293,7 @@ export async function checkIfStudentAccountExists(regNo, email) {
       if (emailProfile) {
         return {
           exists: true,
-          message: `An account with email "${cleanEmail}" already exists. Please sign in or use forgot password.`
+          message: 'User already exists. Please sign in or use forgot password.'
         };
       }
     }
@@ -313,7 +311,7 @@ export async function checkIfStudentAccountExists(regNo, email) {
       if (vsData && (vsData.has_registered || vsData.is_registered)) {
         return {
           exists: true,
-          message: `An account for registration number "${cleanReg}" has already been registered. Please sign in or recover your account.`
+          message: 'User already exists. Please sign in or use forgot password.'
         };
       }
     }
@@ -326,7 +324,7 @@ export async function checkIfStudentAccountExists(regNo, email) {
     if (verifiedRecord && (verifiedRecord.has_registered || verifiedRecord.is_registered)) {
       return {
         exists: true,
-        message: `An account for registration number "${cleanReg}" has already been registered. Please sign in or recover your account.`
+        message: 'User already exists. Please sign in or use forgot password.'
       };
     }
   } catch (e) {}
@@ -367,7 +365,7 @@ export async function lookupVerifiedStudentRecord(regNo) {
     if (existingProfile) {
       return {
         found: false,
-        error: { message: `An account for registration number "${cleanReg}" already exists. Please sign in or reset your password.`, code: 'ACCOUNT_EXISTS' }
+        error: { message: 'User already exists. Please sign in or reset your password.', code: 'ACCOUNT_EXISTS' }
       };
     }
   } catch (e) {}
@@ -378,7 +376,7 @@ export async function lookupVerifiedStudentRecord(regNo) {
     if (localDb.some(s => s.registration_number?.toUpperCase() === cleanReg)) {
       return {
         found: false,
-        error: { message: `An account for registration number "${cleanReg}" already exists. Please sign in or reset your password.`, code: 'ACCOUNT_EXISTS' }
+        error: { message: 'User already exists. Please sign in or reset your password.', code: 'ACCOUNT_EXISTS' }
       };
     }
   } catch (e) {}

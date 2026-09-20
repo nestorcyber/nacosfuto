@@ -164,64 +164,81 @@ const Gallery = () => {
         : images.filter(img => img.category === activeFilter);
 
     return (
-        <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}>
+        <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-[#041801] text-white' : 'bg-white text-gray-900'} transition-colors duration-300`}>
             <Navbar />
-            <div className="flex-grow site-container py-16 w-full">
-                <header className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-500">
-                        Campus Life Gallery
-                    </h1>
-                    <p className="text-base sm:text-lg opacity-80 max-w-2xl mx-auto leading-relaxed">
-                        Capturing the events, tech hackathons, and moments that define our experience at FUTO Computer Science department.
-                    </p>
 
+            <main className="flex-grow">
+                {/* Full-width Home-Style Hero Section */}
+                <section className="relative flex min-h-[460px] sm:min-h-[500px] md:h-[65vh] items-center justify-center overflow-hidden bg-gray-950">
+                    <img
+                        src={getCloudinaryAssetUrl('gallery_dept_front') || galleryDeptFront}
+                        alt="Campus Life Gallery Banner"
+                        className="absolute inset-0 w-full h-full object-cover object-center"
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#041801]/95 via-[#041801]/60 to-black/35" />
+                    <div className="absolute inset-0 bg-black/25" />
+
+                    <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto flex flex-col items-center py-16 sm:py-20 md:py-0">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#138601]/80 text-white font-bold text-xs uppercase tracking-wider mb-4 border border-green-400/30 shadow">
+                            <FiCamera className="text-xs" />
+                            <span>Visual Archive</span>
+                        </div>
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 drop-shadow-lg tracking-tight leading-[1.2]">
+                            Campus Life <span className="text-[#4bd043]">Gallery</span>
+                        </h1>
+                        <p className="text-base sm:text-lg md:text-xl text-gray-100 max-w-2xl drop-shadow font-normal leading-relaxed text-center">
+                            Capturing the moments, hackathons, academic forums, and community culture that define the Department of Computer Science at FUTO.
+                        </p>
+                    </div>
+                </section>
+
+                <div className="site-container py-12 w-full">
                     {/* Filter Pills */}
-                    <div className="flex items-center justify-center flex-wrap gap-2 mt-8">
+                    <div className="flex items-center justify-center flex-wrap gap-2 mb-10">
                         {categories.map(cat => (
                             <button
                                 key={cat}
                                 type="button"
                                 onClick={() => setActiveFilter(cat)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                                className={`px-4 py-2 rounded text-xs font-bold transition-all cursor-pointer ${
                                     activeFilter === cat
-                                        ? 'bg-[#138601] text-white shadow-md'
+                                        ? 'bg-[#138601] text-white shadow-sm'
                                         : theme === 'dark'
-                                            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                            ? 'bg-[#083002] text-gray-200 hover:bg-[#138601]/30 border border-[#138601]/30'
+                                            : 'bg-[#f4faf3] text-[#083002] hover:bg-[#e4f7e2] border border-[#138601]/20'
                                 }`}
                             >
                                 {cat}
                             </button>
                         ))}
                     </div>
-                </header>
 
-                <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-                    {filteredImages.map((img, index) => (
-                        <div 
-                            key={index} 
-                            onClick={() => setActiveModalImage(img)}
-                            className="break-inside-avoid relative group rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-green-500/10"
-                        >
-                            <CloudinaryImage
-                                src={img.publicId}
-                                fallbackSrc={img.src}
-                                alt={img.caption}
-                                preset="gallery_preview"
-                                className="w-full h-auto transform group-hover:scale-105 transition-transform duration-700"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-5 text-white text-left">
-                                <span className="p-2 bg-white/20 backdrop-blur rounded-lg text-white w-fit mb-2">
-                                    <FiMaximize2 size={16} />
-                                </span>
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-green-400 mb-1">{img.category}</span>
-                                <p className="font-semibold text-xs leading-snug drop-shadow">{img.caption}</p>
-                                <span className="text-[9px] text-green-300 mt-1 font-mono">High-Resolution Photo</span>
+                    {/* 4:3 Landscape Ratio Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredImages.map((img, index) => (
+                            <div 
+                                key={index} 
+                                onClick={() => setActiveModalImage(img)}
+                                className="relative group rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer border border-[#138601]/20 dark:border-[#138601]/30 aspect-[4/3] bg-gray-900"
+                            >
+                                <img
+                                    src={img.src}
+                                    alt={img.caption}
+                                    className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-5 text-white text-left">
+                                    <span className="p-2 bg-white/20 backdrop-blur rounded-lg text-white w-fit mb-2">
+                                        <FiMaximize2 size={16} />
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold tracking-wider text-green-400 mb-1">{img.category}</span>
+                                    <p className="font-semibold text-xs leading-snug drop-shadow line-clamp-2">{img.caption}</p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>
+            </main>
 
             {/* Modal for full resolution viewing */}
             {activeModalImage && (

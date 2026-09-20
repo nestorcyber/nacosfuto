@@ -19,9 +19,9 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
     ],
     ABOUT: [
       { name: "About Us", link: "/about" },
-      { name: "NACOS Executives", link: "/about/nacos-executives" },
       { name: "Administration", link: "/about/administration" },
-      { name: "Faculty", link: "/faculty" },
+      { name: "NACOS Executives", link: "/about/nacos-executives" },
+      { name: "News & Journal", link: "/news" },
       { name: "Alumni", link: "/about/alumni" },
       { name: "Anthems", link: "/about/anthems" },
       { name: "Gallery", link: "/about/gallery" },

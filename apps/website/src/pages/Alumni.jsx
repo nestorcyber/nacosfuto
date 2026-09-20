@@ -61,40 +61,29 @@ const Alumni = () => {
     <div className="min-h-screen bg-white dark:bg-[#041801] text-[#083002] dark:text-white transition-colors duration-300">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative py-20 bg-white dark:bg-[#041801] border-b border-[#138601]/20 dark:border-[#138601]/30">
-        <div className="site-container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-[#083002] dark:text-white tracking-tight leading-tight">
-                FUTO CSC <span className="text-[#138601] dark:text-[#4bd043]">Alumni Network</span>
-              </h1>
-              <p className="text-base sm:text-lg text-[#083002]/75 dark:text-green-100/75 mb-8 leading-relaxed">
-                Connecting generations of computer scientists who are shaping the future of technology, fintech, artificial intelligence, and cybersecurity in Nigeria and across the globe.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <ScrollToTopLink
-                  to="/contact"
-                  className="inline-flex items-center justify-center px-7 py-2.5 bg-[#138601] hover:bg-[#0f6c01] text-white font-semibold text-sm rounded shadow-sm transition-colors cursor-pointer min-h-[42px]"
-                >
-                  Join Alumni Network
-                </ScrollToTopLink>
-                <ScrollToTopLink
-                  to="/events"
-                  className="inline-flex items-center justify-center px-7 py-2.5 font-medium text-sm text-gray-900 dark:text-white bg-[#f1f3f5] dark:bg-[#083002] hover:bg-[#e9ecef] dark:hover:bg-[#138601] rounded border border-gray-200 dark:border-[#138601]/30 transition-colors cursor-pointer min-h-[42px]"
-                >
-                  Upcoming Events
-                </ScrollToTopLink>
-              </div>
-            </div>
-            <div className="rounded-2xl overflow-hidden shadow-lg border border-[#138601]/20 dark:border-[#138601]/30">
-              <img
-                src={alumniHeroImg}
-                alt="FUTO Computer Science Alumni"
-                className="w-full h-auto object-cover"
-              />
-            </div>
+      {/* Full-width Home-Style Hero Section */}
+      <section className="relative flex min-h-[460px] sm:min-h-[500px] md:h-[65vh] items-center justify-center overflow-hidden bg-gray-950">
+        <img
+          src={alumniHeroImg}
+          alt="FUTO Computer Science Alumni"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+
+        {/* Clean dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#041801]/95 via-[#041801]/60 to-black/35" />
+        <div className="absolute inset-0 bg-black/25" />
+
+        <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto flex flex-col items-center py-16 sm:py-20 md:py-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#138601]/80 text-white font-bold text-xs uppercase tracking-wider mb-4 border border-green-400/30 shadow">
+            <FaGraduationCap className="text-xs" />
+            <span>Global Fellowship</span>
           </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 drop-shadow-lg tracking-tight leading-[1.2]">
+            FUTO CSC <span className="text-[#4bd043]">Alumni Network</span>
+          </h1>
+          <p className="text-base sm:text-lg md:text-xl text-gray-100 max-w-2xl drop-shadow font-normal leading-relaxed text-center">
+            Connecting generations of computer scientists who are shaping the future of technology, fintech, artificial intelligence, and cybersecurity in Nigeria and across the globe.
+          </p>
         </div>
       </section>
 
