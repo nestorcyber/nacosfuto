@@ -26,6 +26,16 @@ if (fs.existsSync(targetDist)) {
 
 fs.mkdirSync(targetDist, { recursive: true });
 
+// Helper to copy assets to root assets directory as safe fallback
+function copyAssetsToRoot(sourceDir, label) {
+  const assetsDir = path.join(sourceDir, 'assets');
+  if (fs.existsSync(assetsDir)) {
+    fs.mkdirSync(targetAssetsDist, { recursive: true });
+    fs.cpSync(assetsDir, targetAssetsDist, { recursive: true });
+    console.log(`[bundle-dist] Copied ${label} assets to root /assets`);
+  }
+}
+
 // 1. Copy website dist into root dist
 if (fs.existsSync(websiteDist)) {
   console.log('[bundle-dist] 1/4 Copying apps/website/dist -> dist (Main Website)...');
@@ -39,6 +49,7 @@ if (fs.existsSync(websiteAdminDist)) {
   console.log('[bundle-dist] 2/4 Copying apps/website-admin/dist -> dist/admin (Website Admin)...');
   fs.mkdirSync(targetWebsiteAdminDist, { recursive: true });
   fs.cpSync(websiteAdminDist, targetWebsiteAdminDist, { recursive: true });
+  copyAssetsToRoot(websiteAdminDist, 'website-admin');
 } else {
   console.warn('[bundle-dist] Warning: apps/website-admin/dist was not found.');
 }
@@ -48,12 +59,7 @@ if (fs.existsSync(portalDist)) {
   console.log('[bundle-dist] 3/4 Copying apps/portal/dist -> dist/portal (Student Portal)...');
   fs.mkdirSync(targetPortalDist, { recursive: true });
   fs.cpSync(portalDist, targetPortalDist, { recursive: true });
-
-  const portalAssetsDist = path.join(portalDist, 'assets');
-  if (fs.existsSync(portalAssetsDist)) {
-    fs.mkdirSync(targetAssetsDist, { recursive: true });
-    fs.cpSync(portalAssetsDist, targetAssetsDist, { recursive: true });
-  }
+  copyAssetsToRoot(portalDist, 'portal');
 
   const portalIndex = path.join(portalDist, 'index.html');
   if (fs.existsSync(portalIndex)) {
@@ -68,6 +74,7 @@ if (fs.existsSync(portalAdminDist)) {
   console.log('[bundle-dist] 4/4 Copying apps/portal-admin/dist -> dist/portal-admin (Portal Admin)...');
   fs.mkdirSync(targetPortalAdminDist, { recursive: true });
   fs.cpSync(portalAdminDist, targetPortalAdminDist, { recursive: true });
+  copyAssetsToRoot(portalAdminDist, 'portal-admin');
 } else {
   console.warn('[bundle-dist] Warning: apps/portal-admin/dist was not found.');
 }

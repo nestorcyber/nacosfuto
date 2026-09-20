@@ -7,7 +7,7 @@
       "destination": "/portal-admin/index.html"
     },
     {
-      "source": "/portal-admin/:path*",
+      "source": "/portal-admin/((?!.*\\.).*)",
       "destination": "/portal-admin/index.html"
     },
     {
@@ -15,7 +15,7 @@
       "destination": "/admin/index.html"
     },
     {
-      "source": "/admin/:path*",
+      "source": "/admin/((?!.*\\.).*)",
       "destination": "/admin/index.html"
     },
     {
@@ -23,11 +23,11 @@
       "destination": "/portal/index.html"
     },
     {
-      "source": "/portal/:path*",
+      "source": "/portal/((?!.*\\.).*)",
       "destination": "/portal/index.html"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
   ]

@@ -613,59 +613,31 @@ export async function confirmStudentPasswordReset(regNumber, otpCode, newPasswor
 
   const passwordHash = await hashPassword(newPassword);
 
-  let updatedInSupabase = false;
-
-  // 1. Primary: Update via serverless API endpoint (/api/auth/reset-password)
+  // 1. Direct Supabase client update
   try {
-    const apiRes = await fetch('/api/auth/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        identifier: cleanReg,
-        newPasswordHash: passwordHash
-      })
-    });
-    const isJson = (apiRes.headers.get('content-type') || '').includes('application/json');
-    if (apiRes.ok && isJson) {
-      const data = await apiRes.json().catch(() => ({}));
-      if (data.success) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, registration_number, email')
+      .or(`registration_number.ilike.${cleanReg},email.ilike.${cleanReg.toLowerCase()}`)
+      .limit(1)
+      .maybeSingle();
+
+    if (profile) {
+      const { data: updated, error: updErr } = await supabase
+        .from('profiles')
+        .update({
+          password_hash: passwordHash,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', profile.id)
+        .select();
+
+      if (!updErr && updated && updated.length > 0) {
         updatedInSupabase = true;
       }
     }
-  } catch (apiErr) {
-    // API serverless endpoint not reachable, proceed to direct client fallback
-  }
-
-  // 2. Secondary: Direct Supabase client update
-  if (!updatedInSupabase) {
-    try {
-      // Find the profile first
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, registration_number, email')
-        .or(`registration_number.ilike.${cleanReg},email.ilike.${cleanReg.toLowerCase()}`)
-        .limit(1)
-        .maybeSingle();
-
-      if (profile) {
-        const { data: updated, error: updErr } = await supabase
-          .from('profiles')
-          .update({
-            password_hash: passwordHash,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', profile.id)
-          .select();
-
-        if (!updErr && updated && updated.length > 0) {
-          updatedInSupabase = true;
-        } else if (updErr && updErr.code === '42501') {
-          console.error('[Supabase RLS Error] Profiles update forbidden by Row Level Security policy.');
-        }
-      }
-    } catch (e) {
-      console.warn('Direct Supabase profiles update exception:', e);
-    }
+  } catch (e) {
+    console.warn('Direct Supabase profiles update exception:', e);
   }
 
   // 3. Update in local storage

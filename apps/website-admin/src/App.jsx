@@ -16,6 +16,8 @@ import AdminUsers from './pages/AdminUsers';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 
 function App() {
+  const isNestedUnderAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+
   return (
     <ThemeProvider>
       <ToastContainer
@@ -30,7 +32,7 @@ function App() {
         pauseOnHover
         theme="colored"
       />
-      <BrowserRouter>
+      <BrowserRouter basename={isNestedUnderAdmin ? '/admin' : '/'}>
         <Routes>
           {/* Authentication */}
           <Route path="/login" element={<AdminLogin />} />

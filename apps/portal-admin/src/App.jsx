@@ -11,9 +11,11 @@ import PortalAdminSettings from './pages/PortalAdminSettings';
 import PortalAdminProtectedRoute from './components/PortalAdminProtectedRoute';
 
 function App() {
+  const isNestedUnderPortalAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/portal-admin');
+
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={isNestedUnderPortalAdmin ? '/portal-admin' : '/'}>
         <Routes>
           {/* Public Administrative Authentication */}
           <Route path="/login" element={<PortalAdminLogin />} />
