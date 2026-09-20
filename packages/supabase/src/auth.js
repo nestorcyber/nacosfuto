@@ -6,6 +6,8 @@ import {
   calculateExpectedGraduation, 
   getAcademicSession 
 } from '@nacos/config/academic';
+import { createOTPVerification, verifyOTP, maskEmail } from './otpService.js';
+import { sendPasswordResetEmail } from './emailService.js';
 
 /**
  * Cryptographic password hasher (SHA-256 with project salt)
@@ -456,3 +458,142 @@ export async function adminResetStudentPassword(id, newPassword = 'password') {
   saveLocalStudentsDatabase(students);
   return { data: true, error: null };
 }
+
+/**
+ * Request password reset OTP for a student by Registration Number or Email
+ */
+export async function requestStudentPasswordReset(identifier) {
+  if (!identifier || !identifier.trim()) {
+    return { success: false, error: { message: 'Please enter your Registration Number or Registered Email.' } };
+  }
+  const cleanId = identifier.trim().toLowerCase();
+
+  // 1. Try finding in Supabase profiles
+  let studentRecord = null;
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .or(`registration_number.ilike.${cleanId},email.ilike.${cleanId}`)
+      .limit(1)
+      .maybeSingle();
+    if (profile) {
+      studentRecord = profile;
+    }
+  } catch (e) {}
+
+  // 2. Try finding in Supabase verified_students
+  if (!studentRecord) {
+    try {
+      const { data: vs } = await supabase
+        .from('verified_students')
+        .select('*')
+        .or(`registration_number.ilike.${cleanId},email.ilike.${cleanId}`)
+        .limit(1)
+        .maybeSingle();
+      if (vs) {
+        studentRecord = vs;
+      }
+    } catch (e) {}
+  }
+
+  // 3. Fallback to local storage
+  if (!studentRecord) {
+    const localStudents = getLocalStudentsDatabase();
+    studentRecord = localStudents.find(s => 
+      s.registration_number.toLowerCase() === cleanId || 
+      (s.email && s.email.toLowerCase() === cleanId) ||
+      s.registration_number.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === cleanId.replace(/[^a-zA-Z0-9]/g, '')
+    );
+  }
+
+  if (!studentRecord || !studentRecord.email) {
+    return { 
+      success: false, 
+      error: { message: 'No registered student account was found with those details. Please verify and try again.' } 
+    };
+  }
+
+  const regNo = studentRecord.registration_number;
+  const targetEmail = studentRecord.email.trim().toLowerCase();
+  const studentName = studentRecord.full_name || studentRecord.first_name || 'Student';
+  const masked = maskEmail(targetEmail);
+
+  // Generate and store OTP via otpService
+  const otpResult = await createOTPVerification(regNo, 'email', masked, targetEmail);
+  if (!otpResult.success) {
+    return { success: false, error: otpResult.error };
+  }
+
+  // Send real email via SMTP
+  const emailResult = await sendPasswordResetEmail(targetEmail, otpResult.code, studentName);
+  if (!emailResult.success && emailResult.provider !== 'simulated') {
+    return { success: false, error: { message: "Could not send password reset email. Please try again later." } };
+  }
+
+  return {
+    success: true,
+    regNumber: regNo,
+    email: targetEmail,
+    maskedEmail: masked,
+    expiresAt: otpResult.expiresAt
+  };
+}
+
+/**
+ * Confirm password reset with OTP
+ */
+export async function confirmStudentPasswordReset(regNumber, otpCode, newPassword) {
+  if (!regNumber || !otpCode || !newPassword) {
+    return { success: false, error: { message: 'Please provide all required fields.' } };
+  }
+  if (newPassword.length < 6) {
+    return { success: false, error: { message: 'Password must be at least 6 characters long.' } };
+  }
+
+  const cleanReg = regNumber.trim().toUpperCase();
+  const verifyResult = await verifyOTP(cleanReg, 'email', otpCode);
+  if (!verifyResult.success) {
+    return { success: false, error: verifyResult.error };
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+
+  // 1. Update in Supabase profiles
+  try {
+    await supabase
+      .from('profiles')
+      .update({
+        password_hash: passwordHash,
+        updated_at: new Date().toISOString()
+      })
+      .eq('registration_number', cleanReg);
+  } catch (e) {}
+
+  // 2. Update in local storage
+  const students = getLocalStudentsDatabase();
+  const idx = students.findIndex(s => s.registration_number.toUpperCase() === cleanReg);
+  if (idx !== -1) {
+    students[idx] = {
+      ...students[idx],
+      password_hash: passwordHash,
+      updated_at: new Date().toISOString()
+    };
+    saveLocalStudentsDatabase(students);
+  }
+
+  // Also update active session if logged in
+  try {
+    const rawUser = localStorage.getItem('nacos_user');
+    if (rawUser) {
+      const u = JSON.parse(rawUser);
+      if (u.registration_number?.toUpperCase() === cleanReg) {
+        u.password_hash = passwordHash;
+        localStorage.setItem('nacos_user', JSON.stringify(u));
+      }
+    }
+  } catch (e) {}
+
+  return { success: true, message: 'Password reset successful. You can now log in.' };
+}
+
