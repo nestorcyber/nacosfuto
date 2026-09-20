@@ -32,9 +32,9 @@ export default async function handler(req, res) {
       SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
       SMTP_PORT: process.env.SMTP_PORT || '465',
       SMTP_SECURE: process.env.SMTP_SECURE || 'true',
-      SMTP_USER: process.env.SMTP_USER || 'ict.nacosfuto@gmail.com',
-      SMTP_PASS: process.env.SMTP_PASS || 'tpzpeggagtsokdqb',
-      SMTP_FROM: process.env.SMTP_FROM || '"NACOS FUTO" <no-reply@nacosfuto.org.ng>'
+      SMTP_USER: process.env.SMTP_USER,
+      SMTP_PASS: process.env.SMTP_PASS,
+      SMTP_FROM: process.env.SMTP_FROM || (process.env.SMTP_USER ? `"NACOS FUTO" <${process.env.SMTP_USER}>` : undefined)
     };
 
     const result = await dispatchEmail({ to, subject, html, text }, fallbackEnv);

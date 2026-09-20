@@ -44,9 +44,9 @@ const websiteEnv = parseEnv(path.join(rootDir, 'apps/website/.env'));
 const rootEnv = parseEnv(path.join(rootDir, '.env'));
 const env = { ...process.env, ...rootEnv, ...websiteEnv };
 
-const cloudName = env.CLOUDINARY_CLOUD_NAME || 'z3wgqisj';
-const apiKey = env.CLOUDINARY_API_KEY || '722252495954777';
-const apiSecret = env.CLOUDINARY_API_SECRET || 'S8lEKNI2XO6bcGGylYWivj05xUA';
+const cloudName = env.CLOUDINARY_CLOUD_NAME;
+const apiKey = env.CLOUDINARY_API_KEY;
+const apiSecret = env.CLOUDINARY_API_SECRET;
 
 if (!cloudName || !apiKey || !apiSecret) {
   console.error('Missing Cloudinary credentials in .env!');

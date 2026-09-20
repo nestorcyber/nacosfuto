@@ -1,21 +1,5 @@
-/**
- * NACOS FUTO Email Service Abstraction (Zero-Serverless Resend Client)
- * 
- * Directly dispatches verification emails via Resend API (https://resend.com)
- * without requiring any Vercel/backend serverless functions.
- * 
- * Environment Variables (in .env):
- *   VITE_RESEND_API_KEY - Resend API key (e.g., "re_...")
- *   VITE_RESEND_FROM    - Verified sender (defaults to "NACOS FUTO <onboarding@resend.dev>")
- */
-
-const RESEND_API_KEY = typeof import.meta !== 'undefined' && import.meta.env?.VITE_RESEND_API_KEY
-  ? import.meta.env.VITE_RESEND_API_KEY
-  : (typeof process !== 'undefined' && process.env?.RESEND_API_KEY ? process.env.RESEND_API_KEY : '');
-
-const RESEND_FROM = typeof import.meta !== 'undefined' && import.meta.env?.VITE_RESEND_FROM
-  ? import.meta.env.VITE_RESEND_FROM
-  : (typeof process !== 'undefined' && process.env?.RESEND_FROM ? process.env.RESEND_FROM : 'NACOS FUTO <onboarding@resend.dev>');
+// Direct API dispatch is routed through serverless endpoint /api/email/send
+// to keep provider secrets (SMTP, Resend) securely server-side.
 
 /**
  * Build responsive, branded HTML email for verification code
@@ -153,38 +137,7 @@ export async function sendVerificationEmail(toEmail, otpCode) {
     // API server endpoint not accessible, proceed to direct client fallback
   }
 
-  // 2. Secondary Fallback: Direct Resend API (Retained for future / direct client dispatch)
-  if (RESEND_API_KEY) {
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: RESEND_FROM,
-          to: [toEmail],
-          subject,
-          html: htmlBody,
-          text: textBody
-        })
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (response.ok) {
-        console.info(`[Resend Direct Email Success] Dispatched to ${toEmail} (ID: ${data.id})`);
-        return { success: true, provider: 'resend', id: data.id };
-      } else {
-        console.error('[Resend Email API Error]', data);
-      }
-    } catch (err) {
-      console.warn('[Resend Email Direct Network Error]', err);
-    }
-  }
-
-  // 3. Resilient Development / Simulated Fallback
+  // 2. Resilient Development / Simulated Fallback
   console.info(`%c[NACOS VERIFICATION CODE]: ${otpCode} for ${toEmail}`, 'background: #083002; color: #4ade80; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
   return {
     success: true,
@@ -370,29 +323,7 @@ export async function sendPasswordResetEmail(toEmail, resetCode, studentName = '
     // Fallback if API endpoint unreachable
   }
 
-  if (RESEND_API_KEY) {
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: RESEND_FROM,
-          to: [toEmail],
-          subject,
-          html: htmlBody,
-          text: textBody
-        })
-      });
-      if (response.ok) {
-        const data = await response.json().catch(() => ({}));
-        console.info(`[Resend Direct Email Success] Reset email dispatched to ${toEmail} (ID: ${data.id})`);
-        return { success: true, provider: 'resend', id: data.id };
-      }
-    } catch (err) {}
-  }
+  // Fallback in development / simulated mode
 
   console.info(`%c[NACOS RESET CODE]: ${resetCode} for ${toEmail}`, 'background: #083002; color: #4ade80; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
   return {
