@@ -57,6 +57,29 @@ export function getLocalVerifiedStudents() {
   // Pre-seed with authoritative canonical departmental roster
   const seeded = [
     {
+      id: 'vs-seed-20241450682',
+      registration_number: '20241450682',
+      surname: 'Anyanwu',
+      first_name: 'Nestor',
+      middle_name: 'Ifeanyi',
+      last_name: 'Anyanwu',
+      full_name: 'Anyanwu Nestor Ifeanyi',
+      email: 'nestor.ifeanyi@futo.edu.ng',
+      phone_number: '+234 814 506 8200',
+      department: 'Computer Science',
+      faculty: 'School of Information & Communication Tech (SICT)',
+      level: '100 Level',
+      admission_year: 2024,
+      programme: 'B.Tech Computer Science',
+      programme_duration: 5,
+      academic_session: '2024/2025',
+      status: 'active',
+      has_registered: true,
+      auth_user_id: 'student-seed-nestor-2024',
+      registered_at: '2024-10-15T09:00:00Z',
+      created_at: '2024-10-01T08:00:00Z'
+    },
+    {
       id: 'vs-seed-20241429481',
       registration_number: '20241429481',
       full_name: 'Nestor Anyanwu',

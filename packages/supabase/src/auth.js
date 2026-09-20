@@ -82,6 +82,26 @@ export function getLocalStudentsDatabase() {
   // Pre-seed with the required canonical test students (Students A, B, C & demo users)
   const seeded = [
     {
+      id: 'student-seed-nestor-2024',
+      registration_number: '20241450682',
+      surname: 'Anyanwu',
+      first_name: 'Nestor',
+      middle_name: 'Ifeanyi',
+      last_name: 'Anyanwu',
+      full_name: 'Anyanwu Nestor Ifeanyi',
+      email: 'nestor.ifeanyi@futo.edu.ng',
+      phone_number: '+234 814 506 8200',
+      admission_year: 2024,
+      programme: 'B.Tech Computer Science',
+      department: 'Computer Science',
+      faculty: 'School of Information & Communication Tech (SICT)',
+      programme_duration: 5,
+      password_hash: '0c72b5bd44ae98f639e6d29d0429f1fade10ee23cd770e5b8fc9bd2ba248aeb6', // 'password'
+      role: 'Student Member',
+      is_active: true,
+      created_at: '2024-10-15T09:00:00Z'
+    },
+    {
       id: 'student-seed-a',
       registration_number: '20241429481',
       full_name: 'Nestor Anyanwu',
