@@ -17,11 +17,14 @@ import {
   ShieldCheck, 
   Sparkles,
   ChevronRight,
-  UserCheck
+  UserCheck,
+  GraduationCap,
+  ExternalLink
 } from 'lucide-react';
 import { BsSun, BsMoon } from 'react-icons/bs';
 import { useTheme } from '../context/ThemeContext';
 import { getWebsiteAdminSession, logoutWebsiteAdmin, hasPermission } from '@nacos/auth';
+import { getAppUrls } from '@nacos/config/urls';
 import logoDark from '../assets/full-logo-dark.png';
 import logoLight from '../assets/full-logo-light.png';
 
@@ -112,6 +115,30 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
               {isDark ? <BsSun className="w-4 h-4" /> : <BsMoon className="w-4 h-4" />}
             </button>
 
+            {/* Main Portal Dynamic Link (No hardcoded localhost) */}
+            <a
+              href={getAppUrls().portal}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#138601] hover:bg-[#0f6c01] text-white transition-all shadow-xs cursor-pointer"
+              title="Open Student Portal"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Main Portal</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+
+            <a
+              href={getAppUrls().adminHub}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-green-200 dark:border-[#138601]/40 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-[#041801] transition-all cursor-pointer"
+              title="Open Admin Command Center"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Admin Hub</span>
+            </a>
+
             {/* Current Admin Pill */}
             {admin && (
               <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-[#138601]/30 text-xs">
@@ -176,6 +203,40 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
               })}
             </nav>
 
+            {/* Quick Cross-App Launchers */}
+            <div className="space-y-1.5 pt-2 border-t border-gray-200 dark:border-[#138601]/20">
+              <a
+                href={getAppUrls().portal}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold bg-[#138601] hover:bg-[#0f6c01] text-white transition-all shadow-xs group"
+                title="Launch Main Student Portal"
+              >
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  <span>Main Student Portal</span>
+                </div>
+                <ExternalLink className="w-3 h-3 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+
+              <a
+                href={getAppUrls().website}
+                target="_blank"
+                rel="noreferrer"
+                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  isDark
+                    ? 'bg-white/5 border-[#138601]/25 text-gray-300 hover:text-white'
+                    : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
+                  <span>Live Website</span>
+                </div>
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </a>
+            </div>
+
             {/* Scoped Security Assurance Badge */}
             <div className={`p-4 rounded-xl border text-xs space-y-1.5 ${
               isDark 
@@ -232,6 +293,33 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
                     );
                   })}
                 </nav>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-[#138601]/20 space-y-1.5">
+                  <a
+                    href={getAppUrls().portal}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold bg-[#138601] text-white"
+                  >
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="w-3.5 h-3.5" />
+                      <span>Main Student Portal</span>
+                    </div>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <a
+                    href={getAppUrls().adminHub}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold border border-inherit text-inherit"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Admin Hub</span>
+                    </div>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
 
               <button

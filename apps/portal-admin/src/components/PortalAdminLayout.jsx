@@ -11,12 +11,16 @@ import {
   X, 
   Sun, 
   Moon, 
-  ChevronRight,
-  Shield,
-  CreditCard
+  ChevronRight, 
+  Shield, 
+  CreditCard,
+  GraduationCap,
+  Globe,
+  ExternalLink
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { getPortalAdminSession, logoutPortalAdmin } from '@nacos/auth';
+import { getAppUrls } from '@nacos/config/urls';
 import logoDark from '../assets/full-logo-dark.png';
 import logoLight from '../assets/full-logo-light.png';
 
@@ -137,7 +141,56 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+          {/* Dynamic Cross-Portal Launch Links (No hardcoded localhost) */}
+          <div className="space-y-1.5 pt-1">
+            <a
+              href={getAppUrls().portal}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold bg-[#138601] hover:bg-[#0f6c01] text-white transition-all shadow-xs group"
+              title="Open Main Student Portal"
+            >
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>Main Student Portal</span>
+              </div>
+              <ExternalLink className="w-3 h-3 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+            </a>
+
+            <div className="grid grid-cols-2 gap-1.5">
+              <a
+                href={getAppUrls().website}
+                target="_blank"
+                rel="noreferrer"
+                className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium border transition-colors ${
+                  isDark
+                    ? 'bg-white/5 border-[#138601]/25 text-gray-300 hover:text-white hover:bg-white/10'
+                    : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
+                }`}
+                title="Open NACOS FUTO Main Website"
+              >
+                <Globe className="w-3 h-3 text-[#138601] dark:text-[#4bd043]" />
+                <span>Website</span>
+              </a>
+
+              <a
+                href={getAppUrls().adminHub}
+                target="_blank"
+                rel="noreferrer"
+                className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-medium border transition-colors ${
+                  isDark
+                    ? 'bg-white/5 border-[#138601]/25 text-green-300 hover:text-white hover:bg-[#138601]/20'
+                    : 'bg-green-50 border-green-200 text-green-800 hover:bg-green-100'
+                }`}
+                title="Open Admin Command Center"
+              >
+                <Shield className="w-3 h-3 text-[#138601] dark:text-[#4bd043]" />
+                <span>Hub</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1 border-t border-inherit/40">
             <button
               type="button"
               onClick={toggleTheme}
@@ -217,6 +270,41 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
                 </Link>
               );
             })}
+            <div className="py-2 border-t border-inherit space-y-1">
+              <a
+                href={getAppUrls().portal}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between px-3 py-2 rounded text-xs font-semibold bg-[#138601] text-white"
+              >
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  <span>Main Student Portal</span>
+                </div>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <a
+                  href={getAppUrls().website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs border border-inherit text-inherit"
+                >
+                  <Globe className="w-3 h-3" />
+                  <span>Website</span>
+                </a>
+                <a
+                  href={getAppUrls().adminHub}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs border border-inherit text-inherit"
+                >
+                  <Shield className="w-3 h-3" />
+                  <span>Admin Hub</span>
+                </a>
+              </div>
+            </div>
+
             <div className="pt-2 border-t border-inherit flex items-center justify-between">
               <span className="text-xs text-inherit opacity-75">{displayName}</span>
               <button 
@@ -244,8 +332,20 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
               {subtitle || 'Manage student verification records, digital ID applications, and portal access.'}
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <a
+              href={getAppUrls().portal}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#138601] hover:bg-[#0f6c01] text-white transition-all shadow-xs cursor-pointer"
+              title="Open Student Portal"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Open Student Portal</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
               <span className="w-2 h-2 rounded-full bg-[#138601] animate-pulse"></span>
               <span>System Live</span>
             </span>

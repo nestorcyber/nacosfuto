@@ -29,6 +29,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { hashPassword, isLocalEnvironment } from '@nacos/supabase/auth';
 import { supabase } from '@nacos/supabase';
+import { getAppUrls } from '@nacos/config/urls';
 import logoDark from '../assets/full-logo-dark.png';
 import logoLight from '../assets/full-logo-light.png';
 
@@ -394,7 +395,7 @@ const PortalLayout = ({ children }) => {
                     </button>
 
                     <a
-                      href="http://localhost:5173"
+                      href={getAppUrls().website}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => setProfileDropdownOpen(false)}
@@ -402,6 +403,17 @@ const PortalLayout = ({ children }) => {
                     >
                       <Globe className="w-4 h-4 text-gray-400 dark:text-green-400" />
                       <span>Main Website</span>
+                    </a>
+
+                    <a
+                      href={getAppUrls().adminHub}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-green-700 dark:text-[#4bd043] hover:bg-green-50 dark:hover:bg-[#041801]/60 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Admin Command Center</span>
                     </a>
                   </div>
 

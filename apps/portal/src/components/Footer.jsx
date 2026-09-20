@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Globe, MapPin } from 'lucide-react';
 import { FaTwitter, FaLinkedinIn, FaGithub } from 'react-icons/fa';
+import { getAppUrls } from '@nacos/config/urls';
 
 const Footer = () => {
   return (
@@ -49,7 +50,8 @@ const Footer = () => {
           <div>
             <h4 className="text-white font-bold text-sm mb-4">Ecosystem</h4>
             <ul className="space-y-2.5 text-xs">
-              <li><a href="http://localhost:5173" className="hover:text-[#4bd043] transition-colors">Main Public Website</a></li>
+              <li><a href={getAppUrls().website} className="hover:text-[#4bd043] transition-colors">Main Public Website</a></li>
+              <li><a href={getAppUrls().adminHub} className="hover:text-[#4bd043] transition-colors">Admin Command Center</a></li>
               <li><Link to="/hackathons/BuildXNACOS" className="hover:text-[#4bd043] transition-colors">BUILDX Hackathon Hub</Link></li>
               <li><Link to="/hackathons/BuildXNACOS/apply" className="hover:text-[#4bd043] transition-colors">Team Application</Link></li>
               <li><a href="mailto:support@nacos.org.ng" className="hover:text-[#4bd043] transition-colors">Secretariat Support</a></li>

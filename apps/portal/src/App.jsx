@@ -13,6 +13,7 @@ import IdCard from './pages/IdCard';
 import IdVerification from './pages/IdVerification';
 import HackathonDetail from './pages/HackathonDetail';
 import HackathonApply from './pages/HackathonApply';
+import AdminHub from './pages/AdminHub';
 
 function App() {
   const isNestedUnderPortal = typeof window !== 'undefined' && window.location.pathname.startsWith('/portal');
@@ -34,6 +35,14 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/id-card" element={<IdCard />} />
+
+          {/* Dedicated Administrative Gateway & Control Center */}
+          <Route path="/admin-hub" element={<AdminHub />} />
+          <Route path="/admin-portal" element={<AdminHub />} />
+          <Route path="/admin-gateway" element={<AdminHub />} />
+          <Route path="/admin-access" element={<AdminHub />} />
+          <Route path="/admin-login" element={<AdminHub />} />
+          <Route path="/admin" element={<AdminHub />} />
 
           {/* Public Verification Route */}
           <Route path="/verify/id/:id" element={<IdVerification />} />

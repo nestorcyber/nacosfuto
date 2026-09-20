@@ -5,7 +5,8 @@ import { signInStudent, isLocalEnvironment } from '@nacos/supabase/auth';
 import studentPhoto from '../assets/gallery_student_group.jpg';
 import logoDark from '../assets/full-logo-dark.png';
 import { FaUserShield } from 'react-icons/fa';
-import { AlertCircle, Eye, EyeOff, RotateCw, ArrowRight } from 'lucide-react';
+import { ShieldCheck, AlertCircle, Eye, EyeOff, RotateCw, ArrowRight } from 'lucide-react';
+import { getAppUrls } from '@nacos/config/urls';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -196,31 +197,30 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Development Quick Login - Only shown on localhost */}
-          {isLocalEnvironment() && (
-            <>
-              <div className="relative flex items-center justify-center py-2">
-                <div className="w-full border-t border-gray-300"></div>
-                <span className="bg-white px-3 text-xs text-amber-600 font-medium whitespace-nowrap">
-                  Dev Mode: Localhost Only
-                </span>
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
+          {/* Administrative Gateway Button */}
+          <div className="pt-2">
+            <div className="relative flex items-center justify-center py-2 mb-3">
+              <div className="w-full border-t border-gray-200"></div>
+              <span className="bg-white px-3 text-xs text-gray-500 uppercase tracking-wider font-semibold whitespace-nowrap">
+                Staff & Administrators
+              </span>
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
 
-              <div className="space-y-2.5">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('President')}
-                  className="w-full flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer border border-gray-200"
-                >
-                  <div className="w-6 flex items-center justify-center text-gray-700 mr-2">
-                    <FaUserShield className="w-4 h-4" />
-                  </div>
-                  <span className="flex-1 text-center font-medium">Quick Demo Login (Admin)</span>
-                </button>
+            <a
+              href={getAppUrls().adminHub}
+              className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-gray-800 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200 border border-gray-300 shadow-sm cursor-pointer group"
+            >
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-5 h-5 text-[#138601] group-hover:scale-110 transition-transform" />
+                <span>Login as Admin</span>
               </div>
-            </>
-          )}
+              <div className="flex items-center text-xs text-gray-500 font-normal">
+                <span>Admin Hub</span>
+                <ArrowRight className="w-4 h-4 ml-1.5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </a>
+          </div>
 
         </div>
       </div>

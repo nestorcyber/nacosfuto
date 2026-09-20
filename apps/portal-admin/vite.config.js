@@ -80,6 +80,7 @@ export default defineConfig({
       '@nacos/types': path.resolve(__dirname, '../../packages/types/src/index.js'),
       '@nacos/config/academic': path.resolve(__dirname, '../../packages/config/academic.js'),
       '@nacos/config/idCardTemplate': path.resolve(__dirname, '../../packages/config/idCardTemplate.js'),
+      '@nacos/config/urls': path.resolve(__dirname, '../../packages/config/urls.js'),
       '@nacos/config': path.resolve(__dirname, '../../packages/config/tailwind.preset.js')
     }
   },

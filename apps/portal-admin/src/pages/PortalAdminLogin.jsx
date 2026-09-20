@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { getCloudinaryAssetUrl } from '@nacos/media';
-import { loginPortalAdmin, getPortalAdminSession, isLocalEnvironment } from '@nacos/auth';
+import { loginPortalAdmin, getPortalAdminSession } from '@nacos/auth';
+import { getAppUrls } from '@nacos/config/urls';
 import studentPhoto from '../assets/gallery_student_group.jpg';
 import logoDark from '../assets/full-logo-dark.png';
-import { ShieldCheck, Mail, Lock, AlertCircle, ArrowRight, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, ArrowRight, ShieldAlert, Eye, EyeOff, GraduationCap, ExternalLink } from 'lucide-react';
 
 export const PortalAdminLogin = () => {
   const navigate = useNavigate();
@@ -12,10 +13,11 @@ export const PortalAdminLogin = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // If already logged in, redirect
+  // If already logged in with authorized scope, redirect immediately
   useEffect(() => {
     const existing = getPortalAdminSession();
     if (existing) {
@@ -49,17 +51,12 @@ export const PortalAdminLogin = () => {
       }
     } catch (err) {
       setIsLoading(false);
-      setError('An unexpected error occurred during administrative authentication.');
+      setError('An unexpected error occurred during portal authentication.');
     }
   };
 
-  const handleQuickLogin = (adminEmail) => {
-    setEmail(adminEmail);
-    setPassword('password');
-  };
-
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-white text-gray-900 font-sans selection:bg-black selection:text-white">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-white text-gray-900 font-sans selection:bg-[#138601] selection:text-white">
       
       {/* LEFT HALF (50%): Department Photo with Brand Logo, Clean Overlay & Portal Admin Text */}
       <div 
@@ -67,7 +64,7 @@ export const PortalAdminLogin = () => {
         style={{ backgroundImage: `url(${getCloudinaryAssetUrl('gallery_student_group') || studentPhoto})` }}
       >
         {/* Subtle dark gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/25 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30 pointer-events-none"></div>
 
         {/* Top Left NACOS Brand Logo */}
         <div className="relative z-10 flex items-center gap-3">
@@ -83,6 +80,10 @@ export const PortalAdminLogin = () => {
 
         {/* Text bottom left */}
         <div className="relative z-10 max-w-lg space-y-2 mt-auto pt-16">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 border border-white/20 text-white text-xs font-semibold backdrop-blur-xs mb-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#4bd043]" />
+            <span>Secure Database Authentication</span>
+          </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-snug tracking-tight">
             Student Portal Administration & Verification
           </h2>
@@ -98,59 +99,68 @@ export const PortalAdminLogin = () => {
           
           {/* Form Heading */}
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-[#138601] border border-green-200 mb-3">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Restricted Access Control</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
               Sign in to Portal Control
             </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Authorized access for student registry and ID card verification officers.
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              Enter your authorized administrative credentials to manage student rosters, verifications, and digital ID cards.
             </p>
           </div>
 
-          {/* Error Message */}
+          {/* Feedback & Error Alerts */}
           {error && (
-            <div className="p-3.5 rounded bg-red-50 text-sm text-red-600 font-medium flex items-start gap-2.5">
-              <ShieldAlert className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
-              <span>{error}</span>
+            <div className="p-4 rounded bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
+              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="flex-1 leading-relaxed">
+                <span>{error}</span>
+              </div>
             </div>
           )}
 
-          {/* Clean Input Form Box */}
+          {/* Core Login Form */}
           <form onSubmit={handleLogin} className="space-y-4">
+            
+            {/* Email Address */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wider">
-                Admin Email Address
+                Administrator Email Address
               </label>
               <div className="relative">
                 <input
                   type="email"
                   required
-                  placeholder="portaladmin@nacos.org.ng"
+                  placeholder="admin@nacos.org.ng"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-[#138601] font-normal transition-all"
                 />
                 <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
               </div>
             </div>
 
+            {/* Password */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wider">
-                Password
+                Administrative Password
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  placeholder="••••••••"
+                  placeholder="Enter administrative password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
+                  className="w-full pl-10 pr-11 py-3 text-sm rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-[#138601] font-normal transition-all"
                 />
                 <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-700 cursor-pointer"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -161,7 +171,7 @@ export const PortalAdminLogin = () => {
               className="w-full px-7 py-3 min-h-[44px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {isLoading ? (
-                <span>Authenticating...</span>
+                <span>Authenticating with Database...</span>
               ) : (
                 <>
                   <span>Sign In as Portal Admin</span>
@@ -171,30 +181,25 @@ export const PortalAdminLogin = () => {
             </button>
           </form>
 
-          {/* Quick Demo Credentials Chip (Localhost / Development Only) */}
-          {isLocalEnvironment() && (
-            <div className="pt-4 border-t border-gray-100">
-              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-2">
-                Quick Test Credentials (Localhost Only)
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('portaladmin@nacos.org.ng')}
-                  className="px-3 py-1.5 text-xs font-medium bg-[#ebf3ff] hover:bg-[#d8e8ff] text-blue-800 rounded transition-colors cursor-pointer"
-                >
-                  Portal Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('superadmin@nacos.org.ng')}
-                  className="px-3 py-1.5 text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-[#138601] rounded transition-colors cursor-pointer"
-                >
-                  Super Admin
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Standard Navigation Links */}
+          <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+            <a
+              href={getAppUrls().adminHub}
+              className="text-[#138601] hover:underline font-semibold flex items-center gap-1"
+            >
+              <span>Admin Command Center</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+
+            <a
+              href={getAppUrls().portal}
+              className="hover:text-gray-800 transition-colors flex items-center gap-1"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Back to Student Portal</span>
+            </a>
+          </div>
+
         </div>
       </div>
     </div>

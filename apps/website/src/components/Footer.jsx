@@ -87,10 +87,16 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Copyright */}
+        {/* Copyright & Admin Gateway Link */}
         <div className="border-t border-white/10 mt-12 pt-6 text-center text-xs text-green-200/50 flex flex-col sm:flex-row justify-between items-center gap-2">
           <p>&copy; {new Date().getFullYear()} NACOS FUTO Chapter & Department of Computer Science. All rights reserved.</p>
-          <p className="text-green-400/70 font-medium">Towards Advanced Computing & Technological Excellence</p>
+          <div className="flex items-center gap-4">
+            <ScrollToTopLink to="/admin-hub" className="text-green-300/80 hover:text-white transition-colors underline font-medium">
+              Administrative Command Center
+            </ScrollToTopLink>
+            <span>•</span>
+            <p className="text-green-400/70 font-medium">Towards Advanced Computing & Technological Excellence</p>
+          </div>
         </div>
       </div>
     </footer>

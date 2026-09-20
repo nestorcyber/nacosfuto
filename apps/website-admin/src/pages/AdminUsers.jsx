@@ -33,8 +33,8 @@ const AdminUsers = () => {
 
   const loadAdmins = async () => {
     setLoading(true);
-    const list = await superAdminGetAdmins();
-    setAdmins(list || []);
+    const res = await superAdminGetAdmins();
+    setAdmins(Array.isArray(res) ? res : res?.admins || []);
     setLoading(false);
   };
 

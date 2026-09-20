@@ -34,6 +34,7 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 import UnreadAnnouncementBanner from "./components/UnreadAnnouncementBanner";
 import IdVerification from "./pages/IdVerification";
+import AdminHub from "./pages/AdminHub";
 
 // Lazy-loaded pages
 const Events = lazy(() => import("./pages/Events"));
@@ -128,6 +129,14 @@ function App() {
 
             {/* Public Student ID Card Verification */}
             <Route path="/verify/id/:id" element={<IdVerification />} />
+
+            {/* Dedicated Administrative Gateway & Control Center */}
+            <Route path="/admin-hub" element={<AdminHub />} />
+            <Route path="/admin-portal" element={<AdminHub />} />
+            <Route path="/admin-gateway" element={<AdminHub />} />
+            <Route path="/admin-access" element={<AdminHub />} />
+            <Route path="/admin-login" element={<AdminHub />} />
+            <Route path="/admin" element={<AdminHub />} />
 
             {/* 404 Not Found */}
             <Route path="*" element={<NotFound />} />

@@ -97,7 +97,14 @@ export async function loginPortalAdmin(email, password) {
         .maybeSingle();
 
       if (dbAdmin && dbAdmin.password_hash) {
-        const isValidPassword = dbAdmin.password_hash === passwordHash;
+        let rawSha = passwordHash;
+        let saltedSha = null;
+        if (typeof crypto !== 'undefined' && crypto.subtle) {
+          const enc = new TextEncoder();
+          const buf = await crypto.subtle.digest('SHA-256', enc.encode(password + 'nacos_futo_salt_2026'));
+          saltedSha = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        const isValidPassword = dbAdmin.password_hash === rawSha || (saltedSha && dbAdmin.password_hash === saltedSha);
         const isAllowedScope = dbAdmin.scope === ADMIN_SCOPES.STUDENT_PORTAL || dbAdmin.scope === ADMIN_SCOPES.SUPER_ADMIN;
 
         if (isValidPassword && isAllowedScope) {
