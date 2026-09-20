@@ -417,11 +417,13 @@ CREATE TABLE IF NOT EXISTS public.id_card_applications (
   level TEXT,
   passport_photo_url TEXT,
   status TEXT DEFAULT 'pending',
+  payment_status TEXT DEFAULT 'pending',
   qr_verification_code TEXT,
   rejection_reason TEXT,
   submitted_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()),
   reviewed_by TEXT,
   reviewed_at TIMESTAMPTZ,
+  renewal_date DATE,
   card_expiry_date DATE,
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL

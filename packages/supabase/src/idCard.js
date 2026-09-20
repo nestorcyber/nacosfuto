@@ -227,17 +227,46 @@ export async function checkStudentPaymentStatus(matricNumber) {
   if (!matricNumber) return { isPaid: false, payment: null };
 
   const cleanMatric = matricNumber.trim().toUpperCase();
+  const today = new Date();
+  const threeSixtyFiveDays = 365 * 24 * 60 * 60 * 1000;
 
   // 1. Check Supabase remote if available
   try {
     const { data, error } = await supabase
-      .from('dues_payments')
+      .from('departmental_dues')
       .select('*')
       .eq('matric_number', cleanMatric)
       .in('status', ['verified', 'successful'])
       .maybeSingle();
 
     if (!error && data) {
+      // Check renewal date from id_card_applications
+      const { data: appData, error: appError } = await supabase
+        .from('id_card_applications')
+        .select('renewal_date, status')
+        .or(`registration_number.eq.${cleanMatric},matric_number.eq.${cleanMatric}`)
+        .maybeSingle();
+
+      if (!appError && appData) {
+        // If application is revoked, not paid regardless of dues status
+        if (appData.status === 'revoked') {
+          return { isPaid: false, payment: data };
+        }
+
+        // If renewal_date is set and within 365 days, payment stays verified
+        if (appData.renewal_date) {
+          const renewalDate = new Date(appData.renewal_date);
+          const daysSinceRenewal = (today - renewalDate) / (1000 * 60 * 60 * 24);
+          if (daysSinceRenewal <= 365) {
+            return { isPaid: true, payment: data };
+          }
+        }
+
+        // Renewal expired (> 365 days) - still paid if not revoked, but needs renewal
+        return { isPaid: true, payment: data, needsRenewal: true };
+      }
+
+      // No application record - payment from dues is still valid
       return { isPaid: true, payment: data };
     }
   } catch (err) {
@@ -252,6 +281,32 @@ export async function checkStudentPaymentStatus(matricNumber) {
   );
 
   if (payment) {
+    // Check local id_card_applications for renewal
+    const apps = getLocalIdApplicationsDatabase();
+    const app = apps.find(a => 
+      (a.matric_number && a.matric_number.toUpperCase() === cleanMatric) ||
+      (a.student_id && a.student_id.toUpperCase() === cleanMatric)
+    );
+
+    if (app) {
+      // If application is revoked, not paid
+      if (app.status === 'revoked') {
+        return { isPaid: false, payment };
+      }
+
+      // If renewal_date is set and within 365 days, payment stays verified
+      if (app.renewal_date) {
+        const renewalDate = new Date(app.renewal_date);
+        const daysSinceRenewal = (today - renewalDate) / (1000 * 60 * 60 * 24);
+        if (daysSinceRenewal <= 365) {
+          return { isPaid: true, payment };
+        }
+      }
+
+      // Renewal expired
+      return { isPaid: true, payment, needsRenewal: true };
+    }
+
     return { isPaid: true, payment };
   }
 
@@ -279,17 +334,44 @@ export async function recordStudentPayment(matricNumber, amount = 2500) {
   payments.push(newPayment);
   localStorage.setItem(PAYMENTS_STORAGE_KEY, JSON.stringify(payments));
 
-  // Sync with Supabase if online
+  // Calculate renewal date: 365 days from now
+  const renewalDate = new Date();
+  renewalDate.setDate(renewalDate.getDate() + 365);
+
+  // Sync with Supabase - departmental_dues
   try {
-    await supabase.from('dues_payments').insert([{
+    await supabase.from('departmental_dues').insert([{
       matric_number: cleanMatric,
       session: newPayment.session,
       amount: newPayment.amount,
       payment_reference: newPayment.payment_reference,
-      status: 'verified'
+      status: 'verified',
+      paid_at: new Date().toISOString()
     }]);
   } catch (e) {
     // offline
+  }
+
+  // Sync with Supabase - id_card_applications: update existing application's payment_status and renewal_date
+  try {
+    // Check if there's an existing application for this student
+    const { data: existingApp } = await supabase
+      .from('id_card_applications')
+      .select('*')
+      .or(`registration_number.eq.${cleanMatric},matric_number.eq.${cleanMatric}`)
+      .maybeSingle();
+
+    if (existingApp) {
+      // Update existing application with payment status and renewal date
+      await supabase.from('id_card_applications').update({
+        payment_status: 'verified',
+        renewal_date: renewalDate.toISOString().split('T')[0],
+        updated_at: new Date().toISOString()
+      }).eq('id', existingApp.id);
+    }
+    // If no existing application, do not create one - application creation is handled separately in createIdCardApplication
+  } catch (e) {
+    // Offline
   }
 
   return { success: true, payment: newPayment };
@@ -432,6 +514,16 @@ export async function verifyAndLinkPayment(applicationId, matricNumber) {
   app.payment_reference = paymentCheck.payment?.payment_reference || `NACOS-FUTO-2026-PAY-${Math.floor(10000 + Math.random() * 90000)}`;
   app.paid_at = new Date().toISOString();
 
+  // Set renewal date to 365 days from now if not already set or expired
+  const today = new Date();
+  const renewalDate = new Date(today);
+  renewalDate.setDate(renewalDate.getDate() + 365);
+  const existingRenewal = app.renewal_date ? new Date(app.renewal_date) : null;
+  // Only update renewal date if it's expired or not set
+  if (!existingRenewal || (today - existingRenewal) / (1000 * 60 * 60 * 24) > 365) {
+    app.renewal_date = renewalDate.toISOString().split('T')[0];
+  }
+
   // If photo is already uploaded, advance to ready_to_submit, else photo_required
   if (app.passport_url) {
     app.status = 'ready_to_submit';
@@ -447,6 +539,7 @@ export async function verifyAndLinkPayment(applicationId, matricNumber) {
       payment_status: app.payment_status,
       payment_reference: app.payment_reference,
       paid_at: app.paid_at,
+      renewal_date: app.renewal_date,
       status: app.status,
       updated_at: app.updated_at
     }).eq('id', app.id);
