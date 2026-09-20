@@ -40,6 +40,7 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
     ],
     ACADEMICS: [
       { name: "Academic Year Calendar", link: "/about/calendar" },
+      { name: "Learning Resources", link: "/resources" },
       { name: "Programs", link: "/programs" },
       { name: "Admission Portal", link: "/admission-portal" },
       { name: "How To Apply", link: "/how-to-apply" },
@@ -62,7 +63,6 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
       { name: "Research Grants", link: "/research-grants" },
     ],
     RESOURCES: [
-      { name: "Learning Resources", link: "/resources" },
       { name: "Announcements", link: "/announcements" },
       { name: "Student Handbook", link: "/student-handbook" },
       { name: "FAQs", link: "/faqs" },

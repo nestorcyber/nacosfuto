@@ -297,23 +297,29 @@ const PortalLayout = ({ children }) => {
       }`}>
         <div className="site-container h-16 flex items-center justify-between">
           
-          {/* Brand: on mobile when drawer open, hide logo here (it shows in drawer) */}
+          {/* Brand: logo always visible, menu/X button always in same spot */}
           <div className="flex items-center gap-3">
+            {/* Menu toggle — always in same spot, icons cross-fade */}
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className={`md:hidden p-2.5 rounded-xl cursor-pointer transition-colors ${
-                mobileOpen
-                  ? isDark ? 'text-white bg-[#138601] border border-[#138601]' : 'text-white bg-[#138601]'
-                  : isDark ? 'text-gray-200 hover:text-white bg-[#041801] border border-[#138601]/30' : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200'
+              className={`md:hidden p-2.5 rounded-xl cursor-pointer transition-colors relative w-10 h-10 flex items-center justify-center ${
+                isDark ? 'text-gray-200 hover:text-white bg-[#041801] border border-[#138601]/30' : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200'
               }`}
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {/* Hamburger icon — fades out when open */}
+              <Menu className={`w-5 h-5 absolute transition-all duration-200 ${
+                mobileOpen ? 'opacity-0 scale-75 rotate-90' : 'opacity-100 scale-100 rotate-0'
+              }`} />
+              {/* X icon — fades in when open */}
+              <X className={`w-5 h-5 absolute transition-all duration-200 ${
+                mobileOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-75 -rotate-90'
+              }`} />
             </button>
 
-            {/* Logo: hide on mobile when drawer open */}
-            <Link to="/dashboard" className={`flex items-center gap-3 ${mobileOpen ? 'hidden md:flex' : 'flex'}`}>
+            {/* Logo — always visible in same position */}
+            <Link to="/dashboard" className="flex items-center gap-3">
               <img src={isDark ? logoDark : logoLight} alt="NACOS FUTO Logo" className="h-8 md:h-9 w-auto object-contain" />
               <div className="hidden sm:block border-l border-gray-200 dark:border-[#138601]/30 pl-3">
                 <span className="text-xs font-semibold text-[#138601] dark:text-[#4bd043] block leading-none">
