@@ -308,7 +308,7 @@ const Profile = () => {
                     className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors shadow-xs"
                   >
                     <Mail className="w-3.5 h-3.5" />
-                    <span>Contact Administrator (nacosfuto@gmail.com)</span>
+                    <span>Contact Admin</span>
                   </a>
 
                   <button
@@ -343,7 +343,7 @@ const Profile = () => {
             <div 
               onClick={handlePhotoClick}
               className="relative shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-[#138601]/30 bg-gray-100 dark:bg-[#041801] shadow-xs group cursor-pointer"
-              title="Profile photo is locked after registration - click to contact admin"
+              title="Profile photo is locked after registration — contact admin to update"
             >
               {user.profile_photo_url || user.avatar_url ? (
                 <img 

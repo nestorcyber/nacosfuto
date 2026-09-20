@@ -19,9 +19,7 @@ const Login = () => {
   // Auto-Continue: If already logged in & within 1-hour window, open dashboard automatically!
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('reason') === 'inactivity') {
-      setError('You were automatically logged out after 1 hour of inactivity for your security.');
-    } else if (params.get('reason') === 'not_registered') {
+    if (params.get('reason') === 'not_registered') {
       setError('Your registration number was not found in our student database. Please create an account or contact the NACOS admin.');
     } else if (params.get('reason') === 'deactivated') {
       setError('Your account has been deactivated. Please contact the NACOS admin or your department to resolve this.');
@@ -39,10 +37,9 @@ const Login = () => {
           localStorage.setItem('nacos_last_activity', now.toString());
           navigate('/dashboard', { replace: true });
         } else if (lastActivity && (now - lastActivity >= ONE_HOUR_MS)) {
-          // Session expired: clean up
+          // Session expired: clean up silently
           localStorage.removeItem('nacos_user');
           localStorage.removeItem('nacos_last_activity');
-          setError('Your session has expired due to 1 hour of inactivity. Please sign in again.');
         } else {
           // Valid user without stored activity timestamp -> initialize and continue
           localStorage.setItem('nacos_last_activity', now.toString());
