@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import crypto from 'crypto';
+import { dispatchEmail } from '../../packages/supabase/src/server/emailDispatcher.js';
 
 function cloudinaryDevPlugin() {
   return {
@@ -18,52 +19,11 @@ function cloudinaryDevPlugin() {
               const env = { ...process.env, ...rootEnv, ...localEnv };
 
               const data = JSON.parse(body || '{}');
-              const resendApiKey = env.RESEND_API_KEY;
-              const from = env.RESEND_FROM || env.EMAIL_FROM || 'NACOS FUTO <onboarding@resend.dev>';
-
-              console.log('\x1b[36m[NACOS Email (Resend)]\x1b[0m Sending verification email to:', data.to);
-              if (data.subject) console.log('\x1b[36m[NACOS Email (Resend)]\x1b[0m Subject:', data.subject);
-
-              if (resendApiKey) {
-                const resendRes = await fetch('https://api.resend.com/emails', {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${resendApiKey}`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    from,
-                    to: Array.isArray(data.to) ? data.to : [data.to],
-                    subject: data.subject,
-                    html: data.html,
-                    text: data.text
-                  })
-                });
-
-                const resendData = await resendRes.json().catch(() => ({}));
-                if (!resendRes.ok) {
-                  console.error('\x1b[31m[Resend API Error]\x1b[0m', resendData);
-                  res.statusCode = resendRes.status;
-                  res.setHeader('Content-Type', 'application/json');
-                  res.end(JSON.stringify({ error: resendData.message || 'Resend error', details: resendData }));
-                  return;
-                }
-
-                console.log('\x1b[32m[Resend Success]\x1b[0m Email ID:', resendData.id);
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ success: true, provider: 'resend', id: resendData.id }));
-                return;
-              }
-
-              // Fallback / simulated console mode
-              if (data.text) console.log('\x1b[33m[Simulated Resend Body]\x1b[0m:\n', data.text);
+              const result = await dispatchEmail(data, env);
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({
-                success: true,
-                provider: 'simulated_resend',
-                message: 'RESEND_API_KEY not configured. Verification email logged to console.'
-              }));
+              res.end(JSON.stringify(result));
             } catch (e) {
+              console.error('[Dev Server Email Error]:', e);
               res.statusCode = 500;
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ error: e.message }));

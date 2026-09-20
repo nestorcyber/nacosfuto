@@ -21,6 +21,9 @@
     "build:portal-admin": "npm --prefix apps/portal-admin run build",
     "lint": "npm --prefix apps/website run lint"
   },
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  },
   "devDependencies": {
     "concurrently": "^9.1.2",
     "turbo": "^2.4.4"

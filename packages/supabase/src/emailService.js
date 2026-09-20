@@ -20,7 +20,7 @@ const RESEND_FROM = typeof import.meta !== 'undefined' && import.meta.env?.VITE_
 /**
  * Build responsive, branded HTML email for verification code
  */
-function buildVerificationEmailHTML(code, expiryMinutes = 5) {
+export function buildVerificationEmailHTML(code, expiryMinutes = 5) {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -87,7 +87,7 @@ function buildVerificationEmailHTML(code, expiryMinutes = 5) {
 /**
  * Build plain text fallback
  */
-function buildVerificationEmailText(code, expiryMinutes = 5) {
+export function buildVerificationEmailText(code, expiryMinutes = 5) {
   return [
     'NACOS FUTO - STUDENT PORTAL VERIFICATION',
     '=========================================',
@@ -108,7 +108,10 @@ function buildVerificationEmailText(code, expiryMinutes = 5) {
 }
 
 /**
- * Dispatch verification email via Resend directly (Zero-Serverless)
+ * Dispatch verification email:
+ * 1. Calls /api/email/send (Nodemailer SMTP primary, Resend server fallback)
+ * 2. Falls back to direct client Resend API if API endpoint is unreachable
+ * 3. Falls back to simulated console in offline dev mode
  */
 export async function sendVerificationEmail(toEmail, otpCode) {
   const expiryMinutes = 5;
@@ -116,9 +119,36 @@ export async function sendVerificationEmail(toEmail, otpCode) {
   const htmlBody = buildVerificationEmailHTML(otpCode, expiryMinutes);
   const textBody = buildVerificationEmailText(otpCode, expiryMinutes);
 
-  console.info(`[Resend Email] Verification OTP for ${toEmail}: ${otpCode}`);
+  console.info(`[Email Service] Verification OTP for ${toEmail}: ${otpCode}`);
 
-  // If live Resend API key is configured, perform direct dispatch
+  // 1. Primary: Dispatch via /api/email/send (Supports Nodemailer SMTP & Resend)
+  try {
+    const apiResponse = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: toEmail,
+        subject,
+        html: htmlBody,
+        text: textBody
+      })
+    });
+
+    if (apiResponse.ok) {
+      const result = await apiResponse.json().catch(() => ({}));
+      console.info(`[Email Service Success] Dispatched via ${result.provider || 'smtp'} to ${toEmail}`);
+      return { success: true, provider: result.provider || 'smtp', ...result };
+    } else {
+      const errData = await apiResponse.json().catch(() => ({}));
+      console.warn('[API /api/email/send Non-OK]', errData);
+    }
+  } catch (apiErr) {
+    // API server endpoint not accessible, proceed to direct client fallback
+  }
+
+  // 2. Secondary Fallback: Direct Resend API (Retained for future / direct client dispatch)
   if (RESEND_API_KEY) {
     try {
       const response = await fetch('https://api.resend.com/emails', {
@@ -138,26 +168,22 @@ export async function sendVerificationEmail(toEmail, otpCode) {
 
       const data = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
+      if (response.ok) {
+        console.info(`[Resend Direct Email Success] Dispatched to ${toEmail} (ID: ${data.id})`);
+        return { success: true, provider: 'resend', id: data.id };
+      } else {
         console.error('[Resend Email API Error]', data);
-        return {
-          success: false,
-          error: { message: data.message || 'Failed to dispatch email via Resend.' }
-        };
       }
-
-      console.info(`[Resend Email Success] Dispatched email to ${toEmail} (ID: ${data.id})`);
-      return { success: true, provider: 'resend', id: data.id };
     } catch (err) {
       console.warn('[Resend Email Direct Network Error]', err);
     }
   }
 
-  // Resilient Development / Simulated Fallback
-  console.info(`%c[NACOS VERIFICATION CODE (RESEND)]: ${otpCode} for ${toEmail}`, 'background: #083002; color: #4ade80; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
+  // 3. Resilient Development / Simulated Fallback
+  console.info(`%c[NACOS VERIFICATION CODE]: ${otpCode} for ${toEmail}`, 'background: #083002; color: #4ade80; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
   return {
     success: true,
-    provider: 'simulated_resend',
+    provider: 'simulated',
     message: 'Verification code logged to console.'
   };
 }
@@ -168,7 +194,24 @@ export async function sendVerificationEmail(toEmail, otpCode) {
 export async function sendRecoveryNotificationEmail(adminEmail, studentReg, studentName) {
   const subject = `[NACOS Portal] Account Recovery Request: ${studentReg}`;
   const text = `Student ${studentName} (${studentReg}) has requested an account recovery. Please review in the Portal Admin panel.`;
-  
+  const html = `<p>Student <strong>${studentName}</strong> (${studentReg}) has requested an account recovery.</p><p>Please review in the Portal Admin panel.</p>`;
+
+  // 1. Try /api/email/send (SMTP or Resend)
+  try {
+    const apiRes = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: adminEmail,
+        subject,
+        text,
+        html
+      })
+    });
+    if (apiRes.ok) return { success: true };
+  } catch (e) {}
+
+  // 2. Direct Resend fallback
   if (RESEND_API_KEY) {
     try {
       await fetch('https://api.resend.com/emails', {
@@ -181,7 +224,8 @@ export async function sendRecoveryNotificationEmail(adminEmail, studentReg, stud
           from: RESEND_FROM,
           to: [adminEmail],
           subject,
-          text
+          text,
+          html
         })
       });
     } catch (e) {}
