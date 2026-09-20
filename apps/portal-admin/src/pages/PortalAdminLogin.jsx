@@ -17,11 +17,30 @@ export const PortalAdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // If already logged in with authorized scope, redirect immediately
+  // If already logged in with fresh session, auto-continue immediately
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reason') === 'inactivity') {
+      setError('You were automatically logged out after 1 hour of inactivity for your security.');
+    }
+
     const existing = getPortalAdminSession();
     if (existing) {
-      navigate('/', { replace: true });
+      const lastActivity = parseInt(localStorage.getItem('nacos_portal_admin_last_activity') || '0', 10);
+      const ONE_HOUR_MS = 60 * 60 * 1000;
+      const now = Date.now();
+
+      if (lastActivity && (now - lastActivity < ONE_HOUR_MS)) {
+        localStorage.setItem('nacos_portal_admin_last_activity', now.toString());
+        navigate('/', { replace: true });
+      } else if (lastActivity && (now - lastActivity >= ONE_HOUR_MS)) {
+        logoutPortalAdmin();
+        localStorage.removeItem('nacos_portal_admin_last_activity');
+        setError('Your administrative session has expired due to 1 hour of inactivity. Please sign in again.');
+      } else {
+        localStorage.setItem('nacos_portal_admin_last_activity', now.toString());
+        navigate('/', { replace: true });
+      }
     }
   }, [navigate]);
 

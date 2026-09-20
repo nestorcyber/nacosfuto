@@ -31,14 +31,60 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [admin, setAdmin] = useState(null);
 
+  // 1-Hour Inactivity Watchdog & Auto-Logout for Portal Admin
   useEffect(() => {
+    const ONE_HOUR_MS = 60 * 60 * 1000;
+    const now = Date.now();
+
     const session = getPortalAdminSession();
-    if (session) {
-      setAdmin(session);
+    if (!session) {
+      navigate('/login');
+      return;
     }
-  }, []);
+    setAdmin(session);
+
+    const lastActivity = parseInt(localStorage.getItem('nacos_portal_admin_last_activity') || '0', 10);
+    if (lastActivity && (now - lastActivity >= ONE_HOUR_MS)) {
+      logoutPortalAdmin();
+      localStorage.removeItem('nacos_portal_admin_last_activity');
+      navigate('/login?reason=inactivity', { replace: true });
+      return;
+    }
+
+    localStorage.setItem('nacos_portal_admin_last_activity', now.toString());
+
+    let lastRecorded = now;
+    const recordActivity = () => {
+      const current = Date.now();
+      if (current - lastRecorded > 10000) {
+        lastRecorded = current;
+        localStorage.setItem('nacos_portal_admin_last_activity', current.toString());
+      }
+    };
+
+    const checkInactivity = () => {
+      const s = getPortalAdminSession();
+      if (!s) return;
+      const act = parseInt(localStorage.getItem('nacos_portal_admin_last_activity') || '0', 10);
+      if (act && (Date.now() - act >= ONE_HOUR_MS)) {
+        logoutPortalAdmin();
+        localStorage.removeItem('nacos_portal_admin_last_activity');
+        navigate('/login?reason=inactivity', { replace: true });
+      }
+    };
+
+    const intervalId = setInterval(checkInactivity, 15000);
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(ev => window.addEventListener(ev, recordActivity, { passive: true }));
+
+    return () => {
+      clearInterval(intervalId);
+      events.forEach(ev => window.removeEventListener(ev, recordActivity));
+    };
+  }, [navigate]);
 
   const handleSignOut = async () => {
+    localStorage.removeItem('nacos_portal_admin_last_activity');
     await logoutPortalAdmin();
     navigate('/login');
   };

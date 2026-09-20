@@ -701,7 +701,9 @@ export async function submitIdApplication(applicationId, passportUrlOverride = n
 /**
  * PORTAL ADMIN: Retrieve all ID card applications with student details
  */
-export async function portalAdminGetApplications({ status = 'ALL', search = '' } = {}) {
+export async function portalAdminGetApplications(options = {}) {
+  const status = typeof options === 'string' ? options : (options?.status || 'ALL');
+  const search = typeof options === 'object' && options?.search ? options.search : '';
   let list = [];
 
   try {
@@ -1079,21 +1081,39 @@ function traceRoundedHexagon(ctx, vertices, radius = 18) {
 function loadTemplateImage(primaryUrl, fallbackUrl) {
   return new Promise((resolve) => {
     if (typeof window === 'undefined') return resolve(null);
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => {
-      if (fallbackUrl && fallbackUrl !== primaryUrl) {
-        const fallbackImg = new Image();
-        fallbackImg.crossOrigin = 'anonymous';
-        fallbackImg.onload = () => resolve(fallbackImg);
-        fallbackImg.onerror = () => resolve(null);
-        fallbackImg.src = fallbackUrl;
-      } else {
+    const candidates = [
+      primaryUrl,
+      fallbackUrl,
+      '/nacos_id_template_master.jpg',
+      ID_CARD_TEMPLATE.masterTemplateUrl
+    ].filter(Boolean);
+    const uniqueUrls = [...new Set(candidates)];
+
+    let index = 0;
+    const tryNext = () => {
+      if (index >= uniqueUrls.length) {
         resolve(null);
+        return;
       }
+      const url = uniqueUrls[index++];
+      const img = new Image();
+      if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+        img.crossOrigin = 'anonymous';
+      }
+      img.onload = () => {
+        if (img.naturalWidth > 0) {
+          resolve(img);
+        } else {
+          tryNext();
+        }
+      };
+      img.onerror = () => {
+        tryNext();
+      };
+      img.src = url;
     };
-    img.src = fallbackUrl || primaryUrl;
+
+    tryNext();
   });
 }
 
@@ -1101,7 +1121,9 @@ function loadOptionalImage(src) {
   return new Promise((resolve) => {
     if (typeof window === 'undefined' || !src) return resolve(null);
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    if (typeof src === 'string' && (src.startsWith('http://') || src.startsWith('https://'))) {
+      img.crossOrigin = 'anonymous';
+    }
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;
@@ -1128,19 +1150,133 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
   canvas.width = t.dimensions.width;
   canvas.height = t.dimensions.height;
 
-  // 1. Load Master Template Image (Priority: local asset / public -> Cloudinary URL)
+  // 1. Load Master Template Image (Priority: options URL -> static asset -> Cloudinary URL)
+  const templateSrc = options.templateImgUrl || options.templateUrl || t.masterTemplateUrl;
   const templateImg = options.templateImg || await loadTemplateImage(
-    t.masterTemplateUrl, 
+    templateSrc, 
     '/nacos_id_template_master.jpg'
   );
 
-  // Draw master empty template as the authoritative background
-  if (templateImg && templateImg.complete && templateImg.naturalWidth > 0) {
+  const hasMasterTemplate = templateImg && templateImg.complete && templateImg.naturalWidth > 0;
+
+  if (hasMasterTemplate) {
     ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
   } else {
-    // Elegant deep green fallback if template image is still loading
-    ctx.fillStyle = '#083002';
+    // -------------------------------------------------------------------------
+    // HIGH-FIDELITY PROCEDURAL MASTER CARD FRONT (Draws complete official template)
+    // -------------------------------------------------------------------------
+    // Card Base (CR-80 Portrait)
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGrad.addColorStop(0, '#041801');
+    bgGrad.addColorStop(0.5, '#083002');
+    bgGrad.addColorStop(1, '#052201');
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Subtle decorative circuit / security lines
+    ctx.save();
+    ctx.strokeStyle = 'rgba(75, 208, 67, 0.08)';
+    ctx.lineWidth = 2;
+    for (let x = 40; x < canvas.width; x += 60) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 50; y < canvas.height; y += 70) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Top Header Banner
+    const headerGrad = ctx.createLinearGradient(0, 0, canvas.width, 160);
+    headerGrad.addColorStop(0, '#062901');
+    headerGrad.addColorStop(1, '#0f5c02');
+    ctx.fillStyle = headerGrad;
+    ctx.fillRect(0, 0, canvas.width, 165);
+
+    // Gold Accent Border Line under Header
+    ctx.fillStyle = '#eab308';
+    ctx.fillRect(0, 165, canvas.width, 5);
+
+    // Header Typography
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    // Association Name
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 15px "Montserrat", -apple-system, sans-serif';
+    ctx.fillText('NATIONAL ASSOCIATION OF COMPUTER SCIENCE STUDENTS', 331, 24);
+
+    // Institution Name
+    ctx.fillStyle = '#6ee7b7';
+    ctx.font = 'bold 13px "Montserrat", -apple-system, sans-serif';
+    ctx.fillText('FEDERAL UNIVERSITY OF TECHNOLOGY, OWERRI', 331, 48);
+
+    // Department
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '600 12px "Montserrat", -apple-system, sans-serif';
+    ctx.fillText('DEPARTMENT OF COMPUTER SCIENCE (SICT)', 331, 72);
+
+    // Identity Card Title Badge
+    ctx.fillStyle = '#eab308';
+    ctx.font = 'bold 14px "Montserrat", -apple-system, sans-serif';
+    ctx.fillText('• OFFICIAL STUDENT IDENTITY CARD •', 331, 102);
+
+    // Subtitle / Session
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = '500 11px -apple-system, sans-serif';
+    ctx.fillText('OFFICIAL DIGITAL IDENTITY ROSTER', 331, 128);
+
+    // NAME Badge Pill (Position: x=255, y=635, w=152, h=44)
+    ctx.save();
+    ctx.fillStyle = '#138601';
+    ctx.beginPath();
+    const nx = 240, ny = 630, nw = 182, nh = 42, nr = 21;
+    ctx.roundRect ? ctx.roundRect(nx, ny, nw, nh, nr) : ctx.rect(nx, ny, nw, nh);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px "Montserrat", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('NAME', 331, ny + nh / 2);
+    ctx.restore();
+
+    // REG NO Badge Pill (Position: x=255, y=855, w=152, h=44)
+    ctx.save();
+    ctx.fillStyle = '#138601';
+    ctx.beginPath();
+    const rx = 240, ry = 855, rw = 182, rh = 42, rr = 21;
+    ctx.roundRect ? ctx.roundRect(rx, ry, rw, rh, rr) : ctx.rect(rx, ry, rw, rh);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px "Montserrat", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('REG NO.', 331, ry + rh / 2);
+    ctx.restore();
+
+    // White backing boxes for Name and Reg No text so typography is 100% crisp & readable
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(40, 686, 582, 148, 12) : ctx.rect(40, 686, 582, 148);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(70, 910, 522, 60, 10) : ctx.rect(70, 910, 522, 60);
+    ctx.fill();
+    ctx.restore();
   }
 
   // 2. Composite Student Passport Photograph
@@ -1172,13 +1308,20 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
   }
 
   // 2b. Frame Overlay (Ensures authentic green and white border sits cleanly above the photo)
-  const frameImg = options.frameImg || await loadOptionalImage('/nacos_id_template_frame.png');
+  const frameSrc = options.frameImgUrl || options.frameUrl || '/nacos_id_template_frame.png';
+  const frameImg = options.frameImg || await loadOptionalImage(frameSrc);
   if (frameImg && frameImg.complete && frameImg.naturalWidth > 0) {
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
   } else {
-    // Sharp border stroke to guarantee clean border lines if frame PNG is not present
+    // Sharp double border stroke to guarantee clean border lines
     ctx.save();
-    ctx.strokeStyle = 'rgba(10, 115, 1, 0.95)';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 10;
+    ctx.lineJoin = 'round';
+    traceRoundedHexagon(ctx, t.photo.vertices, t.photo.cornerRadius);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#138601';
     ctx.lineWidth = 6;
     ctx.lineJoin = 'round';
     traceRoundedHexagon(ctx, t.photo.vertices, t.photo.cornerRadius);
@@ -1186,11 +1329,11 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
     ctx.restore();
   }
 
-  // 3. Render Dynamic Student Full Name (Maintaining Fixed 38px Aeonik Black font across all generations)
+  // 3. Render Dynamic Student Full Name
   const rawName = student?.full_name || student?.name || 'STUDENT NAME';
   const fullName = String(rawName).trim().toUpperCase();
 
-  const nameFontSize = t.name.fontSize; // Fixed 38px - never scaled down
+  const nameFontSize = t.name.fontSize; // Fixed 38px
   ctx.font = `${t.name.fontWeight} ${nameFontSize}px ${t.name.fontFamily}`;
 
   // Word and hyphen-based tokenization to support natural multi-line wrapping
@@ -1211,7 +1354,6 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
     }
   }
 
-  // Break excessively long single words if any token alone exceeds maxWidth
   const tokens = [];
   for (const token of initialTokens) {
     if (ctx.measureText(token).width > t.name.maxWidth && token.length > 12) {
@@ -1223,7 +1365,6 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
     }
   }
 
-  // Greedily assemble tokens into lines without shrinking the font size
   const lines = [];
   let currentLine = '';
 
@@ -1245,7 +1386,6 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
     lines.push(currentLine);
   }
 
-  // Center multiple lines vertically between the NAME badge (bottom = 682) and REG NO. badge (top = 865)
   const numLines = lines.length;
   let centerY = 750;
   let lineGap = 50;
@@ -1255,17 +1395,18 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
     lineGap = 0;
   } else if (numLines === 2) {
     centerY = 750;
-    lineGap = 50; // Lines at 725 and 775
+    lineGap = 50;
   } else if (numLines === 3) {
     centerY = 750;
-    lineGap = 46; // Lines at 704, 750, 796
+    lineGap = 46;
   } else {
     centerY = 755;
-    lineGap = 40; // Lines at 695, 735, 775, 815
+    lineGap = 40;
   }
 
   const startY = centerY - ((numLines - 1) * lineGap) / 2;
 
+  // Text color: always crisp bold black (#000000) over the white container
   ctx.fillStyle = t.name.color; // #000000
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -1275,7 +1416,7 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
     ctx.fillText(lineText, t.name.centerX, lineY);
   });
 
-  // 4. Render Dynamic Registration Number (Strictly Digits Only)
+  // 4. Render Dynamic Registration Number (Digits Only)
   const rawReg = student?.registration_number || student?.matric || cardInfo?.matric_number || cardInfo?.id_card_number || '20241424442';
   const regNo = String(rawReg).replace(/\D/g, '') || String(rawReg).trim();
 
@@ -1289,7 +1430,48 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
   ctx.fillStyle = t.registrationNumber.color; // #000000
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(regNo, t.registrationNumber.centerX, t.registrationNumber.y); // (331, 956)
+  ctx.fillText(regNo, t.registrationNumber.centerX, t.registrationNumber.y); // (331, 940-956)
+
+  // ---------------------------------------------------------------------------
+  // 5. Render Official ID Card Number (Rendered Prominently with Verification Pill)
+  // ---------------------------------------------------------------------------
+  const rawIdCardNum = cardInfo?.id_card_number || student?.id_card_number || cardInfo?.application_number || `NACOS-${regNo}`;
+  const officialId = String(rawIdCardNum).trim().toUpperCase();
+
+  ctx.save();
+  const idBadgeW = 360;
+  const idBadgeH = 40;
+  const idBadgeX = 331 - idBadgeW / 2;
+  const idBadgeY = 992;
+  const idBadgeR = 20;
+
+  // Render Pill Background
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(idBadgeX, idBadgeY, idBadgeW, idBadgeH, idBadgeR) : ctx.rect(idBadgeX, idBadgeY, idBadgeW, idBadgeH);
+  ctx.fill();
+
+  // Green Border
+  ctx.strokeStyle = '#138601';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // ID Card Text
+  ctx.fillStyle = '#083002';
+  ctx.font = 'bold 17px "Aeonik Black", "Montserrat", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`CARD ID: ${officialId}`, 331, idBadgeY + idBadgeH / 2);
+  ctx.restore();
+
+  // 6. Render Bottom Verification Footer
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+  ctx.font = '600 11px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('OFFICIAL DIGITAL STUDENT ID • VERIFIABLE AT NACOSFUTO.ORG.NG', 331, 1060);
+  ctx.restore();
 }
 
 /**

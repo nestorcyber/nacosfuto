@@ -280,7 +280,7 @@ const Dues = () => {
                 type="button"
                 onClick={handlePayDues}
                 disabled={isProcessing}
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shadow-xs disabled:opacity-50"
               >
                 <CreditCard className="w-4 h-4" />
                 <span>{isProcessing ? 'Processing...' : 'Pay Dues (₦2,500.00)'}</span>
@@ -291,10 +291,10 @@ const Dues = () => {
               type="button"
               onClick={handlePrint}
               disabled={isPrinting}
-              className={`inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded text-xs font-semibold transition-colors cursor-pointer ${
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 isPaid 
-                  ? 'text-white bg-[#138601] hover:bg-[#0f6c01]' 
-                  : 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-[#083002] hover:bg-gray-200 dark:hover:bg-[#062402] border border-gray-200 dark:border-[#138601]/30'
+                  ? 'text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs' 
+                  : 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-[#083002] hover:bg-gray-200 dark:hover:bg-[#062402] border border-gray-200/80 dark:border-[#138601]/30'
               }`}
             >
               <Printer className="w-4 h-4" />
@@ -313,9 +313,9 @@ const Dues = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:hidden">
           
           {/* Card 1: Clearance Status */}
-          <div className={`p-4 rounded bg-white dark:bg-[#083002] border space-y-1 ${
+          <div className={`p-5 rounded-2xl bg-white dark:bg-[#083002] border space-y-1 shadow-xs ${
             isPaid 
-              ? 'border-gray-200 dark:border-[#138601]/30' 
+              ? 'border-gray-200/80 dark:border-[#138601]/30' 
               : 'border-amber-200/80 dark:border-amber-700/40 bg-amber-50/30'
           }`}>
             <span className="text-xs font-medium text-gray-500 dark:text-green-200/80">Clearance Status</span>
@@ -342,7 +342,7 @@ const Dues = () => {
           </div>
 
           {/* Card 2: Current Session Amount */}
-          <div className="p-4 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 space-y-1">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 space-y-1 shadow-xs">
             <span className="text-xs font-medium text-gray-500 dark:text-green-200/80">Current Session Amount</span>
             <div className="text-xl font-bold text-gray-900 dark:text-white">₦2,500.00</div>
             <p className="text-xs text-gray-500 dark:text-green-200/70 font-normal">
@@ -351,9 +351,9 @@ const Dues = () => {
           </div>
 
           {/* Card 3: Electronic Receipt Number */}
-          <div className={`p-4 rounded bg-white dark:bg-[#083002] border space-y-1 ${
+          <div className={`p-5 rounded-2xl bg-white dark:bg-[#083002] border space-y-1 shadow-xs ${
             isPaid 
-              ? 'border-gray-200 dark:border-[#138601]/30' 
+              ? 'border-gray-200/80 dark:border-[#138601]/30' 
               : 'border-amber-200/80 dark:border-amber-700/40'
           }`}>
             <span className="text-xs font-medium text-gray-500 dark:text-green-200/80">Electronic Receipt Number</span>
@@ -377,10 +377,10 @@ const Dues = () => {
         </div>
 
         {/* Official Printable Electronic Receipt Box */}
-        <div className="p-5 sm:p-6 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 space-y-5 print:border-none print:shadow-none print:p-0">
+        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 space-y-5 shadow-xs print:border-none print:shadow-none print:p-0">
           
           {/* Receipt Header */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-[#138601]/30 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-[#138601]/25 text-center sm:text-left">
             <div className="flex items-center space-x-3">
               <img src={isDark ? logoDark : logoLight} alt="NACOS Logo" className="h-8 w-auto object-contain" />
               <div>
@@ -393,15 +393,15 @@ const Dues = () => {
 
             <div className="text-center sm:text-right">
               {isPaid ? (
-                <div className="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-[#ebf3ff] text-[#138601] dark:bg-[#138601]/30 dark:text-[#4bd043]">
+                <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-[#ebf3ff] text-[#138601] dark:bg-[#138601]/30 dark:text-[#4bd043]">
                   Official Electronic Receipt
                 </div>
               ) : (
-                <div className="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50">
+                <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50">
                   Payment Pending / Not Cleared
                 </div>
               )}
-              <div className="text-xs text-gray-500 dark:text-green-200/70 mt-0.5 font-mono">
+              <div className="text-xs text-gray-500 dark:text-green-200/70 mt-1 font-mono">
                 {isPaid ? paymentRecord.receiptNo : 'Awaiting Payment Reference'}
               </div>
             </div>
@@ -460,9 +460,9 @@ const Dues = () => {
                 </span>
               </div>
 
-              <div className={`flex items-center space-x-2.5 p-2.5 rounded border ${
+              <div className={`flex items-center space-x-2.5 p-3 rounded-xl border ${
                 isPaid 
-                  ? 'bg-[#f1f3f5] dark:bg-[#041801] border-gray-200 dark:border-[#138601]/30' 
+                  ? 'bg-[#f1f3f5] dark:bg-[#041801] border-gray-200/80 dark:border-[#138601]/30' 
                   : 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/30'
               }`}>
                 <QrCode className={`w-8 h-8 ${
@@ -494,7 +494,7 @@ const Dues = () => {
 
         {/* Action Callout when Unpaid */}
         {!isPaid && (
-          <div className="p-4 rounded bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 print:hidden">
+          <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs print:hidden">
             <div className="space-y-0.5">
               <h4 className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
                 Annual Departmental Dues Required
@@ -507,7 +507,7 @@ const Dues = () => {
               type="button"
               onClick={handlePayDues}
               disabled={isProcessing}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shrink-0 shadow-xs disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shrink-0 shadow-xs disabled:opacity-50"
             >
               <CreditCard className="w-4 h-4" />
               <span>{isProcessing ? 'Processing Payment...' : 'Pay Dues (₦2,500.00)'}</span>

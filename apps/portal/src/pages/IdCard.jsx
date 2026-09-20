@@ -36,6 +36,8 @@ import {
 } from '@nacos/supabase/idCard';
 import { ID_CARD_TEMPLATE } from '@nacos/config/idCardTemplate';
 import { MediaUpload, CLOUDINARY_FOLDERS, getOptimizedImageUrl } from '@nacos/media';
+import masterTemplateAsset from '../assets/nacos_id_template_master.jpg';
+import frameAsset from '../assets/nacos_id_template_frame.png';
 
 const IdCard = () => {
   const navigate = useNavigate();
@@ -91,7 +93,10 @@ const IdCard = () => {
     if (application && application.status === 'generated' && canvasRef.current && student) {
       const photoUrl = application.passport_url || student.profile_photo_url || student.avatar_url;
       const render = (img) => {
-        drawIdCardOnCanvas(canvasRef.current, student, img, application).then(() => {
+        drawIdCardOnCanvas(canvasRef.current, student, img, application, {
+          templateImgUrl: masterTemplateAsset,
+          frameImgUrl: frameAsset
+        }).then(() => {
           if (!application.id_card_image_url && canvasRef.current) {
             try {
               const dataUrl = canvasRef.current.toDataURL('image/png');
@@ -285,7 +290,7 @@ const IdCard = () => {
       <div className="space-y-6 max-w-5xl mx-auto">
         
         {/* Title Header Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 shadow-xs">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <ShieldCheck className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
@@ -300,7 +305,7 @@ const IdCard = () => {
 
           <div className="flex items-center gap-2">
             {application && (
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold ${
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                 isState7 
                   ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700/50' 
                   : isState8 || isState9
@@ -318,7 +323,7 @@ const IdCard = () => {
 
         {/* Global Notification Banner */}
         {notification.message && (
-          <div className={`p-4 rounded text-xs font-semibold flex items-center gap-2.5 shadow-sm transition-all ${
+          <div className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 shadow-xs transition-all ${
             notification.type === 'error' 
               ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800' 
               : 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-950/60 dark:text-green-300 dark:border-green-800'
@@ -332,8 +337,8 @@ const IdCard = () => {
             STATE 1: NOT APPLIED (Initial On-Demand State)
             ==================================================================== */}
         {isState1 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-6 shadow-sm">
-            <div className="w-16 h-16 rounded bg-green-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] flex items-center justify-center mx-auto border border-[#138601]/30">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-green-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] flex items-center justify-center mx-auto border border-[#138601]/30">
               <CreditCard className="w-8 h-8" />
             </div>
 
@@ -348,7 +353,7 @@ const IdCard = () => {
 
             {/* Checklist of What You Need */}
             <div className="max-w-lg mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-              <div className="p-4 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 space-y-1">
+              <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-[#041801] border border-gray-200/60 dark:border-[#138601]/20 space-y-1">
                 <div className="flex items-center gap-2 font-bold text-xs text-gray-900 dark:text-white">
                   <CreditCard className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
                   <span>ID Card Fee</span>
@@ -358,7 +363,7 @@ const IdCard = () => {
                 </p>
               </div>
 
-              <div className="p-4 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 space-y-1">
+              <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-[#041801] border border-gray-200/60 dark:border-[#138601]/20 space-y-1">
                 <div className="flex items-center gap-2 font-bold text-xs text-gray-900 dark:text-white">
                   <Camera className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
                   <span>Passport Photo</span>
@@ -375,7 +380,7 @@ const IdCard = () => {
                 type="button"
                 onClick={handleApply}
                 disabled={isApplying}
-                className="px-8 py-3.5 min-h-[46px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-md transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+                className="px-8 py-3.5 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
               >
                 {isApplying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 <span>{isApplying ? 'Initiating Application...' : 'Apply for ID Card'}</span>
@@ -388,8 +393,8 @@ const IdCard = () => {
             STATE 2: PAYMENT REQUIRED (Pending Payment)
             ==================================================================== */}
         {isState2 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-6 shadow-sm">
-            <div className="w-16 h-16 rounded bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-200 dark:border-amber-800/40">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-200 dark:border-amber-800/40">
               <CreditCard className="w-8 h-8" />
             </div>
 
@@ -403,8 +408,8 @@ const IdCard = () => {
             </div>
 
             {/* Invoice Summary Box */}
-            <div className="p-5 rounded max-w-md mx-auto bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 text-xs text-left space-y-2.5">
-              <div className="flex justify-between pb-2 border-b border-gray-200 dark:border-[#138601]/20">
+            <div className="p-5 rounded-xl max-w-md mx-auto bg-gray-50/70 dark:bg-[#041801] border border-gray-200/60 dark:border-[#138601]/20 text-xs text-left space-y-2.5">
+              <div className="flex justify-between pb-2 border-b border-gray-200/60 dark:border-[#138601]/20">
                 <span className="text-gray-500 dark:text-green-200/60">Student Reg No:</span>
                 <span className="font-mono font-bold text-gray-900 dark:text-white">{student.matric || student.registration_number}</span>
               </div>
@@ -416,7 +421,7 @@ const IdCard = () => {
                 <span className="text-gray-500 dark:text-green-200/60">Academic Session:</span>
                 <span className="font-medium text-gray-700 dark:text-gray-300">{settings.academic_session}</span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-[#138601]/20 text-sm">
+              <div className="flex justify-between pt-2 border-t border-gray-200/60 dark:border-[#138601]/20 text-sm">
                 <span className="font-bold text-gray-700 dark:text-gray-300">Amount Payable:</span>
                 <span className="font-bold text-[#138601] dark:text-[#4bd043]">₦{settings.id_card_fee?.toLocaleString() || '2,500'}.00</span>
               </div>
@@ -427,7 +432,7 @@ const IdCard = () => {
                 type="button"
                 onClick={handlePayment}
                 disabled={isPaying}
-                className="px-8 py-3.5 min-h-[46px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-md transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+                className="px-8 py-3.5 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
               >
                 {isPaying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
                 <span>{isPaying ? 'Verifying Transaction with Gateway...' : `Pay Fee (₦${settings.id_card_fee?.toLocaleString() || '2,500'})`}</span>
@@ -440,13 +445,13 @@ const IdCard = () => {
             STATE 3: PAYMENT CONFIRMED / PHOTO REQUIRED
             ==================================================================== */}
         {isState3 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-6 shadow-sm">
-            <div className="w-16 h-16 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-200 dark:border-blue-800/40">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto border border-blue-200 dark:border-blue-800/40">
               <Camera className="w-8 h-8" />
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold">
                 <CheckCircle className="w-3.5 h-3.5" /> Payment Verified ({application.payment_reference || 'CLEARED'})
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -458,7 +463,7 @@ const IdCard = () => {
             </div>
 
             {uploadError && (
-              <div className="p-3.5 rounded bg-red-50 text-xs text-red-600 font-semibold max-w-md mx-auto">
+              <div className="p-3.5 rounded-xl bg-red-50 text-xs text-red-600 font-semibold max-w-md mx-auto">
                 {uploadError}
               </div>
             )}
@@ -489,7 +494,7 @@ const IdCard = () => {
                   <button
                     type="button"
                     onClick={() => handlePhotoUploaded({ url: student.profile_photo_url || student.avatar_url })}
-                    className="px-2.5 py-1 text-xs font-semibold text-[#138601] dark:text-[#4bd043] hover:text-white hover:bg-[#138601] border border-[#138601] dark:border-[#138601]/50 rounded transition-colors cursor-pointer"
+                    className="px-3 py-1 text-xs font-semibold text-[#138601] dark:text-[#4bd043] hover:text-white hover:bg-[#138601] border border-[#138601] dark:border-[#138601]/50 rounded-lg transition-colors cursor-pointer"
                   >
                     Select Photo
                   </button>
@@ -526,8 +531,8 @@ const IdCard = () => {
             STATE 4: READY TO SUBMIT (Review & Submit Application)
             ==================================================================== */}
         {isState4 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-6 shadow-sm">
-            <div className="w-16 h-16 rounded bg-green-100 dark:bg-green-900/30 text-[#138601] dark:text-[#4bd043] flex items-center justify-center mx-auto border border-green-300 dark:border-green-800">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-green-100 dark:bg-green-900/30 text-[#138601] dark:text-[#4bd043] flex items-center justify-center mx-auto border border-green-300 dark:border-green-800">
               <CheckCircle className="w-8 h-8" />
             </div>
 
@@ -541,11 +546,11 @@ const IdCard = () => {
             </div>
 
             {/* Profile Confirmation Card */}
-            <div className="max-w-md mx-auto p-5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 flex items-center gap-5 text-left">
+            <div className="max-w-md mx-auto p-5 rounded-xl bg-gray-50/70 dark:bg-[#041801] border border-gray-200/60 dark:border-[#138601]/20 flex items-center gap-5 text-left">
               <img
                 src={application.passport_url || student.profile_photo_url}
                 alt="Passport Photo"
-                className="w-20 h-24 object-cover rounded border-2 border-[#138601] shadow-sm"
+                className="w-20 h-24 object-cover rounded-xl border-2 border-[#138601] shadow-xs"
               />
               <div className="space-y-1 text-xs">
                 <div className="font-bold text-sm text-gray-900 dark:text-white">{student.name || student.full_name}</div>
@@ -561,7 +566,7 @@ const IdCard = () => {
               <button
                 type="button"
                 onClick={() => setApplication(prev => ({ ...prev, status: 'photo_required' }))}
-                className="px-5 py-3 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 rounded transition-colors cursor-pointer"
+                className="px-5 py-3 min-h-[44px] text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
               >
                 Change Photograph
               </button>
@@ -570,7 +575,7 @@ const IdCard = () => {
                 type="button"
                 onClick={handleSubmitApplication}
                 disabled={isSubmitting}
-                className="px-8 py-3 text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-md transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+                className="px-8 py-3.5 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
               >
                 {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
                 <span>{isSubmitting ? 'Submitting Application...' : 'Submit Application for Review'}</span>
@@ -583,13 +588,13 @@ const IdCard = () => {
             STATE 5: PROCESSING (Under Review by Portal Admin)
             ==================================================================== */}
         {isState5 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-6 shadow-sm">
-            <div className="w-16 h-16 rounded bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-200 dark:border-amber-800/40 animate-pulse">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-200 dark:border-amber-800/40 animate-pulse">
               <Clock className="w-8 h-8" />
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
+              <span className="inline-block px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
                 Status: Application Under Review
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -600,7 +605,7 @@ const IdCard = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded max-w-sm mx-auto bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 text-xs text-left space-y-2">
+            <div className="p-5 rounded-xl max-w-sm mx-auto bg-gray-50/70 dark:bg-[#041801] border border-gray-200/60 dark:border-[#138601]/20 text-xs text-left space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-500">Application Number:</span>
                 <span className="font-mono font-bold text-gray-900 dark:text-white">{application.application_number}</span>
@@ -623,8 +628,8 @@ const IdCard = () => {
             STATE 6: APPROVED / PREPARING
             ==================================================================== */}
         {isState6 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-4 shadow-sm">
-            <div className="w-16 h-16 rounded bg-green-50 dark:bg-green-900/20 text-[#138601] dark:text-[#4bd043] flex items-center justify-center mx-auto border border-green-200">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-4 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-green-50 dark:bg-green-900/20 text-[#138601] dark:text-[#4bd043] flex items-center justify-center mx-auto border border-green-200">
               <RefreshCw className="w-8 h-8 animate-spin" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your ID Card is Being Prepared</h2>
@@ -641,14 +646,14 @@ const IdCard = () => {
           <div className="space-y-6">
             
             {/* Visual Canvas Two-Sided ID Card Preview Container */}
-            <div className="p-6 sm:p-8 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm space-y-5">
+            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 shadow-xs space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-[#138601]/20 pb-4">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-gray-900 dark:text-white">
                       Official Student Identity Card (Two-Sided)
                     </h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
                       Active
                     </span>
                   </div>
@@ -659,13 +664,13 @@ const IdCard = () => {
 
                 {/* Front / Back Toggle Buttons */}
                 <div className="flex items-center gap-2">
-                  <div className="inline-flex p-1 rounded bg-gray-100 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/30">
+                  <div className="inline-flex p-1 rounded-xl bg-gray-100 dark:bg-[#041801] border border-gray-200/80 dark:border-[#138601]/30">
                     <button
                       type="button"
                       onClick={() => setCurrentSide('front')}
-                      className={`px-3.5 py-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         currentSide === 'front'
-                          ? 'bg-[#138601] text-white shadow-sm'
+                          ? 'bg-[#138601] text-white shadow-xs'
                           : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
                       }`}
                     >
@@ -674,9 +679,9 @@ const IdCard = () => {
                     <button
                       type="button"
                       onClick={() => setCurrentSide('back')}
-                      className={`px-3.5 py-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         currentSide === 'back'
-                          ? 'bg-[#138601] text-white shadow-sm'
+                          ? 'bg-[#138601] text-white shadow-xs'
                           : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
                       }`}
                     >
@@ -687,7 +692,7 @@ const IdCard = () => {
                   <button
                     type="button"
                     onClick={() => setCurrentSide(prev => prev === 'front' ? 'back' : 'front')}
-                    className="p-2 rounded bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-[#138601]/20 text-gray-700 dark:text-green-200 border border-gray-200 dark:border-[#138601]/30 transition-colors cursor-pointer"
+                    className="p-2 rounded-xl bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-[#138601]/20 text-gray-700 dark:text-green-200 border border-gray-200/80 dark:border-[#138601]/30 transition-colors cursor-pointer"
                     title="Flip Card"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -697,7 +702,7 @@ const IdCard = () => {
                     href={`/verify/id/${application.id_card_number}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-gray-700 dark:text-green-200 bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 border border-gray-200 dark:border-[#138601]/30 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-green-200 bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 border border-gray-200/80 dark:border-[#138601]/30 transition-colors"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     <span>Verify</span>
@@ -707,7 +712,7 @@ const IdCard = () => {
 
               {/* Card Sides Preview Area (Portrait CR-80 Card: 662 × 1075 px) */}
               <div className="flex justify-center items-center py-4">
-                <div className="max-w-xs sm:max-w-sm w-full rounded overflow-hidden shadow-2xl border-2 border-[#138601]/50 bg-[#083002]">
+                <div className="max-w-xs sm:max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl border-2 border-[#138601]/50 bg-[#083002]">
                   
                   {/* FRONT SIDE */}
                   <div className={`${currentSide === 'front' ? 'block' : 'hidden'}`}>
@@ -741,7 +746,7 @@ const IdCard = () => {
                 <button
                   type="button"
                   onClick={() => handleDownloadImage('front')}
-                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
                   <span>Front (PNG)</span>
@@ -750,7 +755,7 @@ const IdCard = () => {
                 <button
                   type="button"
                   onClick={() => handleDownloadImage('back')}
-                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
                   <span>Back (PNG)</span>
@@ -759,7 +764,7 @@ const IdCard = () => {
                 <button
                   type="button"
                   onClick={() => handleDownloadImage('both')}
-                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                  className="px-4 py-2.5 min-h-[40px] text-xs font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-black rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
                   <span>Both Sides (PNG)</span>
@@ -768,7 +773,7 @@ const IdCard = () => {
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
-                  className="px-6 py-2.5 min-h-[40px] text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-md transition-colors cursor-pointer inline-flex items-center gap-2"
+                  className="px-6 py-2.5 min-h-[40px] text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Print / Two-Sided PDF</span>
@@ -777,7 +782,7 @@ const IdCard = () => {
             </div>
 
             {/* Verification & Metadata Summary */}
-            <div className="p-5 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 text-xs space-y-2">
+            <div className="p-5 rounded-xl bg-gray-50/70 dark:bg-[#041801] border border-gray-200/60 dark:border-[#138601]/20 text-xs space-y-2">
               <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
                 <span>Card Validity & Details</span>
@@ -796,13 +801,13 @@ const IdCard = () => {
             STATE 8: REJECTED
             ==================================================================== */}
         {isState8 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-red-200 dark:border-red-900/50 text-center space-y-6 shadow-sm">
-            <div className="w-16 h-16 rounded bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto border border-red-200 dark:border-red-900">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-red-200/80 dark:border-red-900/50 text-center space-y-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto border border-red-200 dark:border-red-900">
               <ShieldAlert className="w-8 h-8" />
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-semibold">
+              <span className="inline-block px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-semibold">
                 Application Rejected
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -814,7 +819,7 @@ const IdCard = () => {
             </div>
 
             {/* Rejection Reason Box */}
-            <div className="p-4 rounded max-w-md mx-auto bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-xs text-left space-y-1.5">
+            <div className="p-4 rounded-xl max-w-md mx-auto bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-xs text-left space-y-1.5">
               <span className="font-bold text-red-800 dark:text-red-300">Administrator Feedback:</span>
               <p className="text-red-700 dark:text-red-200">
                 {application.rejection_reason || 'Photograph did not meet passport criteria. Please upload a clear front-facing photo on a light background.'}
@@ -825,7 +830,7 @@ const IdCard = () => {
               <button
                 type="button"
                 onClick={handleReapply}
-                className="px-8 py-3.5 min-h-[46px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-md transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+                className="px-8 py-3.5 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Update Photo & Re-submit</span>
@@ -838,13 +843,13 @@ const IdCard = () => {
             STATE 9: REVOKED
             ==================================================================== */}
         {isState9 && (
-          <div className="p-8 sm:p-12 rounded bg-white dark:bg-[#083002] border border-red-300 dark:border-red-900 text-center space-y-6 shadow-sm">
-            <div className="w-16 h-16 rounded bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto border border-red-300">
+          <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#083002] border border-red-300 dark:border-red-900 text-center space-y-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto border border-red-300">
               <ShieldAlert className="w-8 h-8" />
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 rounded bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-200 text-xs font-bold uppercase tracking-wider">
+              <span className="inline-block px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-200 text-xs font-bold uppercase tracking-wider">
                 Card Revoked
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -855,7 +860,7 @@ const IdCard = () => {
               </p>
             </div>
 
-            <div className="p-4 rounded max-w-md mx-auto bg-gray-50 dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/20 text-xs text-left">
+            <div className="p-4 rounded-xl max-w-md mx-auto bg-gray-50/70 dark:bg-[#041801] border border-gray-200/60 dark:border-[#138601]/20 text-xs text-left">
               <span className="font-semibold text-gray-500">Reason for Revocation:</span>
               <p className="font-medium text-gray-900 dark:text-white mt-1">
                 {application.revocation_reason || 'Academic session expired or clearance revoked.'}
@@ -867,7 +872,7 @@ const IdCard = () => {
                 <button
                   type="button"
                   onClick={handleReapply}
-                  className="px-8 py-3.5 min-h-[46px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-md transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+                  className="px-8 py-3.5 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>Submit New Application</span>

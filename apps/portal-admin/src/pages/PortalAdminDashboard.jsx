@@ -8,10 +8,16 @@ import {
   Clock, 
   CheckCircle2, 
   AlertTriangle,
-  ArrowRight,
-  TrendingUp,
-  FileSpreadsheet,
-  Image as ImageIcon
+  ArrowRight, 
+  TrendingUp, 
+  FileSpreadsheet, 
+  Image as ImageIcon,
+  RefreshCw,
+  Database,
+  ExternalLink,
+  UserCheck,
+  Calendar,
+  Layers
 } from 'lucide-react';
 import PortalAdminLayout from '../components/PortalAdminLayout';
 import { adminGetAllVerifiedStudents } from '@nacos/supabase/verifiedStudents';
@@ -24,6 +30,14 @@ export const PortalAdminDashboard = () => {
   const isDark = theme === 'dark';
 
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [dbStatus, setDbStatus] = useState({ online: true, source: 'Supabase Cloud DB' });
+
+  // Live collections from database
+  const [verifiedList, setVerifiedList] = useState([]);
+  const [accountsList, setAccountsList] = useState([]);
+  const [idCardsList, setIdCardsList] = useState([]);
+
   const [stats, setStats] = useState({
     whitelistTotal: 0,
     activeAccounts: 0,
@@ -41,15 +55,33 @@ export const PortalAdminDashboard = () => {
       const [whitelistRes, accountsRes, idCardsRes] = await Promise.all([
         adminGetAllVerifiedStudents(),
         adminGetAllStudents(),
-        portalAdminGetApplications('ALL')
+        portalAdminGetApplications({ status: 'ALL' })
       ]);
 
-      const whitelist = whitelistRes.success ? (whitelistRes.students || []) : [];
-      const accounts = accountsRes.success ? (accountsRes.students || []) : [];
-      const idCards = idCardsRes.success ? (idCardsRes.applications || []) : [];
+      // Robust parsing: handles arrays or response objects
+      const whitelist = Array.isArray(whitelistRes) 
+        ? whitelistRes 
+        : (whitelistRes?.students || whitelistRes?.data || []);
 
-      const pending = idCards.filter(c => c.status === 'PENDING').length;
-      const approved = idCards.filter(c => c.status === 'APPROVED').length;
+      const accounts = Array.isArray(accountsRes) 
+        ? accountsRes 
+        : (accountsRes?.students || accountsRes?.data || []);
+
+      const idCards = Array.isArray(idCardsRes) 
+        ? idCardsRes 
+        : (idCardsRes?.applications || idCardsRes?.data || []);
+
+      const pending = idCards.filter(c => 
+        c.status === 'PENDING' || c.status === 'pending' || c.status === 'generated'
+      ).length;
+
+      const approved = idCards.filter(c => 
+        c.status === 'APPROVED' || c.status === 'approved'
+      ).length;
+
+      setVerifiedList(whitelist);
+      setAccountsList(accounts);
+      setIdCardsList(idCards);
 
       setStats({
         whitelistTotal: whitelist.length,
@@ -57,18 +89,35 @@ export const PortalAdminDashboard = () => {
         pendingIdCards: pending,
         approvedIdCards: approved
       });
+
+      setDbStatus({
+        online: true,
+        source: 'Supabase Cloud Database (Live)'
+      });
+      setLastUpdated(new Date());
     } catch (e) {
-      console.error(e);
+      console.error('Failed to load dashboard data:', e);
+      setDbStatus({
+        online: false,
+        source: 'Local Cache / Offline'
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  // Compute live level distribution from active accounts
+  const levelDistribution = accountsList.reduce((acc, student) => {
+    const lvl = student.level || student.current_level || '100 Level';
+    acc[lvl] = (acc[lvl] || 0) + 1;
+    return acc;
+  }, {});
+
   const statCards = [
     {
       title: 'Verified Whitelist',
       value: stats.whitelistTotal,
-      subtitle: 'Eligible CS student records',
+      subtitle: 'Eligible CS ground-truth records',
       icon: Users,
       color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-400',
       link: '/students'
@@ -76,7 +125,7 @@ export const PortalAdminDashboard = () => {
     {
       title: 'Active Portal Users',
       value: stats.activeAccounts,
-      subtitle: 'Registered student accounts',
+      subtitle: 'Registered live student accounts',
       icon: GraduationCap,
       color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-400',
       link: '/students'
@@ -92,7 +141,7 @@ export const PortalAdminDashboard = () => {
     {
       title: 'Approved ID Cards',
       value: stats.approvedIdCards,
-      subtitle: 'Digitally issued cards',
+      subtitle: 'Digitally verified cards',
       icon: CheckCircle2,
       color: 'from-purple-500/20 to-pink-500/20 border-purple-500/30 text-purple-400',
       link: '/id-cards'
@@ -102,9 +151,41 @@ export const PortalAdminDashboard = () => {
   return (
     <PortalAdminLayout 
       title="Student Portal Operations Dashboard" 
-      subtitle="Comprehensive overview of verified student registry, active portal accounts, and digital ID card applications"
+      subtitle="Live administrative control center synchronized with Supabase database"
     >
       <div className="space-y-6">
+
+        {/* Live Database Sync Bar */}
+        <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+          isDark ? 'bg-[#083002]/50 border-[#138601]/30' : 'bg-green-50/70 border-green-200'
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
+                {dbStatus.source}
+              </span>
+            </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">•</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {lastUpdated ? `Last synchronized at ${lastUpdated.toLocaleTimeString()}` : 'Connecting...'}
+            </span>
+          </div>
+
+          <button
+            onClick={loadDashboardData}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-green-950/40 transition-colors shadow-sm disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#138601]' : 'text-gray-500'}`} />
+            <span>Refresh Live Data</span>
+          </button>
+        </div>
+
         {/* KPI Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {statCards.map((stat, i) => {
@@ -136,6 +217,148 @@ export const PortalAdminDashboard = () => {
               </Link>
             );
           })}
+        </div>
+
+        {/* Live Data Tables & Feeds */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Active Registered Students (Live from Database) */}
+          <div className={`p-6 rounded-2xl border lg:col-span-2 ${
+            isDark ? 'bg-[#083002]/40 backdrop-blur border-[#138601]/25 text-white' : 'bg-white border-gray-200 shadow-sm text-gray-900'
+          }`}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-base font-bold flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
+                  <span>Live Student Accounts (Database Ground Truth)</span>
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Synchronized with Supabase <code className="text-[11px] bg-black/10 dark:bg-black/30 px-1 py-0.5 rounded">public.profiles</code> table
+                </p>
+              </div>
+
+              <Link
+                to="/students"
+                className="text-xs font-semibold text-[#138601] dark:text-[#4bd043] hover:underline flex items-center gap-1"
+              >
+                <span>View Full Registry</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="py-12 flex flex-col items-center justify-center text-gray-400">
+                <RefreshCw className="w-6 h-6 animate-spin mb-2 text-[#138601]" />
+                <span className="text-xs">Fetching registered student accounts...</span>
+              </div>
+            ) : accountsList.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-white/10 text-gray-400 uppercase tracking-wider text-[11px]">
+                      <th className="py-2.5 px-3">Student Name</th>
+                      <th className="py-2.5 px-3">Matric / Reg No</th>
+                      <th className="py-2.5 px-3">Level</th>
+                      <th className="py-2.5 px-3">Department</th>
+                      <th className="py-2.5 px-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                    {accountsList.slice(0, 5).map((student, idx) => (
+                      <tr key={student.id || idx} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-3 font-semibold text-gray-900 dark:text-white">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[#138601] dark:text-[#4bd043] flex items-center justify-center font-bold text-xs uppercase">
+                              {(student.full_name || student.surname || 'S')[0]}
+                            </div>
+                            <div>
+                              <div>{student.full_name || `${student.surname || ''} ${student.first_name || ''}`}</div>
+                              <div className="text-[10px] text-gray-400">{student.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 font-mono font-medium text-[#138601] dark:text-green-300">
+                          {student.registration_number || student.matricNumber || '—'}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-medium">
+                            {student.level || student.current_level || '100 Level'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-gray-500 dark:text-gray-300">
+                          {student.department || 'Computer Science'}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                            student.is_active !== false
+                              ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
+                              : 'bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${student.is_active !== false ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                            {student.is_active !== false ? 'Active' : 'Disabled'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-gray-400">
+                <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-xs">No registered accounts found in database profiles yet.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Level Distribution & Registry Status */}
+          <div className={`p-6 rounded-2xl border space-y-5 ${
+            isDark ? 'bg-[#083002]/40 backdrop-blur border-[#138601]/25 text-white' : 'bg-white border-gray-200 shadow-sm text-gray-900'
+          }`}>
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
+              <span>Demographics & Levels</span>
+            </h2>
+
+            <div className="space-y-3">
+              {['100 Level', '200 Level', '300 Level', '400 Level', '500 Level'].map((lvl) => {
+                const count = levelDistribution[lvl] || 0;
+                const percentage = stats.activeAccounts > 0 
+                  ? Math.round((count / stats.activeAccounts) * 100) 
+                  : 0;
+
+                return (
+                  <div key={lvl} className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">{lvl}</span>
+                      <span className="text-gray-500 dark:text-gray-400">{count} students ({percentage}%)</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-black/30 overflow-hidden">
+                      <div 
+                        className="h-full rounded-full bg-gradient-to-r from-[#138601] to-[#4bd043] transition-all duration-500"
+                        style={{ width: `${Math.max(percentage, count > 0 ? 5 : 0)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-gray-100 dark:border-white/10 space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Whitelist Ground-Truth:</span>
+                <span className="font-bold text-gray-900 dark:text-white">{stats.whitelistTotal} Records</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Total Activated:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{stats.activeAccounts} Accounts</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Total ID Applications:</span>
+                <span className="font-bold text-purple-600 dark:text-purple-400">{idCardsList.length} Submissions</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Action Modules */}
@@ -268,6 +491,7 @@ export const PortalAdminDashboard = () => {
             </div>
           </div>
         </div>
+
       </div>
     </PortalAdminLayout>
   );

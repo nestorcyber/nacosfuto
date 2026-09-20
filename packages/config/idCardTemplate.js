@@ -76,6 +76,21 @@ export const ID_CARD_TEMPLATE = {
     fontWeight: '900',
     color: '#000000',
     fontFamily: '"Aeonik Black", "Aeonik", "Montserrat", "Plus Jakarta Sans", Inter, -apple-system, "Segoe UI", Arial, sans-serif'
+  },
+  idCardNumber: {
+    badge: {
+      x: 240,
+      y: 995,
+      width: 182,
+      height: 30
+    },
+    centerX: 331,
+    y: 1040,
+    maxWidth: 520,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#083002',
+    fontFamily: '"Aeonik Black", "Aeonik", "Montserrat", "Plus Jakarta Sans", Inter, -apple-system, "Segoe UI", Arial, sans-serif'
   }
 };
 

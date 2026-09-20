@@ -32,6 +32,8 @@ import {
   downloadIdCardAsPdf
 } from '@nacos/supabase/idCard';
 import { ID_CARD_TEMPLATE } from '@nacos/config/idCardTemplate';
+import masterTemplateAsset from '../assets/nacos_id_template_master.jpg';
+import frameAsset from '../assets/nacos_id_template_frame.png';
 
 const AdminIdCards = () => {
   const [applications, setApplications] = useState([]);
@@ -108,15 +110,19 @@ const AdminIdCards = () => {
       if (selectedApp.passport_url) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
+        const drawOpts = { templateImgUrl: masterTemplateAsset, frameImgUrl: frameAsset };
         img.onload = () => {
-          drawIdCardOnCanvas(adminCanvasRef.current, studentObj, img, selectedApp);
+          drawIdCardOnCanvas(adminCanvasRef.current, studentObj, img, selectedApp, drawOpts);
         };
         img.onerror = () => {
-          drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp);
+          drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp, drawOpts);
         };
         img.src = selectedApp.passport_url;
       } else {
-        drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp);
+        drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp, { 
+          templateImgUrl: masterTemplateAsset, 
+          frameImgUrl: frameAsset 
+        });
       }
     }
   }, [isReviewModalOpen, selectedApp?.id, selectedApp?.status, selectedApp?.generated_at]);

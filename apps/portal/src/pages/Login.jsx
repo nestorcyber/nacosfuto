@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getCloudinaryAssetUrl } from '@nacos/media';
 import { signInStudent, isLocalEnvironment } from '@nacos/supabase/auth';
@@ -15,6 +15,40 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Auto-Continue: If already logged in & within 1-hour window, open dashboard automatically!
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reason') === 'inactivity') {
+      setError('You were automatically logged out after 1 hour of inactivity for your security.');
+    }
+
+    try {
+      const stored = localStorage.getItem('nacos_user');
+      if (stored) {
+        const lastActivity = parseInt(localStorage.getItem('nacos_last_activity') || '0', 10);
+        const ONE_HOUR_MS = 60 * 60 * 1000;
+        const now = Date.now();
+
+        if (lastActivity && (now - lastActivity < ONE_HOUR_MS)) {
+          // Session is fresh: update timestamp and automatically open portal!
+          localStorage.setItem('nacos_last_activity', now.toString());
+          navigate('/dashboard', { replace: true });
+        } else if (lastActivity && (now - lastActivity >= ONE_HOUR_MS)) {
+          // Session expired: clean up
+          localStorage.removeItem('nacos_user');
+          localStorage.removeItem('nacos_last_activity');
+          setError('Your session has expired due to 1 hour of inactivity. Please sign in again.');
+        } else {
+          // Valid user without stored activity timestamp -> initialize and continue
+          localStorage.setItem('nacos_last_activity', now.toString());
+          navigate('/dashboard', { replace: true });
+        }
+      }
+    } catch (e) {
+      console.error('Session auto-continue error:', e);
+    }
+  }, [navigate]);
 
   const handleContinue = async (e) => {
     e.preventDefault();
@@ -34,6 +68,7 @@ const Login = () => {
       if (res.error) {
         setError(res.error.message || 'Invalid credentials. Please verify your details.');
       } else {
+        localStorage.setItem('nacos_last_activity', Date.now().toString());
         navigate('/dashboard');
       }
     } catch (err) {
@@ -50,6 +85,7 @@ const Login = () => {
     try {
       const res = await signInStudent(regNo, 'password');
       if (!res.error) {
+        localStorage.setItem('nacos_last_activity', Date.now().toString());
         navigate('/dashboard');
       } else {
         setError(res.error.message || 'Demo login failed.');

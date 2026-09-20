@@ -243,7 +243,7 @@ const Courses = () => {
               placeholder="Search course code, title or lecturer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-3.5 py-1.5 text-xs rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-green-200/50 focus:outline-none focus:ring-1 focus:ring-[#138601] w-full sm:w-72 font-normal shadow-xs"
+              className="pl-9 pr-3.5 py-2 text-xs rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-green-200/50 focus:outline-none focus:ring-1 focus:ring-[#138601] w-full sm:w-72 font-normal shadow-xs"
             />
           </div>
         </div>
@@ -253,9 +253,9 @@ const Courses = () => {
           <button
             type="button"
             onClick={() => setActiveTab('courses')}
-            className={`px-3.5 py-2 rounded text-xs font-semibold transition-colors cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
               activeTab === 'courses'
-                ? 'bg-[#138601] text-white'
+                ? 'bg-[#138601] text-white shadow-xs'
                 : 'text-gray-600 dark:text-green-200 hover:text-gray-900 dark:hover:text-white hover:bg-[#f1f3f5] dark:hover:bg-[#083002]'
             }`}
           >
@@ -264,9 +264,9 @@ const Courses = () => {
           <button
             type="button"
             onClick={() => setActiveTab('pq')}
-            className={`px-3.5 py-2 rounded text-xs font-semibold transition-colors cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
               activeTab === 'pq'
-                ? 'bg-[#138601] text-white'
+                ? 'bg-[#138601] text-white shadow-xs'
                 : 'text-gray-600 dark:text-green-200 hover:text-gray-900 dark:hover:text-white hover:bg-[#f1f3f5] dark:hover:bg-[#083002]'
             }`}
           >
@@ -275,7 +275,7 @@ const Courses = () => {
         </div>
 
         {/* Single Filter Box - Defaults to Current Semester & Level */}
-        <div className="p-3.5 sm:p-4 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2">
             <Filter className="w-3.5 h-3.5 text-gray-400 dark:text-green-300 shrink-0" />
             <label className="text-xs font-semibold text-gray-700 dark:text-green-200 whitespace-nowrap">Filter Session / Semester:</label>
@@ -286,7 +286,7 @@ const Courses = () => {
                   setSelectedFilter(e.target.value);
                   setHasUserChangedFilter(true);
                 }}
-                className="appearance-none px-3 py-1.5 pr-8 text-xs rounded bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer min-w-[240px] sm:min-w-[280px]"
+                className="appearance-none px-3.5 py-2 pr-8 text-xs rounded-lg bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer min-w-[240px] sm:min-w-[280px]"
               >
                 <option value="all">All Levels & Semesters (100L – {currentLevel}L)</option>
                 {availableLevels.map((lvl) => (
@@ -326,7 +326,7 @@ const Courses = () => {
         {/* Courses Tab */}
         {activeTab === 'courses' && (
           filteredCourses.length === 0 ? (
-            <div className="p-8 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-2 shadow-xs">
+            <div className="p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-2 shadow-xs">
               <p className="text-sm font-semibold text-gray-900 dark:text-white">No courses match your filter criteria.</p>
               <p className="text-xs text-gray-500 dark:text-green-200/80">Try selecting a different level/semester or resetting the filter.</p>
               <button
@@ -336,7 +336,7 @@ const Courses = () => {
                   setHasUserChangedFilter(false);
                   setSearchTerm('');
                 }}
-                className="mt-2 inline-flex items-center px-3 py-1.5 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
+                className="mt-2 inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
               >
                 Reset to Current Semester
               </button>
@@ -346,16 +346,16 @@ const Courses = () => {
               {filteredCourses.map((course, idx) => (
                 <div
                   key={idx}
-                  className="p-4 sm:p-5 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 hover:border-gray-400 dark:hover:border-[#138601] transition-all space-y-2.5 shadow-xs"
+                  className="p-5 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#138601] transition-all space-y-2.5 shadow-xs"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{course.code}</span>
-                      <span className="text-[10px] sm:text-xs font-medium bg-[#f1f3f5] dark:bg-[#041801] text-gray-600 dark:text-green-200 px-2 py-0.5 rounded">
+                      <span className="text-[10px] sm:text-xs font-medium bg-[#f1f3f5] dark:bg-[#041801] text-gray-600 dark:text-green-200 px-2.5 py-0.5 rounded-full">
                         {course.levelNumber}L • Sem {course.semesterNumber}
                       </span>
                     </div>
-                    <span className="text-xs font-semibold bg-[#ebf3ff] dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] px-2.5 py-0.5 rounded">
+                    <span className="text-xs font-semibold bg-[#ebf3ff] dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] px-2.5 py-0.5 rounded-full">
                       {course.units} Credit Units
                     </span>
                   </div>
@@ -384,7 +384,7 @@ const Courses = () => {
         {/* Past Questions Tab */}
         {activeTab === 'pq' && (
           filteredPQs.length === 0 ? (
-            <div className="p-8 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 text-center space-y-2 shadow-xs">
+            <div className="p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-2 shadow-xs">
               <p className="text-sm font-semibold text-gray-900 dark:text-white">No past questions match your filter criteria.</p>
               <p className="text-xs text-gray-500 dark:text-green-200/80">Try selecting a different level/semester or resetting the filter.</p>
               <button
@@ -394,7 +394,7 @@ const Courses = () => {
                   setHasUserChangedFilter(false);
                   setSearchTerm('');
                 }}
-                className="mt-2 inline-flex items-center px-3 py-1.5 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
+                className="mt-2 inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
               >
                 Reset to Current Semester
               </button>
@@ -404,16 +404,16 @@ const Courses = () => {
               {filteredPQs.map((pq) => (
                 <div
                   key={pq.id}
-                  className="p-3.5 sm:p-4 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+                  className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded bg-[#f1f3f5] dark:bg-[#041801] flex items-center justify-center text-[#138601] dark:text-[#4bd043] shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-[#f1f3f5] dark:bg-[#041801] flex items-center justify-center text-[#138601] dark:text-[#4bd043] shrink-0">
                       <FileText className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">{pq.course}</span>
-                        <span className="text-[10px] sm:text-xs font-medium bg-[#f1f3f5] dark:bg-[#041801] text-gray-600 dark:text-green-200 px-2 py-0.5 rounded">
+                        <span className="text-[10px] sm:text-xs font-medium bg-[#f1f3f5] dark:bg-[#041801] text-gray-600 dark:text-green-200 px-2.5 py-0.5 rounded-full">
                           {pq.levelNumber}L • Sem {pq.semesterNumber}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-green-300 font-normal">({pq.size})</span>
@@ -427,7 +427,7 @@ const Courses = () => {
                     <a
                       href={`/downloads/${pq.file}`}
                       download
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors shadow-xs"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download PDF</span>

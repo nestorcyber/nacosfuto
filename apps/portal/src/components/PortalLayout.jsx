@@ -104,8 +104,68 @@ const PortalLayout = ({ children }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // 1-Hour Inactivity Watchdog & Auto-Logout
+  useEffect(() => {
+    const ONE_HOUR_MS = 60 * 60 * 1000;
+    const now = Date.now();
+
+    // Check on initial page load / route change
+    const storedUser = localStorage.getItem('nacos_user');
+    if (!storedUser) {
+      navigate('/login');
+      return;
+    }
+
+    const lastActivity = parseInt(localStorage.getItem('nacos_last_activity') || '0', 10);
+    if (lastActivity && (now - lastActivity >= ONE_HOUR_MS)) {
+      // Inactivity exceeded 1 hour! Log out immediately!
+      localStorage.removeItem('nacos_user');
+      localStorage.removeItem('nacos_last_activity');
+      window.dispatchEvent(new Event('nacos_user_logged_out'));
+      navigate('/login?reason=inactivity', { replace: true });
+      return;
+    }
+
+    // Session is valid: initialize/refresh activity timestamp
+    localStorage.setItem('nacos_last_activity', now.toString());
+
+    let lastRecorded = now;
+    // Record user activity (throttled to once every 10 seconds)
+    const recordActivity = () => {
+      const current = Date.now();
+      if (current - lastRecorded > 10000) {
+        lastRecorded = current;
+        localStorage.setItem('nacos_last_activity', current.toString());
+      }
+    };
+
+    // Check periodically if inactivity has exceeded 1 hour
+    const checkInactivity = () => {
+      const u = localStorage.getItem('nacos_user');
+      if (!u) return;
+
+      const act = parseInt(localStorage.getItem('nacos_last_activity') || '0', 10);
+      if (act && (Date.now() - act >= ONE_HOUR_MS)) {
+        localStorage.removeItem('nacos_user');
+        localStorage.removeItem('nacos_last_activity');
+        window.dispatchEvent(new Event('nacos_user_logged_out'));
+        navigate('/login?reason=inactivity', { replace: true });
+      }
+    };
+
+    const intervalId = setInterval(checkInactivity, 15000);
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(ev => window.addEventListener(ev, recordActivity, { passive: true }));
+
+    return () => {
+      clearInterval(intervalId);
+      events.forEach(ev => window.removeEventListener(ev, recordActivity));
+    };
+  }, [navigate]);
+
   const handleLogout = () => {
     localStorage.removeItem('nacos_user');
+    localStorage.removeItem('nacos_last_activity');
     navigate('/login');
   };
 

@@ -457,6 +457,21 @@ export async function signOutStudent() {
 // ==========================================
 
 export async function adminGetAllStudents() {
+  // 1. Fetch live records from Supabase profiles table
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      return data.map(s => enrichStudentProfile(s));
+    }
+  } catch (e) {
+    console.warn('adminGetAllStudents Supabase query notice:', e);
+  }
+
+  // 2. Fallback to local students database
   const students = getLocalStudentsDatabase();
   return students.map(s => enrichStudentProfile(s));
 }
