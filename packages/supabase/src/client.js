@@ -1,15 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Default Supabase project configuration (or fallback demo mode)
 const supabaseUrl = 
   typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL
     ? import.meta.env.VITE_SUPABASE_URL
-    : 'https://nacos-futo.supabase.co';
+    : (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL
+        ? process.env.VITE_SUPABASE_URL
+        : 'https://hfaomycwsjgxgvdqqgwl.supabase.co');
 
 const supabaseAnonKey = 
   typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY
     ? import.meta.env.VITE_SUPABASE_ANON_KEY
-    : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummyKeyForDemoEnvironment12345';
+    : (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY
+        ? process.env.VITE_SUPABASE_ANON_KEY
+        : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmYW9teWN3c2pneGd2ZHFxZ3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1NTcwOTEsImV4cCI6MjEwNDEzMzA5MX0.W0for0s-oWavvkuws93EAbW7PPiD4uux-MMUDtmQat8');
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

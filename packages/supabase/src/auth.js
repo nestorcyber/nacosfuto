@@ -290,10 +290,12 @@ export async function signInStudent(identifier, password) {
         return { data: null, error: { message: 'This student account has been deactivated. Please contact the department.' } };
       }
 
-      const computedHash = await hashPassword(cleanPass);
-      // Hardcoded default passwords ONLY allowed in local development
+      const computedHashSalted = await hashPassword(cleanPass, 'nacos_futo_salt_2026');
+      const computedHashUnsalted = await hashPassword(cleanPass, '');
       const isDefaultPassword = isLocal && (cleanPass === 'password' || cleanPass === 'admin123');
-      const isValidPassword = (dbProfile.password_hash && dbProfile.password_hash === computedHash) || isDefaultPassword;
+      const isValidPassword = 
+        (dbProfile.password_hash && (dbProfile.password_hash === computedHashSalted || dbProfile.password_hash === computedHashUnsalted)) || 
+        isDefaultPassword;
 
       if (!isValidPassword) {
         return { data: null, error: { message: 'Incorrect password. Please verify and try again.' } };
@@ -611,20 +613,67 @@ export async function confirmStudentPasswordReset(regNumber, otpCode, newPasswor
 
   const passwordHash = await hashPassword(newPassword);
 
-  // 1. Update in Supabase profiles
-  try {
-    await supabase
-      .from('profiles')
-      .update({
-        password_hash: passwordHash,
-        updated_at: new Date().toISOString()
-      })
-      .eq('registration_number', cleanReg);
-  } catch (e) {}
+  let updatedInSupabase = false;
 
-  // 2. Update in local storage
+  // 1. Primary: Update via serverless API endpoint (/api/auth/reset-password)
+  try {
+    const apiRes = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: cleanReg,
+        newPasswordHash: passwordHash
+      })
+    });
+    const isJson = (apiRes.headers.get('content-type') || '').includes('application/json');
+    if (apiRes.ok && isJson) {
+      const data = await apiRes.json().catch(() => ({}));
+      if (data.success) {
+        updatedInSupabase = true;
+      }
+    }
+  } catch (apiErr) {
+    // API serverless endpoint not reachable, proceed to direct client fallback
+  }
+
+  // 2. Secondary: Direct Supabase client update
+  if (!updatedInSupabase) {
+    try {
+      // Find the profile first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, registration_number, email')
+        .or(`registration_number.ilike.${cleanReg},email.ilike.${cleanReg.toLowerCase()}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (profile) {
+        const { data: updated, error: updErr } = await supabase
+          .from('profiles')
+          .update({
+            password_hash: passwordHash,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', profile.id)
+          .select();
+
+        if (!updErr && updated && updated.length > 0) {
+          updatedInSupabase = true;
+        } else if (updErr && updErr.code === '42501') {
+          console.error('[Supabase RLS Error] Profiles update forbidden by Row Level Security policy.');
+        }
+      }
+    } catch (e) {
+      console.warn('Direct Supabase profiles update exception:', e);
+    }
+  }
+
+  // 3. Update in local storage
   const students = getLocalStudentsDatabase();
-  const idx = students.findIndex(s => s.registration_number.toUpperCase() === cleanReg);
+  const idx = students.findIndex(s => 
+    s.registration_number.toUpperCase() === cleanReg || 
+    (s.email && s.email.toLowerCase() === cleanReg.toLowerCase())
+  );
   if (idx !== -1) {
     students[idx] = {
       ...students[idx],
@@ -639,7 +688,7 @@ export async function confirmStudentPasswordReset(regNumber, otpCode, newPasswor
     const rawUser = localStorage.getItem('nacos_user');
     if (rawUser) {
       const u = JSON.parse(rawUser);
-      if (u.registration_number?.toUpperCase() === cleanReg) {
+      if (u.registration_number?.toUpperCase() === cleanReg || (u.email && u.email.toLowerCase() === cleanReg.toLowerCase())) {
         u.password_hash = passwordHash;
         localStorage.setItem('nacos_user', JSON.stringify(u));
       }
