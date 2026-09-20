@@ -46,7 +46,7 @@ async function addStudent() {
   const firstName = process.argv[4] || 'Nestor';
   const middleName = process.argv[5] || 'Ifeanyi';
   const fullName = `${surname} ${firstName} ${middleName}`.trim();
-  const email = process.argv[6] || 'nestor.ifeanyi@futo.edu.ng';
+  const email = process.argv[6] || 'neorxpro@gmail.com';
   const phone = process.argv[7] || '+234 814 506 8200';
   const admissionYear = parseInt(regNumber.slice(0, 4), 10) || 2024;
   const initialPassword = 'password';

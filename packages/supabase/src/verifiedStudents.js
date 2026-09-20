@@ -64,7 +64,7 @@ export function getLocalVerifiedStudents() {
       middle_name: 'Ifeanyi',
       last_name: 'Anyanwu',
       full_name: 'Anyanwu Nestor Ifeanyi',
-      email: 'nestor.ifeanyi@futo.edu.ng',
+      email: 'neorxpro@gmail.com',
       phone_number: '+234 814 506 8200',
       department: 'Computer Science',
       faculty: 'School of Information & Communication Tech (SICT)',

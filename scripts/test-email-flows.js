@@ -26,7 +26,7 @@ if (fs.existsSync(envPath)) {
 }
 
 async function testEmailFlows() {
-  const targetEmail = process.env.SMTP_USER || 'ict.nacosfuto@gmail.com';
+  const targetEmail = process.argv[2] || 'neorxpro@gmail.com';
   console.log(`\nTesting Email Dispatch to: ${targetEmail}`);
 
   // 1. Test Registration Verification Email

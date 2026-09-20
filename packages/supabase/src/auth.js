@@ -91,7 +91,7 @@ export function getLocalStudentsDatabase() {
       middle_name: 'Ifeanyi',
       last_name: 'Anyanwu',
       full_name: 'Anyanwu Nestor Ifeanyi',
-      email: 'nestor.ifeanyi@futo.edu.ng',
+      email: 'neorxpro@gmail.com',
       phone_number: '+234 814 506 8200',
       admission_year: 2024,
       programme: 'B.Tech Computer Science',
