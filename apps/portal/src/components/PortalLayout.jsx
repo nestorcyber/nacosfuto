@@ -229,7 +229,7 @@ const PortalLayout = ({ children }) => {
     <div className="min-h-screen bg-[#f8fafc] dark:bg-[#041801] text-gray-900 dark:text-white flex flex-col font-sans selection:bg-[#138601] selection:text-white">
       
       {/* Top Header */}
-      <header className={`sticky top-0 z-40 w-full border-b ${
+      <header className={`sticky top-0 z-40 w-full border-b print:hidden ${
         isDark 
           ? 'bg-[#083002] border-[#138601]/25 text-white' 
           : 'bg-white border-gray-200 text-gray-900'
@@ -548,10 +548,10 @@ const PortalLayout = ({ children }) => {
         </div>
       )}
 
-      <div className="flex-1 flex site-container w-full gap-6 lg:gap-8 min-h-0">
+      <div className="flex-1 flex site-container w-full gap-6 lg:gap-8 min-h-0 print:p-0 print:m-0 print:max-w-none print:w-full">
         
         {/* DESKTOP SIDEBAR: Sticky, Independent Scroll & Spacious */}
-        <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-6 pr-1.5 justify-between sidebar-scroll">
+        <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-6 pr-1.5 justify-between sidebar-scroll print:hidden">
           
           <div className="space-y-4">
             {/* Navigation Links with comfortable padding and text-sm size */}
@@ -603,7 +603,7 @@ const PortalLayout = ({ children }) => {
 
         {/* MOBILE NAVIGATION DRAWER */}
         {mobileOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-[#041801]/95 flex flex-col p-6 text-white">
+          <div className="md:hidden fixed inset-0 z-50 bg-[#041801]/95 flex flex-col p-6 text-white print:hidden">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-2">
                 <img src={logoDark} alt="NACOS Logo" className="h-7 w-auto object-contain" />
@@ -646,7 +646,7 @@ const PortalLayout = ({ children }) => {
         )}
 
         {/* MAIN BODY VIEW */}
-        <main className="flex-1 min-w-0 py-6">
+        <main className="flex-1 min-w-0 py-6 print:py-0 print:m-0 print:w-full">
           {children}
         </main>
 

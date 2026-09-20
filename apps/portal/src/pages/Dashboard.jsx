@@ -13,9 +13,11 @@ import {
   Wallet,
   ChevronDown,
   ChevronUp,
-  ExternalLink
+  ExternalLink,
+  Clock
 } from 'lucide-react';
 import PortalLayout from '../components/PortalLayout';
+import { supabase, getLocalPaymentsDatabase } from '@nacos/supabase';
 
 const Dashboard = () => {
   const [user, setUser] = useState(() => {
@@ -30,12 +32,84 @@ const Dashboard = () => {
     return {};
   });
 
+  const [isPaid, setIsPaid] = useState(false);
+
+  const checkPaymentStatus = async (currentUser) => {
+    const matric = currentUser?.registration_number || currentUser?.matric || currentUser?.matricNumber || '';
+
+    // 1. Direct profile flags
+    if (
+      currentUser?.dues_cleared === true || 
+      currentUser?.has_paid_dues === true || 
+      ['cleared', 'successful', 'verified', 'paid'].includes(String(currentUser?.payment_status).toLowerCase())
+    ) {
+      setIsPaid(true);
+      return;
+    }
+
+    // 2. Local payments db
+    if (matric) {
+      try {
+        const cleanMatric = String(matric).trim().toUpperCase();
+        const localPayments = getLocalPaymentsDatabase();
+        if (Array.isArray(localPayments)) {
+          const found = localPayments.find(p => {
+            const pMatric = String(p.student_matric || p.matric_number || '').trim().toUpperCase();
+            const pStatus = String(p.status || '').toLowerCase();
+            return pMatric === cleanMatric && (pStatus === 'successful' || pStatus === 'verified' || pStatus === 'cleared' || pStatus === 'paid');
+          });
+
+          if (found) {
+            setIsPaid(true);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Local payment check error:', e);
+      }
+
+      // 3. Supabase check
+      try {
+        const cleanMatric = String(matric).trim().toUpperCase();
+        const { data: duesPay } = await supabase
+          .from('dues_payments')
+          .select('id, status')
+          .eq('matric_number', cleanMatric)
+          .in('status', ['successful', 'verified', 'cleared', 'paid'])
+          .maybeSingle();
+
+        if (duesPay) {
+          setIsPaid(true);
+          return;
+        }
+
+        const { data: deptDues } = await supabase
+          .from('departmental_dues')
+          .select('id, status')
+          .eq('registration_number', cleanMatric)
+          .in('status', ['successful', 'verified', 'cleared', 'paid'])
+          .maybeSingle();
+
+        if (deptDues) {
+          setIsPaid(true);
+          return;
+        }
+      } catch (err) {
+        console.warn('Supabase dues check error:', err);
+      }
+    }
+
+    setIsPaid(false);
+  };
+
   useEffect(() => {
     const handleUserUpdate = () => {
       const stored = localStorage.getItem('nacos_user');
       if (stored) {
         try {
-          setUser(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          setUser(parsed);
+          checkPaymentStatus(parsed);
         } catch (e) {
           console.error(e);
         }
@@ -66,6 +140,26 @@ const Dashboard = () => {
   };
 
   const firstName = getFirstName();
+
+  // Dynamic course count based on level
+  const getCoursesCount = () => {
+    const levelStr = String(user.level || user.current_level || '100');
+    const levelNum = parseInt(levelStr, 10);
+    if (levelNum === 200) return '14 courses';
+    if (levelNum === 300) return '14 courses';
+    if (levelNum === 400) return '8 courses';
+    if (levelNum === 500) return '10 courses';
+    return '16 courses';
+  };
+
+  // Dynamic published results count based on level
+  const getResultsCount = () => {
+    const levelStr = String(user.level || user.current_level || '100');
+    const levelNum = parseInt(levelStr, 10);
+    if (levelNum >= 300) return '4 semesters';
+    if (levelNum >= 200) return '2 semesters';
+    return '0 results';
+  };
 
   return (
     <PortalLayout>
@@ -105,7 +199,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 3 Clean, Unclustered Summary Cards (Matching Reference Image) */}
+        {/* 3 Clean Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           
           {/* Card 1: Courses Registered */}
@@ -118,7 +212,7 @@ const Dashboard = () => {
                 Courses Registered
               </h4>
               <div className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                40 courses
+                {getCoursesCount()}
               </div>
             </div>
           </div>
@@ -133,22 +227,39 @@ const Dashboard = () => {
                 Results Published
               </h4>
               <div className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                0 results
+                {getResultsCount()}
               </div>
             </div>
           </div>
 
           {/* Card 3: Fees Paid */}
-          <div className="p-4 sm:p-5 rounded bg-[#bbf0b7] dark:bg-[#138601]/30 border border-green-200/70 dark:border-[#138601]/40 flex flex-col justify-between min-h-[125px] shadow-xs">
-            <div className="text-[#083002] dark:text-[#4bd043]">
+          <div className={`p-4 sm:p-5 rounded border flex flex-col justify-between min-h-[125px] shadow-xs transition-colors ${
+            isPaid 
+              ? 'bg-[#bbf0b7] dark:bg-[#138601]/30 border-green-200/70 dark:border-[#138601]/40' 
+              : 'bg-amber-50/80 dark:bg-[#083002] border-amber-200/80 dark:border-amber-700/40'
+          }`}>
+            <div className={isPaid ? 'text-[#083002] dark:text-[#4bd043]' : 'text-amber-600 dark:text-amber-400'}>
               <Wallet className="w-6 h-6" />
             </div>
             <div className="mt-3 space-y-1.5">
-              <h4 className="text-xs sm:text-sm font-normal text-gray-800 dark:text-white">
-                Fees paid
-              </h4>
-              <div className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                353,000 NGN
+              <div className="flex items-center justify-between">
+                <h4 className={`text-xs sm:text-sm font-normal ${
+                  isPaid ? 'text-gray-800 dark:text-white' : 'text-gray-700 dark:text-gray-200'
+                }`}>
+                  Fees paid
+                </h4>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                  isPaid 
+                    ? 'bg-white/70 dark:bg-[#041801]/60 text-[#138601] dark:text-[#4bd043]' 
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
+                }`}>
+                  {isPaid ? 'Cleared' : 'Not Paid'}
+                </span>
+              </div>
+              <div className={`text-sm sm:text-base font-bold ${
+                isPaid ? 'text-gray-900 dark:text-white' : 'text-amber-700 dark:text-amber-400'
+              }`}>
+                {isPaid ? '2,500 NGN' : '0 NGN'}
               </div>
             </div>
           </div>
@@ -165,12 +276,27 @@ const Dashboard = () => {
               className="flex items-center justify-between p-3.5 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 hover:border-gray-400 dark:hover:border-[#138601] transition-all group shadow-xs"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded bg-[#f1f3f5] dark:bg-[#041801] flex items-center justify-center text-gray-700 dark:text-[#4bd043] group-hover:bg-[#138601] group-hover:text-white transition-colors shrink-0">
+                <div className={`w-10 h-10 rounded flex items-center justify-center transition-colors shrink-0 ${
+                  isPaid 
+                    ? 'bg-[#f1f3f5] dark:bg-[#041801] text-gray-700 dark:text-[#4bd043] group-hover:bg-[#138601] group-hover:text-white' 
+                    : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 group-hover:bg-amber-600 group-hover:text-white'
+                }`}>
                   <CreditCard className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Dues Clearance Receipt</h4>
-                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-green-200/80 font-normal mt-0.5">Generate verified electronic receipt</p>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Dues Clearance Receipt</h4>
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.2 rounded ${
+                      isPaid 
+                        ? 'bg-green-100 text-green-800 dark:bg-[#138601]/20 dark:text-[#4bd043]' 
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
+                    }`}>
+                      {isPaid ? 'Cleared' : 'Not Paid'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-green-200/80 font-normal mt-0.5">
+                    {isPaid ? 'View verified electronic receipt' : 'Clearance required • Pending payment'}
+                  </p>
                 </div>
               </div>
               <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors shrink-0" />

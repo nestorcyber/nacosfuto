@@ -558,16 +558,121 @@ export async function savePassportToApplication(applicationId, file, student) {
 }
 
 /**
+ * Link an uploaded passport photo URL directly to an application and sync to student records
+ */
+export async function linkPassportUrlToApplication(applicationId, matric, photoUrl, publicId = '') {
+  if (!photoUrl) return { error: 'No photo URL provided' };
+  const cleanMatric = String(matric || '').trim().toUpperCase();
+
+  // 1. Update in local applications DB
+  const apps = getLocalIdApplicationsDatabase();
+  const index = apps.findIndex(a => 
+    a.id === applicationId || 
+    (a.matric_number && a.matric_number.toUpperCase() === cleanMatric)
+  );
+
+  let updatedApp = null;
+  if (index !== -1) {
+    apps[index].passport_url = photoUrl;
+    if (publicId) apps[index].cloudinary_public_id = publicId;
+    if (apps[index].payment_status === 'verified') {
+      apps[index].status = 'ready_to_submit';
+    }
+    apps[index].updated_at = new Date().toISOString();
+    updatedApp = apps[index];
+    saveLocalIdApplications(apps);
+  }
+
+  // 2. Update in local students DB & nacos_user
+  const students = getLocalStudentsDatabase();
+  const sIndex = students.findIndex(s => 
+    (s.registration_number && s.registration_number.toUpperCase() === cleanMatric) || 
+    s.id === cleanMatric
+  );
+  if (sIndex !== -1) {
+    students[sIndex].profile_photo_url = photoUrl;
+    students[sIndex].avatar_url = photoUrl;
+    students[sIndex].photo_url = photoUrl;
+    if (publicId) students[sIndex].cloudinary_public_id = publicId;
+    localStorage.setItem('nacos_students_db', JSON.stringify(students));
+  }
+
+  const currentUser = localStorage.getItem('nacos_user');
+  if (currentUser) {
+    try {
+      const userObj = JSON.parse(currentUser);
+      userObj.profile_photo_url = photoUrl;
+      userObj.avatar_url = photoUrl;
+      userObj.photo_url = photoUrl;
+      if (publicId) userObj.cloudinary_public_id = publicId;
+      localStorage.setItem('nacos_user', JSON.stringify(userObj));
+    } catch (e) {}
+  }
+
+  // 3. Supabase sync
+  try {
+    if (applicationId) {
+      await supabase.from('id_card_applications').update({
+        passport_url: photoUrl,
+        cloudinary_public_id: publicId || null,
+        status: updatedApp?.status || 'ready_to_submit',
+        updated_at: new Date().toISOString()
+      }).eq('id', applicationId);
+    }
+    if (cleanMatric) {
+      await supabase.from('profiles').update({
+        profile_photo_url: photoUrl,
+        avatar_url: photoUrl,
+        cloudinary_public_id: publicId || null
+      }).eq('registration_number', cleanMatric);
+    }
+  } catch (e) {
+    // Offline
+  }
+
+  return { success: true, application: updatedApp };
+}
+
+/**
  * Submit ID Card application for portal review
  */
-export async function submitIdApplication(applicationId) {
+export async function submitIdApplication(applicationId, passportUrlOverride = null) {
   const apps = getLocalIdApplicationsDatabase();
-  const index = apps.findIndex(a => a.id === applicationId);
+  let index = apps.findIndex(a => a.id === applicationId);
+  if (index === -1) {
+    // Remote check
+    try {
+      const { data } = await supabase.from('id_card_applications').select('*').eq('id', applicationId).maybeSingle();
+      if (data) {
+        apps.push(data);
+        index = apps.length - 1;
+      }
+    } catch (e) {}
+  }
+
   if (index === -1) {
     return { error: 'Application not found.' };
   }
 
   const app = apps[index];
+
+  // If passport url is missing on app record, use override or session fallback
+  if (!app.passport_url && passportUrlOverride) {
+    app.passport_url = passportUrlOverride;
+  }
+
+  if (!app.passport_url && typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('nacos_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u.profile_photo_url || u.avatar_url || u.photo_url) {
+          app.passport_url = u.profile_photo_url || u.avatar_url || u.photo_url;
+        }
+      }
+    } catch (e) {}
+  }
+
   if (app.payment_status !== 'verified') {
     return { error: 'Payment must be verified before submitting application.' };
   }
@@ -583,6 +688,7 @@ export async function submitIdApplication(applicationId) {
 
   try {
     await supabase.from('id_card_applications').update({
+      passport_url: app.passport_url,
       status: 'submitted',
       submitted_at: app.submitted_at,
       updated_at: app.updated_at

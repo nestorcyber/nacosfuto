@@ -27,6 +27,7 @@ import {
   verifyAndLinkPayment,
   recordStudentPayment,
   savePassportToApplication,
+  linkPassportUrlToApplication,
   submitIdApplication,
   drawIdCardOnCanvas, 
   downloadIdCardAsImage, 
@@ -163,20 +164,31 @@ const IdCard = () => {
   };
 
   // State 3 -> State 4: Photo Upload
-  const handlePhotoUploaded = (media) => {
-    const photoUrl = media.secureUrl || media.url;
+  const handlePhotoUploaded = async (media) => {
+    const photoUrl = media?.secureUrl || media?.url;
+    if (!photoUrl) return;
+    const matric = student?.matric || student?.registration_number;
+
+    // Persist photo directly to application and student profile
+    if (application?.id) {
+      await linkPassportUrlToApplication(application.id, matric, photoUrl, media?.publicId || '');
+    }
+
     setApplication(prev => ({
       ...prev,
       passport_url: photoUrl,
-      cloudinary_public_id: media.publicId,
+      cloudinary_public_id: media?.publicId || '',
       status: 'ready_to_submit'
     }));
+
     setStudent(prev => ({
       ...prev,
       profile_photo_url: photoUrl,
       avatar_url: photoUrl,
-      cloudinary_public_id: media.publicId
+      cloudinary_public_id: media?.publicId || ''
     }));
+
+    window.dispatchEvent(new Event('nacos_user_updated'));
     showNotification('Passport photograph uploaded successfully!');
   };
 
@@ -184,7 +196,15 @@ const IdCard = () => {
   const handleSubmitApplication = async () => {
     if (!application?.id) return;
     setIsSubmitting(true);
-    const res = await submitIdApplication(application.id);
+    const photoUrl = application.passport_url || student?.profile_photo_url || student?.avatar_url;
+    
+    // Ensure photo is linked in DB before submission
+    const matric = student?.matric || student?.registration_number;
+    if (photoUrl) {
+      await linkPassportUrlToApplication(application.id, matric, photoUrl, application.cloudinary_public_id || '');
+    }
+
+    const res = await submitIdApplication(application.id, photoUrl);
     setIsSubmitting(false);
 
     if (res.error) {
@@ -443,7 +463,7 @@ const IdCard = () => {
               </div>
             )}
 
-            <div className="max-w-sm mx-auto text-left">
+            <div className="max-w-sm mx-auto text-left space-y-3">
               <MediaUpload
                 folder={CLOUDINARY_FOLDERS.STUDENTS}
                 publicId={`${CLOUDINARY_FOLDERS.STUDENTS}/${(student.matric || student.registration_number || 'student').replace(/[^a-zA-Z0-9]/g, '_')}_passport`}
@@ -454,6 +474,50 @@ const IdCard = () => {
                 onUploadSuccess={handlePhotoUploaded}
                 onError={(err) => setUploadError(err)}
               />
+
+              {/* Option to use existing profile photo if student already has one */}
+              {(student?.profile_photo_url || student?.avatar_url) && (
+                <div className="pt-2 border-t border-gray-100 dark:border-[#138601]/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src={student.profile_photo_url || student.avatar_url} 
+                      alt="Current Avatar" 
+                      className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-[#138601]/40" 
+                    />
+                    <span className="text-[11px] text-gray-600 dark:text-green-200">Use current profile photo</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handlePhotoUploaded({ url: student.profile_photo_url || student.avatar_url })}
+                    className="px-2.5 py-1 text-xs font-semibold text-[#138601] dark:text-[#4bd043] hover:text-white hover:bg-[#138601] border border-[#138601] dark:border-[#138601]/50 rounded transition-colors cursor-pointer"
+                  >
+                    Select Photo
+                  </button>
+                </div>
+              )}
+
+              {/* Direct file picker fallback */}
+              <div className="pt-1 text-center">
+                <label className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 dark:hover:text-white cursor-pointer underline">
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Choose file from device directly</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (evt) => {
+                          handlePhotoUploaded({ url: evt.target.result });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
             </div>
           </div>
         )}
