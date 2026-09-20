@@ -19,3 +19,18 @@ export async function hashPassword(password) {
   }
   return Math.abs(hash).toString(16);
 }
+
+export function isLocalEnvironment() {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    return (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host.endsWith('.local') ||
+      Boolean(typeof import.meta !== 'undefined' && import.meta.env?.DEV)
+    );
+  }
+  return typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+}
+

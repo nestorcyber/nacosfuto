@@ -27,7 +27,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { hashPassword } from '@nacos/supabase/auth';
+import { hashPassword, isLocalEnvironment } from '@nacos/supabase/auth';
+import { supabase } from '@nacos/supabase';
 import logoDark from '../assets/full-logo-dark.png';
 import logoLight from '../assets/full-logo-light.png';
 
@@ -142,17 +143,33 @@ const PortalLayout = ({ children }) => {
       );
 
       const currentHash = await hashPassword(currentPassword);
-      const isDefault = currentPassword === 'password' || currentPassword === 'admin123';
+      const isLocal = isLocalEnvironment();
+      const isDefault = isLocal && (currentPassword === 'password' || currentPassword === 'admin123');
 
-      if (studentIdx >= 0) {
-        const student = students[studentIdx];
-        if (student.password_hash && student.password_hash !== currentHash && !isDefault) {
-          setPasswordError('Current password is incorrect.');
-          setIsChangingPassword(false);
-          return;
+      // Verify current password against active session or local storage
+      const existingHash = user.password_hash || (studentIdx >= 0 ? students[studentIdx].password_hash : null);
+      if (existingHash && existingHash !== currentHash && !isDefault) {
+        setPasswordError('Current password is incorrect.');
+        setIsChangingPassword(false);
+        return;
+      }
+
+      const newHash = await hashPassword(newPassword);
+
+      // 1. Update remote Supabase profile if available
+      try {
+        if (supabase && (regNo || user.id)) {
+          const query = user.id 
+            ? supabase.from('profiles').update({ password_hash: newHash, updated_at: new Date().toISOString() }).eq('id', user.id)
+            : supabase.from('profiles').update({ password_hash: newHash, updated_at: new Date().toISOString() }).eq('registration_number', regNo);
+          await query;
         }
+      } catch (dbErr) {
+        console.warn('Could not sync password update to Supabase:', dbErr);
+      }
 
-        const newHash = await hashPassword(newPassword);
+      // 2. Update local storage cache
+      if (studentIdx >= 0) {
         students[studentIdx].password_hash = newHash;
         students[studentIdx].updated_at = new Date().toISOString();
         localStorage.setItem('nacos_students_db', JSON.stringify(students));
@@ -161,7 +178,7 @@ const PortalLayout = ({ children }) => {
       // Update active user session
       const updatedUser = {
         ...user,
-        password_hash: await hashPassword(newPassword)
+        password_hash: newHash
       };
       localStorage.setItem('nacos_user', JSON.stringify(updatedUser));
       setUser(updatedUser);

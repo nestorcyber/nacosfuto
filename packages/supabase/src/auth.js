@@ -36,6 +36,20 @@ export async function hashPassword(password, salt = 'nacos_futo_salt_2026') {
   return 'hashed_' + Math.abs(hash).toString(16);
 }
 
+export function isLocalEnvironment() {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    return (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host.endsWith('.local') ||
+      Boolean(typeof import.meta !== 'undefined' && import.meta.env?.DEV)
+    );
+  }
+  return typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+}
+
 /**
  * Helper to dynamically compute derived academic level and expected graduation
  * Ensures level is never hard-coded or desynchronized from the academic year.
@@ -230,6 +244,7 @@ export async function signInStudent(identifier, password) {
     return { data: null, error: { message: 'Registration number and password are required.' } };
   }
 
+  const isLocal = isLocalEnvironment();
   const cleanId = identifier.trim().toLowerCase();
   const cleanPass = password;
 
@@ -276,7 +291,8 @@ export async function signInStudent(identifier, password) {
       }
 
       const computedHash = await hashPassword(cleanPass);
-      const isDefaultPassword = cleanPass === 'password' || cleanPass === 'admin123';
+      // Hardcoded default passwords ONLY allowed in local development
+      const isDefaultPassword = isLocal && (cleanPass === 'password' || cleanPass === 'admin123');
       const isValidPassword = (dbProfile.password_hash && dbProfile.password_hash === computedHash) || isDefaultPassword;
 
       if (!isValidPassword) {
@@ -291,37 +307,40 @@ export async function signInStudent(identifier, password) {
     console.warn('Supabase profiles query fallback:', err);
   }
 
-  // 3. Local Database lookup & verification (fallback & offline support)
-  const students = getLocalStudentsDatabase();
-  const student = students.find(s => 
-    s.registration_number.toLowerCase() === cleanId || 
-    (s.email && s.email.toLowerCase() === cleanId) ||
-    s.registration_number.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === cleanId.replace(/[^a-zA-Z0-9]/g, '')
-  );
+  // 3. Local Mock Database lookup & verification (ACTIVE ONLY ON LOCALHOST / DEV)
+  if (isLocal) {
+    const students = getLocalStudentsDatabase();
+    const student = students.find(s => 
+      s.registration_number.toLowerCase() === cleanId || 
+      (s.email && s.email.toLowerCase() === cleanId) ||
+      s.registration_number.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === cleanId.replace(/[^a-zA-Z0-9]/g, '')
+    );
 
-  if (!student) {
-    return { 
-      data: null, 
-      error: { message: 'No student account found with this registration number or email. If you have not registered yet, please create an account.' } 
-    };
+    if (student) {
+      if (!student.is_active) {
+        return { data: null, error: { message: 'This student account has been deactivated. Please contact the department.' } };
+      }
+
+      // Verify password hash or dev default
+      const computedHash = await hashPassword(cleanPass);
+      const isDefaultPassword = cleanPass === 'password' || cleanPass === 'admin123';
+      const isValidPassword = student.password_hash === computedHash || isDefaultPassword;
+
+      if (!isValidPassword) {
+        return { data: null, error: { message: 'Incorrect password. Please verify and try again.' } };
+      }
+
+      const enriched = enrichStudentProfile(student);
+      localStorage.setItem('nacos_user', JSON.stringify(enriched));
+      return { data: { user: enriched }, error: null };
+    }
   }
 
-  if (!student.is_active) {
-    return { data: null, error: { message: 'This student account has been deactivated. Please contact the department.' } };
-  }
-
-  // Verify password hash
-  const computedHash = await hashPassword(cleanPass);
-  const isDefaultPassword = cleanPass === 'password' || cleanPass === 'admin123';
-  const isValidPassword = student.password_hash === computedHash || isDefaultPassword;
-
-  if (!isValidPassword) {
-    return { data: null, error: { message: 'Incorrect password. Please verify and try again.' } };
-  }
-
-  const enriched = enrichStudentProfile(student);
-  localStorage.setItem('nacos_user', JSON.stringify(enriched));
-  return { data: { user: enriched }, error: null };
+  // If not found in database (or on production)
+  return { 
+    data: null, 
+    error: { message: 'No student account found with this registration number or email. If you have not registered yet, please create an account.' } 
+  };
 }
 
 /**

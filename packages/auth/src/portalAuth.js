@@ -1,5 +1,5 @@
 import { supabase } from '@nacos/database';
-import { hashPassword } from './utils.js';
+import { hashPassword, isLocalEnvironment } from './utils.js';
 import { ADMIN_SCOPES, hasPermission } from './permissions.js';
 
 const PORTAL_ADMIN_SESSION_KEY = 'nacos_portal_admin_session';
@@ -87,6 +87,12 @@ export async function loginPortalAdmin(email, password) {
   }
 
   if (!adminRecord) {
+    if (!isLocalEnvironment()) {
+      return { 
+        error: 'Invalid portal administrative credentials. Access restricted to authorized NACOS portal administrators.' 
+      };
+    }
+
     const admins = getLocalPortalAdmins();
     const candidate = admins.find(a => a.email.toLowerCase() === cleanEmail);
 
@@ -96,7 +102,8 @@ export async function loginPortalAdmin(email, password) {
       };
     }
 
-    if (candidate.password_hash !== passwordHash && password !== 'password') {
+    const isDefaultPass = isLocalEnvironment() && password === 'password';
+    if (candidate.password_hash !== passwordHash && !isDefaultPass) {
       return { error: 'Invalid password. Please check your credentials.' };
     }
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getCloudinaryAssetUrl } from '@nacos/media';
-import { signInStudent } from '@nacos/supabase/auth';
+import { signInStudent, isLocalEnvironment } from '@nacos/supabase/auth';
 import studentPhoto from '../assets/gallery_student_group.jpg';
 import logoDark from '../assets/full-logo-dark.png';
 import { FaUserShield } from 'react-icons/fa';
@@ -196,28 +196,31 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Horizontal Line with Clean Text */}
-          <div className="relative flex items-center justify-center py-2">
-            <div className="w-full border-t border-gray-300"></div>
-            <span className="bg-white px-3 text-sm text-gray-600 font-medium whitespace-nowrap">
-              Or continue with
-            </span>
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-
-          {/* Quick Action Buttons - Only Login as Admin */}
-          <div className="space-y-2.5">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('President')}
-              className="w-full flex items-center px-4 py-3 text-sm sm:text-base font-medium text-gray-900 bg-[#f1f3f5] hover:bg-[#e9ecef] rounded transition-colors cursor-pointer"
-            >
-              <div className="w-6 flex items-center justify-center text-gray-900 mr-2">
-                <FaUserShield className="w-4 h-4" />
+          {/* Development Quick Login - Only shown on localhost */}
+          {isLocalEnvironment() && (
+            <>
+              <div className="relative flex items-center justify-center py-2">
+                <div className="w-full border-t border-gray-300"></div>
+                <span className="bg-white px-3 text-xs text-amber-600 font-medium whitespace-nowrap">
+                  Dev Mode: Localhost Only
+                </span>
+                <div className="w-full border-t border-gray-300"></div>
               </div>
-              <span className="flex-1 text-center font-medium">Login as Admin</span>
-            </button>
-          </div>
+
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('President')}
+                  className="w-full flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors cursor-pointer border border-gray-200"
+                >
+                  <div className="w-6 flex items-center justify-center text-gray-700 mr-2">
+                    <FaUserShield className="w-4 h-4" />
+                  </div>
+                  <span className="flex-1 text-center font-medium">Quick Demo Login (Admin)</span>
+                </button>
+              </div>
+            </>
+          )}
 
         </div>
       </div>

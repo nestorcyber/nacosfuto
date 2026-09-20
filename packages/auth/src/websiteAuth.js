@@ -1,5 +1,5 @@
 import { supabase } from '@nacos/database';
-import { hashPassword } from './utils.js';
+import { hashPassword, isLocalEnvironment } from './utils.js';
 import { ADMIN_SCOPES, hasPermission } from './permissions.js';
 
 const WEBSITE_ADMIN_SESSION_KEY = 'nacos_website_admin_session';
@@ -105,8 +105,14 @@ export async function loginWebsiteAdmin(email, password) {
     // Offline fallback
   }
 
-  // Local seeded storage fallback
+  // Local seeded storage fallback (ONLY on localhost / dev)
   if (!adminRecord) {
+    if (!isLocalEnvironment()) {
+      return { 
+        error: 'Invalid administrative credentials. Access restricted to authorized NACOS website administrators.' 
+      };
+    }
+
     const admins = getLocalWebsiteAdmins();
     const candidate = admins.find(a => a.email.toLowerCase() === cleanEmail);
 
@@ -116,7 +122,8 @@ export async function loginWebsiteAdmin(email, password) {
       };
     }
 
-    if (candidate.password_hash !== passwordHash && password !== 'password') {
+    const isDefaultPass = isLocalEnvironment() && password === 'password';
+    if (candidate.password_hash !== passwordHash && !isDefaultPass) {
       return { error: 'Invalid password. Please check your credentials.' };
     }
 

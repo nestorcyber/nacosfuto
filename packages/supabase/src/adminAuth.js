@@ -1,5 +1,5 @@
 import { supabase } from './client.js';
-import { hashPassword } from './auth.js';
+import { hashPassword, isLocalEnvironment } from './auth.js';
 
 const ADMIN_SESSION_STORAGE_KEY = 'nacos_website_admin_session';
 const ADMIN_SCOPES_STORAGE_KEY = 'nacos_admin_scopes_db';
@@ -240,8 +240,8 @@ export async function loginWebsiteAdmin(email, password) {
     }
   }
 
-  // Check local seeded database fallback
-  if (!adminRecord) {
+  // Check local seeded database fallback (ONLY on localhost / dev)
+  if (!adminRecord && isLocalEnvironment()) {
     const admins = getLocalAdminScopesDatabase();
     const candidate = admins.find(a => a.email.toLowerCase() === cleanEmail);
 
@@ -252,7 +252,8 @@ export async function loginWebsiteAdmin(email, password) {
     }
 
     // Verify password hash
-    if (candidate.password_hash !== passwordHash && password !== 'password') {
+    const isDefaultPass = isLocalEnvironment() && password === 'password';
+    if (candidate.password_hash !== passwordHash && !isDefaultPass) {
       return { error: 'Invalid password. Please check your credentials.' };
     }
 
