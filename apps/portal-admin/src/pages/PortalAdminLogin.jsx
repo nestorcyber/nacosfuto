@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { getCloudinaryAssetUrl } from '@nacos/media';
-import { loginPortalAdmin, getPortalAdminSession } from '@nacos/auth';
+import { loginPortalAdmin, getPortalAdminSession, isLocalEnvironment } from '@nacos/auth';
 import studentPhoto from '../assets/gallery_student_group.jpg';
 import logoDark from '../assets/full-logo-dark.png';
 import { ShieldCheck, Mail, Lock, AlertCircle, ArrowRight, ShieldAlert } from 'lucide-react';
@@ -171,28 +171,30 @@ export const PortalAdminLogin = () => {
             </button>
           </form>
 
-          {/* Quick Demo Credentials Chip */}
-          <div className="pt-4 border-t border-gray-100">
-            <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-2">
-              Quick Test Credentials
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('portaladmin@nacos.org.ng')}
-                className="px-3 py-1.5 text-xs font-medium bg-[#ebf3ff] hover:bg-[#d8e8ff] text-blue-800 rounded transition-colors cursor-pointer"
-              >
-                Portal Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('superadmin@nacos.org.ng')}
-                className="px-3 py-1.5 text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-[#138601] rounded transition-colors cursor-pointer"
-              >
-                Super Admin
-              </button>
+          {/* Quick Demo Credentials Chip (Localhost / Development Only) */}
+          {isLocalEnvironment() && (
+            <div className="pt-4 border-t border-gray-100">
+              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-2">
+                Quick Test Credentials (Localhost Only)
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('portaladmin@nacos.org.ng')}
+                  className="px-3 py-1.5 text-xs font-medium bg-[#ebf3ff] hover:bg-[#d8e8ff] text-blue-800 rounded transition-colors cursor-pointer"
+                >
+                  Portal Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('superadmin@nacos.org.ng')}
+                  className="px-3 py-1.5 text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-[#138601] rounded transition-colors cursor-pointer"
+                >
+                  Super Admin
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

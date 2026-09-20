@@ -75,7 +75,7 @@ export async function loginPortalAdmin(email, password) {
       const { data: scopeData } = await supabase
         .from('admin_scopes')
         .select('*')
-        .eq('user_id', data.user.id)
+        .or(`user_id.eq.${data.user.id},email.eq.${cleanEmail}`)
         .in('scope', [ADMIN_SCOPES.STUDENT_PORTAL, ADMIN_SCOPES.SUPER_ADMIN])
         .eq('is_active', true)
         .maybeSingle();
@@ -83,9 +83,39 @@ export async function loginPortalAdmin(email, password) {
       if (scopeData) adminRecord = scopeData;
     }
   } catch (e) {
-    // Offline
+    // Supabase Auth offline or not configured for this user
   }
 
+  // 2. Direct Supabase admin_scopes database lookup (for seeded or SQL-added live admins)
+  if (!adminRecord && supabase) {
+    try {
+      const { data: dbAdmin } = await supabase
+        .from('admin_scopes')
+        .select('*')
+        .eq('email', cleanEmail)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (dbAdmin && dbAdmin.password_hash) {
+        const isValidPassword = dbAdmin.password_hash === passwordHash;
+        const isAllowedScope = dbAdmin.scope === ADMIN_SCOPES.STUDENT_PORTAL || dbAdmin.scope === ADMIN_SCOPES.SUPER_ADMIN;
+
+        if (isValidPassword && isAllowedScope) {
+          adminRecord = dbAdmin;
+        } else if (!isValidPassword) {
+          return { error: 'Invalid password. Please check your credentials.' };
+        } else if (!isAllowedScope) {
+          return { 
+            error: `Access Denied: Your account holds the '${dbAdmin.scope}' scope and is not authorized to manage Student Portal data.` 
+          };
+        }
+      }
+    } catch (dbErr) {
+      console.warn('Supabase admin_scopes query error:', dbErr);
+    }
+  }
+
+  // 3. Local seeded fallback (strictly localhost / dev only)
   if (!adminRecord) {
     if (!isLocalEnvironment()) {
       return { 

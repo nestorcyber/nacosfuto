@@ -5,12 +5,12 @@ const SESSION_STORAGE_KEY = 'nacos_verification_sessions_db';
 const RATE_LIMIT_KEY = 'nacos_otp_rate_limits_db';
 const RECOVERY_REQUESTS_KEY = 'nacos_account_recovery_requests_db';
 
-const OTP_EXPIRY_MINUTES = 5;
+const OTP_EXPIRY_MINUTES = 15;
 const OTP_MAX_ATTEMPTS = 5;
 const RESEND_COOLDOWN_SECONDS = 60;
 const RATE_LIMIT_WINDOW_MINUTES = 15;
 const RATE_LIMIT_MAX_REQUESTS = 5;
-const SESSION_EXPIRY_MINUTES = 10;
+const SESSION_EXPIRY_MINUTES = 15;
 
 // =========================================================================
 // CRYPTOGRAPHIC UTILITIES

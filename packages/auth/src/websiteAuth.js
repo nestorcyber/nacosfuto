@@ -94,7 +94,7 @@ export async function loginWebsiteAdmin(email, password) {
       const { data: scopeData } = await supabase
         .from('admin_scopes')
         .select('*')
-        .eq('user_id', data.user.id)
+        .or(`user_id.eq.${data.user.id},email.eq.${cleanEmail}`)
         .in('scope', [ADMIN_SCOPES.MAIN_WEBSITE, ADMIN_SCOPES.SUPER_ADMIN])
         .eq('is_active', true)
         .maybeSingle();
@@ -102,10 +102,39 @@ export async function loginWebsiteAdmin(email, password) {
       if (scopeData) adminRecord = scopeData;
     }
   } catch (e) {
-    // Offline fallback
+    // Supabase Auth offline or not configured for this user
   }
 
-  // Local seeded storage fallback (ONLY on localhost / dev)
+  // 2. Direct Supabase admin_scopes database lookup (for seeded or SQL-added live admins)
+  if (!adminRecord && supabase) {
+    try {
+      const { data: dbAdmin } = await supabase
+        .from('admin_scopes')
+        .select('*')
+        .eq('email', cleanEmail)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (dbAdmin && dbAdmin.password_hash) {
+        const isValidPassword = dbAdmin.password_hash === passwordHash;
+        const isAllowedScope = dbAdmin.scope === ADMIN_SCOPES.MAIN_WEBSITE || dbAdmin.scope === ADMIN_SCOPES.SUPER_ADMIN;
+
+        if (isValidPassword && isAllowedScope) {
+          adminRecord = dbAdmin;
+        } else if (!isValidPassword) {
+          return { error: 'Invalid password. Please check your credentials.' };
+        } else if (!isAllowedScope) {
+          return { 
+            error: `Access Denied: Your account holds the '${dbAdmin.scope}' scope and is not authorized to access the Main Website Administration area.` 
+          };
+        }
+      }
+    } catch (dbErr) {
+      console.warn('Supabase admin_scopes query error:', dbErr);
+    }
+  }
+
+  // 3. Local seeded storage fallback (ONLY on localhost / dev)
   if (!adminRecord) {
     if (!isLocalEnvironment()) {
       return { 

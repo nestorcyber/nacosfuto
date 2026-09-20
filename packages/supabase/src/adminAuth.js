@@ -227,7 +227,7 @@ export async function loginWebsiteAdmin(email, password) {
       const { data, error } = await supabase
         .from('admin_scopes')
         .select('*')
-        .eq('user_id', authUser.id)
+        .or(`user_id.eq.${authUser.id},email.eq.${cleanEmail}`)
         .in('scope', ['main_website', 'super_admin'])
         .eq('is_active', true)
         .maybeSingle();
@@ -237,6 +237,42 @@ export async function loginWebsiteAdmin(email, password) {
       }
     } catch (e) {
       // offline
+    }
+  }
+
+  // Check Supabase admin_scopes table directly (for SQL-seeded or dashboard admins)
+  if (!adminRecord && supabase) {
+    try {
+      const { data: dbAdmin } = await supabase
+        .from('admin_scopes')
+        .select('*')
+        .eq('email', cleanEmail)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (dbAdmin && dbAdmin.password_hash) {
+        // Test standard SHA-256 and salted hash
+        let rawSha = null;
+        if (typeof crypto !== 'undefined' && crypto.subtle) {
+          const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+          rawSha = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const isValidPassword = dbAdmin.password_hash === passwordHash || (rawSha && dbAdmin.password_hash === rawSha);
+        const isAllowedScope = dbAdmin.scope === 'main_website' || dbAdmin.scope === 'super_admin';
+
+        if (isValidPassword && isAllowedScope) {
+          adminRecord = dbAdmin;
+        } else if (!isValidPassword) {
+          return { error: 'Invalid password. Please check your credentials.' };
+        } else if (!isAllowedScope) {
+          return { 
+            error: `Access Denied: Your account holds the '${dbAdmin.scope}' scope and is not authorized to access the Main Website Administration area.` 
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase admin_scopes query error:', e);
     }
   }
 

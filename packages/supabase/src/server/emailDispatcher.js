@@ -96,7 +96,10 @@ export async function getSmtpTransporter(smtpConfig) {
     },
     tls: {
       rejectUnauthorized: false // Helps avoid self-signed certificate rejections on institutional / university relays
-    }
+    },
+    connectionTimeout: 8000, // 8s max to establish connection
+    greetingTimeout: 5000,   // 5s max to receive greeting
+    socketTimeout: 10000     // 10s max socket inactivity
   };
 
   cachedTransporter = nodemailer.createTransport(transportOptions);
