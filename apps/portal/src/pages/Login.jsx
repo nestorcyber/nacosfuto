@@ -5,18 +5,20 @@ import { signInStudent } from '@nacos/supabase/auth';
 import studentPhoto from '../assets/gallery_student_group.jpg';
 import logoDark from '../assets/full-logo-dark.png';
 import { FaUserShield } from 'react-icons/fa';
+import { AlertCircle, Eye, EyeOff, RotateCw, ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleContinue = async (e) => {
     e.preventDefault();
     if (!identifier.trim()) {
-      setError('Please enter your Registration / Matric Number.');
+      setError('Please enter your Registration / Matric Number or Email.');
       return;
     }
     if (!password) {
@@ -26,22 +28,35 @@ const Login = () => {
     setIsLoading(true);
     setError('');
 
-    const res = await signInStudent(identifier.trim(), password);
-    setIsLoading(false);
-    if (res.error) {
-      setError(res.error.message || 'Login failed.');
-    } else {
-      navigate('/dashboard');
+    try {
+      const res = await signInStudent(identifier.trim(), password);
+      if (res.error) {
+        setError(res.error.message || 'Invalid credentials. Please verify your details.');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError('A network or server error occurred during sign in. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleQuickLogin = async (role) => {
     setIsLoading(true);
+    setError('');
     const regNo = role === 'President' ? '20201012948' : '20241429481';
-    const res = await signInStudent(regNo, 'password');
-    setIsLoading(false);
-    if (!res.error) {
-      navigate('/dashboard');
+    try {
+      const res = await signInStudent(regNo, 'password');
+      if (!res.error) {
+        navigate('/dashboard');
+      } else {
+        setError(res.error.message || 'Demo login failed.');
+      }
+    } catch (err) {
+      setError('Could not complete demo login.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,7 +94,7 @@ const Login = () => {
           {/* Form Heading & Sign up link */}
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight">
-              Sign in or create your account below
+              Sign in to your student account
             </h1>
             <p className="mt-2 text-sm text-gray-600">
               Don't have an account yet?{' '}
@@ -89,20 +104,42 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Error Message */}
+          {/* Error Message with Context Actions */}
           {error && (
-            <div className="p-3.5 rounded bg-red-50 text-sm text-red-600 font-medium">
-              {error}
+            <div className="p-3.5 rounded bg-red-50 border border-red-200 text-xs sm:text-sm text-red-700 font-medium flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+              <div className="leading-relaxed flex-1">
+                <p>{error}</p>
+                {error.toLowerCase().includes('create an account') && (
+                  <div className="mt-2 pt-2 border-t border-red-200/80">
+                    <Link to="/register" className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline">
+                      <span>Go to Student Registration</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
+                {error.toLowerCase().includes('incorrect password') && (
+                  <div className="mt-2 pt-2 border-t border-red-200/80">
+                    <Link to="/forgot-password" className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline">
+                      <span>Reset your forgotten password</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* Clean Input Form Box */}
           <form onSubmit={handleContinue} className="space-y-4">
             <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wider">
+                Registration Number or Email
+              </label>
               <input
                 type="text"
                 required
-                placeholder="Registration number (e.g. 20241429481)"
+                placeholder="e.g. 20241450682 or name@futo.edu.ng"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full px-4 py-3 text-sm sm:text-base rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
@@ -110,14 +147,27 @@ const Login = () => {
             </div>
 
             <div>
-              <input
-                type="password"
-                required
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 text-sm sm:text-base rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
-              />
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wider">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-4 pr-11 py-3 text-sm sm:text-base rounded bg-[#ebf3ff] text-gray-900 placeholder-gray-500 border-0 focus:outline-none focus:ring-1 focus:ring-black font-normal transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {/* Forgot Password Link */}
@@ -133,9 +183,16 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="px-7 py-3 min-h-[44px] text-sm sm:text-base font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center"
+              className="w-full px-7 py-3 min-h-[44px] text-sm sm:text-base font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2"
             >
-              {isLoading ? 'Signing in...' : 'Continue'}
+              {isLoading ? (
+                <>
+                  <RotateCw className="w-4 h-4 animate-spin" />
+                  <span>Signing in...</span>
+                </>
+              ) : (
+                <span>Continue</span>
+              )}
             </button>
           </form>
 

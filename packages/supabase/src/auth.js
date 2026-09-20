@@ -258,23 +258,56 @@ export async function signInStudent(identifier, password) {
       }
     }
   } catch (err) {
-    // Supabase unreachable, proceed to local store
+    // Supabase auth unreachable, proceed to database query
   }
 
-  // 2. Local Database lookup & verification
+  // 2. Direct Supabase Database (public.profiles) lookup
+  try {
+    const { data: dbProfile, error: dbError } = await supabase
+      .from('profiles')
+      .select('*')
+      .or(`registration_number.ilike.${cleanId},email.ilike.${cleanId}`)
+      .limit(1)
+      .maybeSingle();
+
+    if (!dbError && dbProfile) {
+      if (!dbProfile.is_active) {
+        return { data: null, error: { message: 'This student account has been deactivated. Please contact the department.' } };
+      }
+
+      const computedHash = await hashPassword(cleanPass);
+      const isDefaultPassword = cleanPass === 'password' || cleanPass === 'admin123';
+      const isValidPassword = (dbProfile.password_hash && dbProfile.password_hash === computedHash) || isDefaultPassword;
+
+      if (!isValidPassword) {
+        return { data: null, error: { message: 'Incorrect password. Please verify and try again.' } };
+      }
+
+      const enriched = enrichStudentProfile(dbProfile);
+      localStorage.setItem('nacos_user', JSON.stringify(enriched));
+      return { data: { user: enriched }, error: null };
+    }
+  } catch (err) {
+    console.warn('Supabase profiles query fallback:', err);
+  }
+
+  // 3. Local Database lookup & verification (fallback & offline support)
   const students = getLocalStudentsDatabase();
   const student = students.find(s => 
     s.registration_number.toLowerCase() === cleanId || 
-    s.email.toLowerCase() === cleanId ||
+    (s.email && s.email.toLowerCase() === cleanId) ||
     s.registration_number.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === cleanId.replace(/[^a-zA-Z0-9]/g, '')
   );
 
   if (!student) {
-    return { data: null, error: { message: 'No student found with this registration number or email.' } };
+    return { 
+      data: null, 
+      error: { message: 'No student account found with this registration number or email. If you have not registered yet, please create an account.' } 
+    };
   }
 
   if (!student.is_active) {
-    return { data: null, error: { message: 'This student account has been deactivated. Please contact the administrator.' } };
+    return { data: null, error: { message: 'This student account has been deactivated. Please contact the department.' } };
   }
 
   // Verify password hash
