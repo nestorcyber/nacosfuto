@@ -101,6 +101,7 @@ async function addStudent() {
   const { data: profData, error: profError } = await supabase
     .from('profiles')
     .upsert([{
+      id: (await import('crypto')).randomUUID(),
       registration_number: regNumber,
       matric_number: regNumber,
       surname,

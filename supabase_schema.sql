@@ -157,6 +157,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- Ensure all profiles columns exist even if public.profiles already existed (e.g. Supabase starter)
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;
+ALTER TABLE public.profiles ALTER COLUMN id SET DEFAULT gen_random_uuid();
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS registration_number VARCHAR(30);
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS surname TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS first_name TEXT DEFAULT '';

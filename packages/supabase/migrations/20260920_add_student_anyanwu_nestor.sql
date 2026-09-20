@@ -2,7 +2,26 @@
 -- NACOS FUTO: ADD STUDENT (Anyanwu Nestor Ifeanyi - 20241450682)
 -- =========================================================================
 
--- 1. Insert into public.verified_students (Official Roster)
+-- 1. Drop the foreign key constraint that binds profiles.id to auth.users
+-- (This allows creating student profiles directly without requiring auth.users entries)
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey CASCADE;
+
+-- 2. Ensure default UUID generation is active on profiles.id
+ALTER TABLE public.profiles ALTER COLUMN id SET DEFAULT gen_random_uuid();
+
+-- 3. Ensure unique constraint on registration_number for profiles so ON CONFLICT works
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'profiles_registration_number_key' OR conname = 'profiles_reg_key'
+  ) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT profiles_registration_number_key UNIQUE (registration_number);
+  END IF;
+EXCEPTION
+  WHEN duplicate_table OR duplicate_object OR duplicate_column THEN NULL;
+END $$;
+
+-- 4. Insert into public.verified_students (Official Roster)
 INSERT INTO public.verified_students (
   registration_number,
   surname,
@@ -49,8 +68,9 @@ ON CONFLICT (registration_number) DO UPDATE SET
   has_registered = true,
   updated_at = NOW();
 
--- 2. Insert into public.profiles (Active Student Account - Password: password)
+-- 5. Insert into public.profiles (Active Student Account - Password: password)
 INSERT INTO public.profiles (
+  id,
   registration_number,
   matric_number,
   surname,
@@ -69,6 +89,7 @@ INSERT INTO public.profiles (
   role,
   is_active
 ) VALUES (
+  gen_random_uuid(),
   '20241450682',
   '20241450682',
   'Anyanwu',
