@@ -29,6 +29,16 @@
   --color-primary: #138601;
   --color-primary-dark: #083002;
   --color-primary-light: #4bd043;
+
+  /* ─── Universal 4px Border Radius System ─── */
+  --radius: 4px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-full: 9999px;
 }
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
@@ -54,6 +64,15 @@ body {
   --gutter-mobile: 16px;        /* Mobile gutter standard (16px) */
   --gutter-tablet: 20px;        /* Tablet gutter standard (20px) */
   --gutter-desktop: 24px;       /* Desktop gutter standard (24px) */
+
+  /* Override Tailwind v4 border-radius tokens to 4px universally */
+  --rounded-sm: 4px;
+  --rounded:    4px;
+  --rounded-md: 4px;
+  --rounded-lg: 4px;
+  --rounded-xl: 4px;
+  --rounded-2xl: 4px;
+  --rounded-3xl: 4px;
 }
 
 .padding-global,
@@ -210,6 +229,28 @@ p {
   background-color: #138601;
   color: #ffffff;
 }
+
+/* ─── Universal 4px Radius — enforced on all Tailwind rounded-* classes ─── */
+/* rounded-full (9999px) is intentionally excluded to preserve pills & avatars */
+.rounded-sm  { border-radius: 4px !important; }
+.rounded     { border-radius: 4px !important; }
+.rounded-md  { border-radius: 4px !important; }
+.rounded-lg  { border-radius: 4px !important; }
+.rounded-xl  { border-radius: 4px !important; }
+.rounded-2xl { border-radius: 4px !important; }
+.rounded-3xl { border-radius: 4px !important; }
+.rounded-t   { border-top-left-radius: 4px !important; border-top-right-radius: 4px !important; }
+.rounded-t-sm, .rounded-t-md, .rounded-t-lg, .rounded-t-xl, .rounded-t-2xl, .rounded-t-3xl
+             { border-top-left-radius: 4px !important; border-top-right-radius: 4px !important; }
+.rounded-b   { border-bottom-left-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+.rounded-b-sm, .rounded-b-md, .rounded-b-lg, .rounded-b-xl, .rounded-b-2xl, .rounded-b-3xl
+             { border-bottom-left-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+.rounded-l   { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
+.rounded-l-sm, .rounded-l-md, .rounded-l-lg, .rounded-l-xl, .rounded-l-2xl, .rounded-l-3xl
+             { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
+.rounded-r   { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+.rounded-r-sm, .rounded-r-md, .rounded-r-lg, .rounded-r-xl, .rounded-r-2xl, .rounded-r-3xl
+             { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
 
 /* Webflow-style Clean Button System (42px Height, #138601 Green, 4px Radius) */
 .btn-primary,

@@ -318,17 +318,9 @@ const PortalLayout = ({ children }) => {
               }`} />
             </button>
 
-            {/* Logo — always visible in same position */}
-            <Link to="/dashboard" className="flex items-center gap-3">
+            {/* Logo — always visible in same position, no subtitle text */}
+            <Link to="/dashboard" className="flex items-center">
               <img src={isDark ? logoDark : logoLight} alt="NACOS FUTO Logo" className="h-8 md:h-9 w-auto object-contain" />
-              <div className="hidden sm:block border-l border-gray-200 dark:border-[#138601]/30 pl-3">
-                <span className="text-xs font-semibold text-[#138601] dark:text-[#4bd043] block leading-none">
-                  Student Portal
-                </span>
-                <span className="text-[11px] font-normal text-gray-500 dark:text-green-200/80 block mt-0.5 leading-tight">
-                  Department of Computer Science
-                </span>
-              </div>
             </Link>
           </div>
 
@@ -480,7 +472,7 @@ const PortalLayout = ({ children }) => {
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-green-700 dark:text-[#4bd043] hover:bg-green-50 dark:hover:bg-[#041801]/60 transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-green-700 dark:text-[#4bd043] hover:bg-gray-50 dark:hover:bg-[#041801]/60 transition-colors"
                     >
                       <ShieldCheck className="w-4 h-4" />
                       <span>Admin Command Center</span>
@@ -687,25 +679,21 @@ const PortalLayout = ({ children }) => {
         {mobileOpen && (
           <div className="md:hidden fixed inset-0 z-50 flex flex-col text-white print:hidden" style={{background: isDark ? '#041801' : '#0a2800'}}>
             
-            {/* Drawer Header: close icon on left, logo on right */}
+            {/* Drawer Header: same layout as main header — logo left, X right */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-              {/* Close button on LEFT */}
+              {/* Logo on LEFT — mirrors main header */}
+              <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center">
+                <img src={logoDark} alt="NACOS Logo" className="h-8 w-auto object-contain" />
+              </Link>
+
+              {/* Close button on RIGHT */}
               <button
                 onClick={() => setMobileOpen(false)}
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                className="p-2.5 rounded bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
                 aria-label="Close navigation"
               >
                 <X className="w-5 h-5" />
               </button>
-
-              {/* Logo on RIGHT */}
-              <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5">
-                <img src={logoDark} alt="NACOS Logo" className="h-8 w-auto object-contain" />
-                <div className="border-l border-white/20 pl-2.5">
-                  <span className="text-xs font-bold text-[#4bd043] block leading-none">Student Portal</span>
-                  <span className="text-[10px] text-white/60 block mt-0.5">Computer Science • FUTO</span>
-                </div>
-              </Link>
             </div>
 
             {/* User greeting strip */}

@@ -37,6 +37,16 @@ const Dues = () => {
   const [paymentData, setPaymentData] = useState(null);
   const [isPaid, setIsPaid] = useState(false);
 
+  // Level the student is paying dues for — pre-filled from their profile
+  const deriveLevel = (u) => {
+    const raw = String(u?.level || u?.current_level || '100');
+    const num = parseInt(raw, 10);
+    if ([100, 200, 300, 400, 500].includes(num)) return String(num);
+    const match = raw.match(/(\d{3})/);
+    return match ? match[1] : '100';
+  };
+  const [selectedLevel, setSelectedLevel] = useState(() => deriveLevel(user));
+
   // Check payment status from local storage and database
   const checkStatus = async (currentUser) => {
     const matric = currentUser?.registration_number || currentUser?.matric || currentUser?.matricNumber || '';
@@ -137,6 +147,7 @@ const Dues = () => {
         try {
           const parsed = JSON.parse(stored);
           setUser(parsed);
+          setSelectedLevel(deriveLevel(parsed));
           checkStatus(parsed);
         } catch (e) {
           console.error(e);
@@ -197,7 +208,7 @@ const Dues = () => {
     : (rawName || 'Student Member');
 
   const matricNo = user.registration_number || user.matric || user.matricNumber || 'N/A';
-  const level = user.level || user.current_level || '100 Level';
+  const levelLabel = `${selectedLevel} Level`;
   const department = user.department || 'Computer Science';
   const session = user.academic_session || '2026/2027 Academic Session';
 
@@ -206,7 +217,7 @@ const Dues = () => {
     session,
     studentName,
     matricNo,
-    level,
+    level: levelLabel,
     department,
     amount: paymentData?.amount || '₦2,500.00',
     amountInWords: 'Two Thousand Five Hundred Naira Only',
@@ -219,7 +230,7 @@ const Dues = () => {
     session,
     studentName,
     matricNo,
-    level,
+    level: levelLabel,
     department,
     amount: '₦0.00',
     amountInWords: 'Zero Naira (₦2,500.00 Outstanding)',
@@ -242,48 +253,66 @@ const Dues = () => {
       <div className="space-y-6">
         
         {/* Title Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 print:hidden">
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Dues Clearance & Receipts
+              Dues Clearance &amp; Receipts
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-green-200/80 font-normal mt-1">
               Official annual departmental association dues payment confirmation and electronic receipt.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
+            {/* Level Selector — only shown when not yet paid */}
             {!isPaid && (
-              <button
-                type="button"
-                onClick={handlePayDues}
-                disabled={isProcessing}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shadow-xs disabled:opacity-50"
-              >
-                <CreditCard className="w-4 h-4" />
-                <span>{isProcessing ? 'Processing...' : 'Pay Dues (₦2,500.00)'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold text-gray-600 dark:text-green-200/80 whitespace-nowrap">Paying as:</label>
+                <select
+                  value={selectedLevel}
+                  onChange={(e) => setSelectedLevel(e.target.value)}
+                  className="text-xs font-semibold px-3 py-2 border border-gray-200 dark:border-[#138601]/40 rounded bg-white dark:bg-[#041801] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer"
+                >
+                  {['100', '200', '300', '400', '500'].map(l => (
+                    <option key={l} value={l}>{l} Level</option>
+                  ))}
+                </select>
+              </div>
             )}
 
-            <button
-              type="button"
-              onClick={handlePrint}
-              disabled={isPrinting}
-              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                isPaid 
-                  ? 'text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs' 
-                  : 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-[#083002] hover:bg-gray-200 dark:hover:bg-[#062402] border border-gray-200/80 dark:border-[#138601]/30'
-              }`}
-            >
-              <Printer className="w-4 h-4" />
-              <span>
-                {isPrinting 
-                  ? 'Generating Printout...' 
-                  : isPaid 
-                  ? 'Print Official Receipt' 
-                  : 'Print Payment Slip'}
-              </span>
-            </button>
+            <div className="flex items-center gap-2">
+              {!isPaid && (
+                <button
+                  type="button"
+                  onClick={handlePayDues}
+                  disabled={isProcessing}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>{isProcessing ? 'Processing...' : 'Pay Dues (₦2,500.00)'}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handlePrint}
+                disabled={isPrinting}
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                  isPaid 
+                    ? 'text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs' 
+                    : 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-[#083002] hover:bg-gray-200 dark:hover:bg-[#062402] border border-gray-200/80 dark:border-[#138601]/30'
+                }`}
+              >
+                <Printer className="w-4 h-4" />
+                <span>
+                  {isPrinting 
+                    ? 'Generating Printout...' 
+                    : isPaid 
+                    ? 'Print Official Receipt' 
+                    : 'Print Payment Slip'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -472,24 +501,43 @@ const Dues = () => {
 
         {/* Action Callout when Unpaid */}
         {!isPaid && (
-          <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs print:hidden">
-            <div className="space-y-0.5">
-              <h4 className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
-                Annual Departmental Dues Required
-              </h4>
-              <p className="text-xs text-amber-700 dark:text-amber-300/80">
-                Pay your ₦2,500.00 departmental dues to complete academic clearance and unlock your verified electronic receipt.
-              </p>
+          <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 shadow-xs print:hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <h4 className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
+                  Annual Departmental Dues Required — {levelLabel}
+                </h4>
+                <p className="text-xs text-amber-700 dark:text-amber-300/80">
+                  Pay your ₦2,500.00 departmental dues for <strong>{levelLabel}</strong> to complete academic clearance and unlock your verified electronic receipt.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0 w-full sm:w-auto">
+                {/* Inline level selector inside callout */}
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-amber-800 dark:text-amber-300 whitespace-nowrap">Level:</label>
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) => setSelectedLevel(e.target.value)}
+                    className="text-xs font-semibold px-3 py-2 border border-amber-300 dark:border-amber-600/60 rounded bg-white dark:bg-[#1a0c00] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                  >
+                    {['100', '200', '300', '400', '500'].map(l => (
+                      <option key={l} value={l}>{l} Level</option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handlePayDues}
+                  disabled={isProcessing}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>{isProcessing ? 'Processing Payment...' : `Pay ₦2,500 — ${levelLabel}`}</span>
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={handlePayDues}
-              disabled={isProcessing}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shrink-0 shadow-xs disabled:opacity-50"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>{isProcessing ? 'Processing Payment...' : 'Pay Dues (₦2,500.00)'}</span>
-            </button>
           </div>
         )}
 
