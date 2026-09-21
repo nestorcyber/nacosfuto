@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Navbar from '../components/Nav/Navbar';
 import Footer from '../components/Footer';
 import { 
@@ -300,6 +300,60 @@ const Resources = () => {
     };
   }, []);
 
+  const pendingDownloadHandledRef = useRef(false);
+
+  // Handle cross-app auth session returned via URL hash (#auth_user=...)
+  useEffect(() => {
+    try {
+      const hash = window.location.hash;
+      if (hash && hash.includes('auth_user=')) {
+        const rawData = hash.substring(hash.indexOf('auth_user=') + 10);
+        const cleanData = decodeURIComponent(rawData);
+        const userData = JSON.parse(cleanData);
+        if (userData && (userData.id || userData.registration_number || userData.regNo)) {
+          localStorage.setItem('nacos_user', JSON.stringify(userData));
+          localStorage.setItem('nacos_last_activity', Date.now().toString());
+          setUser(userData);
+          window.dispatchEvent(new Event('nacos_user_updated'));
+
+          // Remove the hash fragment cleanly from URL bar without causing page reload
+          const cleanUrl = window.location.pathname + window.location.search;
+          window.history.replaceState(null, '', cleanUrl);
+
+          const studentName = userData.firstName || userData.name || 'Student';
+          showToast(`Welcome back, ${studentName}! Authenticated successfully.`);
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading auth hash session:', e);
+    }
+  }, []);
+
+  // Auto-trigger pending download once student is authenticated and resource catalog has loaded
+  useEffect(() => {
+    if (!user || resources.length === 0 || pendingDownloadHandledRef.current) return;
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const pendingDownloadId = params.get('download');
+      if (pendingDownloadId) {
+        const itemToDownload = resources.find(r => String(r.id) === String(pendingDownloadId));
+        if (itemToDownload) {
+          pendingDownloadHandledRef.current = true;
+          // Clean the download param from URL bar
+          params.delete('download');
+          const newSearch = params.toString() ? `?${params.toString()}` : '';
+          window.history.replaceState(null, '', window.location.pathname + newSearch);
+
+          showToast(`Resuming download for "${itemToDownload.title}"...`);
+          executeDownload(itemToDownload);
+        }
+      }
+    } catch (e) {
+      console.warn('Error handling pending download:', e);
+    }
+  }, [user, resources]);
+
   // Debounce search query
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -507,8 +561,18 @@ const Resources = () => {
   // Redirect to Portal Sign-In
   const handleRedirectToSignIn = () => {
     const portalUrl = getAppUrls().portal;
-    const currentPath = window.location.href;
-    const loginTarget = `${portalUrl}/login?redirect=${encodeURIComponent(currentPath)}`;
+    let returnUrl = window.location.href;
+    if (targetResource?.id) {
+      try {
+        const urlObj = new URL(window.location.href);
+        urlObj.searchParams.set('download', targetResource.id);
+        returnUrl = urlObj.toString();
+      } catch (e) {
+        const separator = returnUrl.includes('?') ? '&' : '?';
+        returnUrl = `${returnUrl}${separator}download=${encodeURIComponent(targetResource.id)}`;
+      }
+    }
+    const loginTarget = `${portalUrl}/login?redirect=${encodeURIComponent(returnUrl)}`;
     window.location.href = loginTarget;
   };
 

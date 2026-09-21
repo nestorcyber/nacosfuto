@@ -27,6 +27,9 @@ const ForgotPassword = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  const redirectTarget = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') || new URLSearchParams(window.location.search).get('returnUrl') || '' : '';
+  const loginLink = redirectTarget ? `/login?redirect=${encodeURIComponent(redirectTarget)}` : '/login';
+
   // Cooldown ticker
   useEffect(() => {
     let timer;
@@ -212,7 +215,7 @@ const ForgotPassword = () => {
 
                 <div className="pt-2">
                   <Link
-                    to="/login"
+                    to={loginLink}
                     className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-black transition-colors"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
@@ -363,7 +366,7 @@ const ForgotPassword = () => {
               </p>
               <div className="pt-4">
                 <Link
-                  to="/login"
+                  to={loginLink}
                   className="w-full px-7 py-2.5 min-h-[42px] text-sm font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] rounded shadow-sm transition-colors inline-flex items-center justify-center"
                 >
                   Proceed to Sign In

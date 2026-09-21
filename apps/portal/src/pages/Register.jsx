@@ -68,6 +68,15 @@ const Register = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [accountRecovered, setAccountRecovered] = useState(false);
 
+  const getRedirectTarget = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('redirect') || params.get('returnUrl') || '';
+    } catch {
+      return '';
+    }
+  };
+
   // Resend cooldown timer
   useEffect(() => {
     let timer;
@@ -285,8 +294,45 @@ const Register = () => {
 
       setIsSuccess(true);
       setTimeout(() => {
+        const redirectTarget = getRedirectTarget();
+        if (redirectTarget) {
+          try {
+            const userPayload = {
+              id: result.data?.user?.id || verifiedRecord?.id,
+              regNo: result.data?.user?.registration_number || verifiedRecord?.registration_number || regNumber.trim(),
+              registration_number: result.data?.user?.registration_number || verifiedRecord?.registration_number || regNumber.trim(),
+              full_name: result.data?.user?.full_name || verifiedRecord?.full_name,
+              name: result.data?.user?.full_name || verifiedRecord?.full_name,
+              firstName: verifiedRecord?.full_name ? verifiedRecord.full_name.split(' ')[0] : 'Student',
+              lastName: verifiedRecord?.full_name ? verifiedRecord.full_name.split(' ').slice(1).join(' ') : '',
+              email: result.data?.user?.email || verifiedRecord?.email,
+              level: result.data?.user?.level || verifiedRecord?.level,
+              role: 'student',
+              is_verified: true
+            };
+            const encodedUser = encodeURIComponent(JSON.stringify(userPayload));
+
+            if (redirectTarget.startsWith('http://') || redirectTarget.startsWith('https://')) {
+              const targetUrl = new URL(redirectTarget);
+              targetUrl.hash = `auth_user=${encodedUser}`;
+              window.location.href = targetUrl.toString();
+              return;
+            }
+
+            if (redirectTarget.startsWith('/')) {
+              if (!redirectTarget.startsWith('/portal') && (redirectTarget.startsWith('/resources') || redirectTarget === '/')) {
+                window.location.href = `${redirectTarget}#auth_user=${encodedUser}`;
+                return;
+              }
+              navigate(redirectTarget, { replace: true });
+              return;
+            }
+          } catch (err) {
+            console.error('Redirect error:', err);
+          }
+        }
         navigate('/dashboard');
-      }, 2000);
+      }, 1500);
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
     } finally {
@@ -394,7 +440,10 @@ const Register = () => {
               </h1>
               <p className="mt-1 text-xs text-gray-600">
                 Already have an account?{' '}
-                <Link to="/login" className="text-[#138601] font-semibold hover:underline">
+                <Link 
+                  to={getRedirectTarget() ? `/login?redirect=${encodeURIComponent(getRedirectTarget())}` : "/login"} 
+                  className="text-[#138601] font-semibold hover:underline"
+                >
                   Sign in here
                 </Link>
               </p>
@@ -409,7 +458,10 @@ const Register = () => {
                 <p>{error}</p>
                 {(error.toLowerCase().includes('already exist') || error.toLowerCase().includes('already been registered')) && (
                   <div className="mt-2 pt-2 border-t border-red-200/80">
-                    <Link to="/login" className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline">
+                    <Link 
+                      to={getRedirectTarget() ? `/login?redirect=${encodeURIComponent(getRedirectTarget())}` : "/login"} 
+                      className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline"
+                    >
                       <span>Click here to Sign In</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
@@ -427,7 +479,7 @@ const Register = () => {
               </div>
               <h2 className="text-xl font-bold text-gray-900">Account Created!</h2>
               <p className="text-xs text-gray-600 max-w-sm mx-auto">
-                Welcome to NACOS FUTO, <strong>{verifiedRecord?.full_name || 'Student'}</strong>. Redirecting you to your student dashboard...
+                Welcome to NACOS FUTO, <strong>{verifiedRecord?.full_name || 'Student'}</strong>. Redirecting you {getRedirectTarget() ? 'back to your previous page...' : 'to your student dashboard...'}
               </p>
             </div>
           ) : accountRecovered ? (
@@ -439,7 +491,10 @@ const Register = () => {
               <p className="text-xs text-gray-600 max-w-sm mx-auto">
                 Your account recovery request has been submitted. A NACOS administrator will review it and contact you. You can sign in once your request is approved.
               </p>
-              <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-[#138601] hover:underline">
+              <Link 
+                to={getRedirectTarget() ? `/login?redirect=${encodeURIComponent(getRedirectTarget())}` : "/login"} 
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[#138601] hover:underline"
+              >
                 Go to Sign In
                 <ArrowRight className="w-4 h-4" />
               </Link>

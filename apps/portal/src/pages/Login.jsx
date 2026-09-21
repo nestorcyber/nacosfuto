@@ -16,7 +16,64 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Auto-Continue: If already logged in & within 1-hour window, open dashboard automatically!
+  const getRedirectTarget = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('redirect') || params.get('returnUrl') || '';
+    } catch {
+      return '';
+    }
+  };
+
+  const handlePostLoginRedirect = (userObj) => {
+    localStorage.setItem('nacos_last_activity', Date.now().toString());
+
+    const redirectTarget = getRedirectTarget();
+    if (redirectTarget) {
+      try {
+        const userPayload = {
+          id: userObj?.id,
+          regNo: userObj?.registration_number || userObj?.regNo || userObj?.matric,
+          registration_number: userObj?.registration_number || userObj?.regNo || userObj?.matric,
+          full_name: userObj?.full_name || userObj?.name || `${userObj?.first_name || ''} ${userObj?.last_name || ''}`.trim(),
+          name: userObj?.full_name || userObj?.name || `${userObj?.first_name || ''} ${userObj?.last_name || ''}`.trim(),
+          firstName: userObj?.first_name || userObj?.firstName || (userObj?.full_name ? userObj.full_name.split(' ')[0] : 'Student'),
+          lastName: userObj?.last_name || userObj?.lastName || '',
+          email: userObj?.email,
+          level: userObj?.level,
+          role: userObj?.role || 'student',
+          is_verified: userObj?.is_verified ?? true
+        };
+
+        const encodedUser = encodeURIComponent(JSON.stringify(userPayload));
+
+        // If target is an absolute URL (e.g. http://localhost:5173/resources or https://...)
+        if (redirectTarget.startsWith('http://') || redirectTarget.startsWith('https://')) {
+          const targetUrl = new URL(redirectTarget);
+          targetUrl.hash = `auth_user=${encodedUser}`;
+          window.location.href = targetUrl.toString();
+          return;
+        }
+
+        // If target is a relative path
+        if (redirectTarget.startsWith('/')) {
+          if (!redirectTarget.startsWith('/portal') && (redirectTarget.startsWith('/resources') || redirectTarget === '/')) {
+            window.location.href = `${redirectTarget}#auth_user=${encodedUser}`;
+            return;
+          }
+          navigate(redirectTarget, { replace: true });
+          return;
+        }
+      } catch (err) {
+        console.error('Error executing redirect:', err);
+      }
+    }
+
+    // Default to portal dashboard
+    navigate('/dashboard');
+  };
+
+  // Auto-Continue: If already logged in & within 1-hour window, open target or dashboard automatically!
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('reason') === 'not_registered') {
@@ -24,6 +81,8 @@ const Login = () => {
     } else if (params.get('reason') === 'deactivated') {
       setError('Your account has been deactivated. Please contact the NACOS admin or your department to resolve this.');
     }
+
+    const redirectTarget = params.get('redirect') || params.get('returnUrl') || '';
 
     try {
       const stored = localStorage.getItem('nacos_user');
@@ -33,8 +92,13 @@ const Login = () => {
         const now = Date.now();
 
         if (lastActivity && (now - lastActivity < ONE_HOUR_MS)) {
-          // Session is fresh: update timestamp and automatically open portal!
+          // Session is fresh: update timestamp and automatically redirect or open dashboard!
           localStorage.setItem('nacos_last_activity', now.toString());
+          const parsedUser = JSON.parse(stored);
+          if (redirectTarget) {
+            handlePostLoginRedirect(parsedUser);
+            return;
+          }
           navigate('/dashboard', { replace: true });
         } else if (lastActivity && (now - lastActivity >= ONE_HOUR_MS)) {
           // Session expired: clean up silently
@@ -43,6 +107,11 @@ const Login = () => {
         } else {
           // Valid user without stored activity timestamp -> initialize and continue
           localStorage.setItem('nacos_last_activity', now.toString());
+          const parsedUser = JSON.parse(stored);
+          if (redirectTarget) {
+            handlePostLoginRedirect(parsedUser);
+            return;
+          }
           navigate('/dashboard', { replace: true });
         }
       }
@@ -69,8 +138,7 @@ const Login = () => {
       if (res.error) {
         setError(res.error.message || 'Invalid credentials. Please verify your details.');
       } else {
-        localStorage.setItem('nacos_last_activity', Date.now().toString());
-        navigate('/dashboard');
+        handlePostLoginRedirect(res.data?.user || { identifier: identifier.trim() });
       }
     } catch (err) {
       setError('A network or server error occurred during sign in. Please try again.');
@@ -86,8 +154,7 @@ const Login = () => {
     try {
       const res = await signInStudent(regNo, 'password');
       if (!res.error) {
-        localStorage.setItem('nacos_last_activity', Date.now().toString());
-        navigate('/dashboard');
+        handlePostLoginRedirect(res.data?.user || { regNo });
       } else {
         setError(res.error.message || 'Demo login failed.');
       }
@@ -136,7 +203,10 @@ const Login = () => {
             </h1>
             <p className="mt-2 text-sm text-gray-600">
               Don't have an account yet?{' '}
-              <Link to="/register" className="text-[#138601] font-semibold hover:underline">
+              <Link 
+                to={getRedirectTarget() ? `/register?redirect=${encodeURIComponent(getRedirectTarget())}` : "/register"} 
+                className="text-[#138601] font-semibold hover:underline"
+              >
                 Sign up here
               </Link>
             </p>
@@ -150,7 +220,10 @@ const Login = () => {
                 <p>{error}</p>
                 {error.toLowerCase().includes('create an account') && (
                   <div className="mt-2 pt-2 border-t border-red-200/80">
-                    <Link to="/register" className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline">
+                    <Link 
+                      to={getRedirectTarget() ? `/register?redirect=${encodeURIComponent(getRedirectTarget())}` : "/register"} 
+                      className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline"
+                    >
                       <span>Go to Student Registration</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
@@ -158,7 +231,10 @@ const Login = () => {
                 )}
                 {error.toLowerCase().includes('incorrect password') && (
                   <div className="mt-2 pt-2 border-t border-red-200/80">
-                    <Link to="/forgot-password" className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline">
+                    <Link 
+                      to={getRedirectTarget() ? `/forgot-password?redirect=${encodeURIComponent(getRedirectTarget())}` : "/forgot-password"} 
+                      className="inline-flex items-center gap-1 font-bold text-[#138601] hover:underline"
+                    >
                       <span>Reset your forgotten password</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
@@ -211,7 +287,7 @@ const Login = () => {
             {/* Forgot Password Link */}
             <div className="flex items-center justify-end text-sm">
               <Link 
-                to="/forgot-password" 
+                to={getRedirectTarget() ? `/forgot-password?redirect=${encodeURIComponent(getRedirectTarget())}` : "/forgot-password"} 
                 className="text-[#138601] font-medium hover:underline"
               >
                 Forgot password?
