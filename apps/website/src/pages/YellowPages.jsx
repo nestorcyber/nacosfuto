@@ -403,7 +403,7 @@ const YellowPages = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Owner Year / Level</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Owner Level</label>
                   <select 
                     className="w-full px-4 py-3 rounded border border-gray-300 dark:border-[#138601]/30 bg-white dark:bg-[#041801] text-sm focus:outline-none focus:border-[#138601] text-gray-900 dark:text-white"
                     value={newBusiness.ownerLevel}

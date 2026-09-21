@@ -72,7 +72,7 @@ export const PortalAdminDashboard = () => {
         : (idCardsRes?.applications || idCardsRes?.data || []);
 
       const pending = idCards.filter(c => 
-        c.status === 'PENDING' || c.status === 'pending' || c.status === 'generated'
+        ['submitted', 'pending', 'PENDING', 'pending_payment', 'payment_confirmed', 'photo_required', 'ready_to_submit', 'processing', 'generated', 'draft'].includes(c.status)
       ).length;
 
       const approved = idCards.filter(c => 

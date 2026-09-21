@@ -322,7 +322,7 @@ export async function getStudentIdApplication(matricOrId) {
     const { data, error } = await supabase
       .from('id_card_applications')
       .select('*')
-      .or(`registration_number.eq.${cleanMatric},registration_number.ilike.${cleanMatric}`)
+      .or(`matric_number.eq.${cleanMatric},matric_number.ilike.${cleanMatric}`)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -330,10 +330,10 @@ export async function getStudentIdApplication(matricOrId) {
     if (!error && data) {
       return {
         ...data,
-        matric_number: data.registration_number || data.matric_number || cleanMatric,
-        registration_number: data.registration_number || data.matric_number || cleanMatric,
-        passport_url: data.passport_photo_url || data.passport_url || null,
-        passport_photo_url: data.passport_photo_url || data.passport_url || null,
+        matric_number: data.matric_number || cleanMatric,
+        registration_number: data.matric_number || cleanMatric,
+        passport_url: data.passport_url || null,
+        passport_photo_url: data.passport_url || null,
         full_name: data.full_name || 'Student Member'
       };
     }
@@ -430,17 +430,34 @@ export async function createIdCardApplication(student) {
 
   // Sync with Supabase (send schema-compliant payload; DB generates valid UUID for id)
   try {
+    let resolvedStudentId = student.id;
+    if (!resolvedStudentId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedStudentId)) {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('id')
+        .or(`registration_number.eq.${cleanMatric},matric_number.eq.${cleanMatric}`)
+        .maybeSingle();
+      if (prof?.id) {
+        resolvedStudentId = prof.id;
+      }
+    }
+
     const dbPayload = {
-      registration_number: cleanMatric,
-      full_name: studentName,
-      level: student.level || '300 Level',
-      passport_photo_url: existingPhoto || null,
+      matric_number: cleanMatric,
+      application_number: appNumber,
       status: initialStatus,
-      qr_verification_code: appNumber,
-      submitted_at: new Date().toISOString(),
+      payment_status: paymentStatus,
+      payment_reference: paymentRef,
+      passport_url: existingPhoto || null,
+      cloudinary_public_id: student.cloudinary_public_id || null,
+      submitted_at: initialStatus === 'submitted' ? new Date().toISOString() : null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+
+    if (resolvedStudentId) {
+      dbPayload.student_id = resolvedStudentId;
+    }
 
     const { data: inserted, error: insertErr } = await supabase
       .from('id_card_applications')
@@ -453,6 +470,8 @@ export async function createIdCardApplication(student) {
       newApp.created_at = inserted.created_at;
       saveLocalIdApplications(apps);
       return { success: true, application: { ...newApp, ...inserted } };
+    } else if (insertErr) {
+      console.warn('createIdCardApplication Supabase insert error:', insertErr);
     }
   } catch (e) {
     console.warn('createIdCardApplication Supabase insert error:', e);
@@ -780,19 +799,19 @@ export async function portalAdminGetApplications(options = {}) {
     const { data, error } = await query;
     if (!error && Array.isArray(data)) {
       // Enrich with matching profile details
-      const regNos = data.map(d => d.registration_number || d.matric_number).filter(Boolean);
+      const regNos = data.map(d => d.matric_number || d.registration_number).filter(Boolean);
       let profilesMap = {};
       if (regNos.length > 0) {
         try {
-          const { data: profs } = await supabase
+          const { data: profs, error: profErr } = await supabase
             .from('profiles')
-            .select('id, registration_number, full_name, name, department, programme, level, admission_year, profile_photo_url, avatar_url')
+            .select('id, registration_number, matric_number, full_name, surname, first_name, department, programme, admission_year, profile_photo_url, avatar_url')
             .in('registration_number', regNos);
-          if (Array.isArray(profs)) {
+          if (!profErr && Array.isArray(profs)) {
             profs.forEach(p => {
-              if (p.registration_number) {
-                profilesMap[p.registration_number.toUpperCase()] = p;
-              }
+              if (p.registration_number) profilesMap[p.registration_number.toUpperCase()] = p;
+              if (p.matric_number) profilesMap[p.matric_number.toUpperCase()] = p;
+              if (p.id) profilesMap[p.id] = p;
             });
           }
         } catch (profErr) {
@@ -801,19 +820,19 @@ export async function portalAdminGetApplications(options = {}) {
       }
 
       list = data.map(app => {
-        const reg = (app.registration_number || app.matric_number || '').toUpperCase();
-        const profile = profilesMap[reg] || {};
+        const reg = (app.matric_number || app.registration_number || '').toUpperCase();
+        const profile = profilesMap[reg] || (app.student_id ? profilesMap[app.student_id] : {}) || {};
         return {
           ...app,
-          matric_number: app.registration_number || app.matric_number || profile.registration_number || reg,
-          registration_number: app.registration_number || app.matric_number || profile.registration_number || reg,
-          student_name: app.full_name || profile.full_name || profile.name || 'Student Member',
-          full_name: app.full_name || profile.full_name || profile.name || 'Student Member',
-          programme: app.programme || profile.programme || 'B.Tech Computer Science',
-          department: app.department || profile.department || 'Computer Science',
-          level: app.level || profile.level || '300 Level',
-          passport_url: app.passport_photo_url || app.passport_url || profile.profile_photo_url || profile.avatar_url || null,
-          passport_photo_url: app.passport_photo_url || app.passport_url || profile.profile_photo_url || profile.avatar_url || null
+          matric_number: app.matric_number || profile.registration_number || profile.matric_number || reg,
+          registration_number: app.matric_number || profile.registration_number || profile.matric_number || reg,
+          student_name: profile.full_name || app.full_name || profile.name || 'Student Member',
+          full_name: profile.full_name || app.full_name || profile.name || 'Student Member',
+          programme: profile.programme || app.programme || 'B.Tech Computer Science',
+          department: profile.department || app.department || 'Computer Science',
+          level: profile.admission_year ? `${Math.min(500, Math.max(100, (new Date().getFullYear() - profile.admission_year + 1) * 100))} Level` : (app.level || '300 Level'),
+          passport_url: app.passport_url || profile.profile_photo_url || profile.avatar_url || null,
+          passport_photo_url: app.passport_url || profile.profile_photo_url || profile.avatar_url || null
         };
       });
     }

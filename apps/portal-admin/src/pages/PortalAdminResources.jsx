@@ -91,7 +91,6 @@ const PortalAdminResources = () => {
     courseCode: '',
     courseTitle: '',
     level: '300',
-    session: '2024/2025',
     semester: 'First Semester',
     resourceType: 'document',
     isPublic: true,
@@ -247,7 +246,6 @@ const PortalAdminResources = () => {
         courseCode: uploadFormData.courseCode,
         courseTitle: uploadFormData.courseTitle,
         level: uploadFormData.level,
-        session: uploadFormData.session,
         semester: uploadFormData.semester,
         resourceType: uploadFormData.resourceType,
         fileName: selectedFile.name,
@@ -286,7 +284,6 @@ const PortalAdminResources = () => {
         courseCode: '',
         courseTitle: '',
         level: '300',
-        session: '2024/2025',
         semester: 'First Semester',
         resourceType: 'document',
         isPublic: true,
@@ -347,7 +344,6 @@ const PortalAdminResources = () => {
         course_code: selectedResourceForEdit.course_code,
         course_title: selectedResourceForEdit.course_title,
         level: selectedResourceForEdit.level ? parseInt(selectedResourceForEdit.level, 10) : null,
-        session: selectedResourceForEdit.session,
         semester: selectedResourceForEdit.semester,
         resource_type: selectedResourceForEdit.resource_type,
         category_id: selectedResourceForEdit.category_id,
@@ -862,7 +858,7 @@ const PortalAdminResources = () => {
                   </div>
                 </div>
 
-                {/* Level & Session Grid */}
+                {/* Level & Semester Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">
@@ -883,17 +879,16 @@ const PortalAdminResources = () => {
 
                   <div>
                     <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">
-                      Academic Session
+                      Semester Term
                     </label>
                     <select
-                      value={uploadFormData.session}
-                      onChange={(e) => setUploadFormData(prev => ({ ...prev, session: e.target.value }))}
+                      value={uploadFormData.semester}
+                      onChange={(e) => setUploadFormData(prev => ({ ...prev, semester: e.target.value }))}
                       className="w-full px-3 py-2 rounded bg-white dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white"
                     >
-                      <option value="2025/2026">2025/2026</option>
-                      <option value="2024/2025">2024/2025</option>
-                      <option value="2023/2024">2023/2024</option>
-                      <option value="2022/2023">2022/2023</option>
+                      <option value="First Semester">First Semester</option>
+                      <option value="Second Semester">Second Semester</option>
+                      <option value="All Semesters">All Semesters</option>
                     </select>
                   </div>
                 </div>
@@ -1030,7 +1025,7 @@ const PortalAdminResources = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">Course Code</label>
                     <input
@@ -1048,6 +1043,18 @@ const PortalAdminResources = () => {
                       onChange={(e) => setSelectedResourceForEdit({ ...selectedResourceForEdit, level: e.target.value })}
                       className="w-full px-3 py-2 rounded bg-white dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white"
                     />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-gray-700 dark:text-green-200 mb-1">Semester</label>
+                    <select
+                      value={selectedResourceForEdit.semester || 'First Semester'}
+                      onChange={(e) => setSelectedResourceForEdit({ ...selectedResourceForEdit, semester: e.target.value })}
+                      className="w-full px-3 py-2 rounded bg-white dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white"
+                    >
+                      <option value="First Semester">First Semester</option>
+                      <option value="Second Semester">Second Semester</option>
+                      <option value="All Semesters">All Semesters</option>
+                    </select>
                   </div>
                 </div>
 

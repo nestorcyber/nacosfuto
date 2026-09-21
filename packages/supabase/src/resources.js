@@ -43,7 +43,6 @@ export async function fetchResources({
   categoryId = null,
   level = null,
   courseCode = null,
-  session = null,
   semester = null,
   resourceType = null,
   search = '',
@@ -95,11 +94,6 @@ export async function fetchResources({
     // Course Code filter
     if (courseCode && courseCode !== 'all') {
       query = query.ilike('course_code', `%${courseCode.trim()}%`);
-    }
-
-    // Session filter (e.g. '2024/2025')
-    if (session && session !== 'all') {
-      query = query.eq('session', session.trim());
     }
 
     // Semester filter
@@ -240,7 +234,6 @@ export async function adminCreateResource(resourceData) {
       course_code: resourceData.courseCode ? resourceData.courseCode.toUpperCase().trim() : null,
       course_title: resourceData.courseTitle || null,
       level: resourceData.level ? resourceData.level.toString() : '300',
-      session: resourceData.session || '2024/2025',
       semester: resourceData.semester || 'First Semester',
       resource_type: resourceData.resourceType || 'document',
       file_name: resourceData.fileName,

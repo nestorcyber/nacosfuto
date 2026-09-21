@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS public.resources (
   course_code VARCHAR(30),
   course_title VARCHAR(255),
   level VARCHAR(20) DEFAULT 'All Levels',
-  session VARCHAR(30) DEFAULT '2026/2027',
   semester VARCHAR(20) DEFAULT 'First Semester',
   resource_type VARCHAR(50) DEFAULT 'document', -- 'document', 'past_question', 'video', 'slides', 'archive', 'image', 'other'
   file_name VARCHAR(255) NOT NULL,
@@ -85,9 +84,13 @@ CREATE TABLE IF NOT EXISTS public.resource_tag_links (
 CREATE INDEX IF NOT EXISTS idx_resources_category ON public.resources(category_id);
 CREATE INDEX IF NOT EXISTS idx_resources_course_code ON public.resources(course_code);
 CREATE INDEX IF NOT EXISTS idx_resources_level ON public.resources(level);
-CREATE INDEX IF NOT EXISTS idx_resources_session ON public.resources(session);
+CREATE INDEX IF NOT EXISTS idx_resources_semester ON public.resources(semester);
 CREATE INDEX IF NOT EXISTS idx_resources_type ON public.resources(resource_type);
 CREATE INDEX IF NOT EXISTS idx_resources_is_published ON public.resources(is_published);
+
+-- Remove legacy session column if present
+ALTER TABLE public.resources DROP COLUMN IF EXISTS session;
+DROP INDEX IF EXISTS public.idx_resources_session;
 CREATE INDEX IF NOT EXISTS idx_resources_is_active ON public.resources(is_active);
 CREATE INDEX IF NOT EXISTS idx_resources_created_at ON public.resources(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_resources_downloads ON public.resources(download_count DESC);
