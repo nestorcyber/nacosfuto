@@ -24,7 +24,9 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { hashPassword, isLocalEnvironment } from '@nacos/supabase/auth';
@@ -38,6 +40,27 @@ const PortalLayout = ({ children }) => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Desktop sidebar collapse/expand state (persisted)
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('nacos_sidebar_collapsed') === 'true';
+    }
+    return false;
+  });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('nacos_sidebar_collapsed', String(next));
+      }
+      return next;
+    });
+  };
+
+  const isExpanded = !isCollapsed || isHovered;
 
   // Dropdown & Modal states
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -632,17 +655,17 @@ const PortalLayout = ({ children }) => {
         </div>
       )}
 
-      <div className="flex-1 flex site-container w-full gap-5 lg:gap-8 min-h-0 print:p-0 print:m-0 print:max-w-none print:w-full overflow-x-hidden">
+      <div className="flex-1 flex site-container w-full gap-5 lg:gap-8 min-h-0 items-start print:p-0 print:m-0 print:max-w-none print:w-full">
 
-        {/* DESKTOP SIDEBAR WRAPPER: Collapsible into Icons with Hover Expansion */}
-        <div className={`hidden md:block shrink-0 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
+        {/* DESKTOP SIDEBAR WRAPPER: Maintained Fixed Position on Scroll */}
+        <div className={`hidden md:block shrink-0 transition-all duration-300 sticky top-16 h-[calc(100vh-4rem)] z-30 ${isCollapsed ? 'w-16' : 'w-64'}`}>
           <aside
             onMouseEnter={() => isCollapsed && setIsHovered(true)}
             onMouseLeave={() => isCollapsed && setIsHovered(false)}
-            className={`fixed md:sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden py-6 flex flex-col justify-between sidebar-scroll print:hidden transition-all duration-300 ease-in-out ${
+            className={`h-full overflow-y-auto overflow-x-hidden py-6 flex flex-col justify-between sidebar-scroll print:hidden transition-all duration-300 ease-in-out ${
               isCollapsed
                 ? isHovered
-                  ? 'w-64 z-40 bg-white dark:bg-[#083002] shadow-2xl px-3 border-r border-gray-200 dark:border-[#138601]/30 rounded-r-xl'
+                  ? 'w-64 z-40 bg-white dark:bg-[#083002] shadow-2xl px-3 border-r border-gray-200 dark:border-[#138601]/30 rounded-r-xl absolute top-0 left-0 bottom-0'
                   : 'w-16 px-2'
                 : 'w-64 px-1 pr-2'
             }`}
