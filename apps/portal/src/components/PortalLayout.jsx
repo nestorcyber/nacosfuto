@@ -287,9 +287,16 @@ const PortalLayout = ({ children }) => {
     { label: 'Dues & Clearance', path: '/dues', icon: CreditCard },
     { label: 'ID Card Application', path: '/id-card', icon: ShieldCheck },
     { label: 'Academic Results', path: '/results', icon: GraduationCap },
-    { label: 'Course Materials', path: '/courses', icon: BookOpen },
+    { label: 'Student Resource Hub', path: '/courses', icon: BookOpen },
     { label: 'Student Profile', path: '/profile', icon: User }
   ];
+
+  const isItemActive = (path) => {
+    if (path === '/courses') {
+      return location.pathname === '/courses' || location.pathname === '/resources' || location.pathname === '/resource-hub';
+    }
+    return location.pathname === path;
+  };
 
   const isDark = theme === 'dark';
 
@@ -531,6 +538,126 @@ const PortalLayout = ({ children }) => {
           </div>
 
         </div>
+
+        {/* MOBILE NAVIGATION DROPDOWN – Drops dynamically down from UNDER the navbar */}
+        {mobileOpen && (
+          <div 
+            className={`md:hidden border-b shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto animate-in slide-in-from-top-2 duration-200 ${
+              isDark 
+                ? 'bg-[#083002] border-[#138601]/30 text-white' 
+                : 'bg-white border-gray-200 text-gray-900'
+            }`}
+          >
+            {/* User greeting strip */}
+            <div className={`px-5 py-3.5 border-b flex items-center gap-3 ${
+              isDark ? 'border-[#138601]/20 bg-[#041801]/60' : 'border-gray-100 bg-[#f8fafc]'
+            }`}>
+              <div className="w-10 h-10 rounded-full bg-[#138601] flex items-center justify-center text-white font-bold text-sm shrink-0 ring-2 ring-[#138601]/30">
+                {displayInitials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold truncate text-gray-900 dark:text-white">{displayName}</p>
+                <p className="text-xs text-gray-500 dark:text-green-200/70 font-mono truncate">{displayMatric}</p>
+              </div>
+            </div>
+
+            {/* Nav Links formatted as clean card buttons */}
+            <nav className="p-4 space-y-2">
+              {navItems.map((item) => {
+                const active = isItemActive(item.path);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center justify-between px-4 py-3 rounded text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${
+                      active
+                        ? 'bg-[#138601] text-white border-[#138601] shadow-xs'
+                        : isDark
+                        ? 'bg-[#041801] text-gray-200 border-[#138601]/30 hover:bg-[#138601]/20 hover:text-white hover:border-[#138601]/60'
+                        : 'bg-[#f8fafc] text-gray-800 border-gray-200/80 hover:bg-[#f1f3f5] hover:text-[#138601]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : isDark ? 'text-[#4bd043]' : 'text-gray-600'}`} />
+                      <span>{item.label}</span>
+                    </div>
+                    {active ? (
+                      <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 shrink-0 text-gray-400" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* External Portals & Actions */}
+            <div className={`p-4 pt-2 border-t space-y-2 ${isDark ? 'border-[#138601]/20' : 'border-gray-100'}`}>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={getAppUrls().website}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded text-xs font-semibold border transition-colors ${
+                    isDark
+                      ? 'bg-[#041801] text-gray-200 border-[#138601]/30 hover:bg-[#138601]/20'
+                      : 'bg-[#f8fafc] text-gray-700 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  <Globe className="w-3.5 h-3.5 text-[#138601] dark:text-[#4bd043]" />
+                  <span>Main Website</span>
+                </a>
+
+                <a
+                  href={getAppUrls().adminHub}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded text-xs font-semibold border transition-colors ${
+                    isDark
+                      ? 'bg-[#041801] text-[#4bd043] border-[#138601]/30 hover:bg-[#138601]/20'
+                      : 'bg-green-50 text-[#138601] border-green-200 hover:bg-green-100'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Admin Hub</span>
+                </a>
+              </div>
+
+              {/* Theme Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className={`w-full flex items-center justify-between px-4 py-2.5 rounded text-xs font-semibold border transition-colors cursor-pointer ${
+                  isDark
+                    ? 'bg-[#041801] text-gray-200 border-[#138601]/30 hover:bg-[#138601]/20'
+                    : 'bg-[#f8fafc] text-gray-700 border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-gray-500" />}
+                  <span>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-gray-200 dark:bg-[#083002] text-gray-700 dark:text-gray-300">
+                  {isDark ? 'Dark Active' : 'Light Active'}
+                </span>
+              </button>
+
+              {/* Sign Out Button */}
+              <button
+                type="button"
+                onClick={() => { setMobileOpen(false); handleLogout(); }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out Account</span>
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ─── Password Management / Settings Modal ─── */}
@@ -700,7 +827,7 @@ const PortalLayout = ({ children }) => {
               {/* Navigation Links */}
               <nav className="space-y-1.5">
                 {navItems.map((item) => {
-                  const active = location.pathname === item.path;
+                  const active = isItemActive(item.path);
                   const Icon = item.icon;
                   return (
                     <Link
@@ -757,81 +884,6 @@ const PortalLayout = ({ children }) => {
             )}
           </aside>
         </div>
-
-        {/* MOBILE NAVIGATION DRAWER – Full-screen overlay */}
-        {mobileOpen && (
-          <div className="md:hidden fixed inset-0 z-50 flex flex-col text-white print:hidden" style={{ background: isDark ? '#041801' : '#0a2800' }}>
-
-            {/* Drawer Header: same layout as main header — logo left, X right */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-              {/* Logo on LEFT — mirrors main header */}
-              <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center">
-                <img src={logoDark} alt="NACOS Logo" className="h-8 w-auto object-contain" />
-              </Link>
-
-              {/* Close button on RIGHT */}
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="p-2.5 rounded bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-                aria-label="Close navigation"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* User greeting strip */}
-            <div className="px-5 py-4 border-b border-white/10 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#138601] flex items-center justify-center text-white font-bold text-sm shrink-0">
-                {displayInitials}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-white truncate">{displayName}</p>
-                <p className="text-[11px] text-white/50 truncate">{displayMatric}</p>
-              </div>
-            </div>
-
-            {/* Nav Links */}
-            <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
-              {navItems.map((item) => {
-                const active = location.pathname === item.path;
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${active
-                        ? 'bg-[#138601] text-white shadow-sm'
-                        : 'text-white/80 hover:text-white hover:bg-white/10'
-                      }`}
-                  >
-                    <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-[#4bd043]'}`} />
-                    <span>{item.label}</span>
-                    {active && <ChevronRight className="w-4 h-4 ml-auto text-white/60" />}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Bottom actions */}
-            <div className="px-4 pb-6 pt-2 space-y-2 border-t border-white/10">
-              <button
-                onClick={toggleTheme}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                {isDark ? <Sun className="w-4.5 h-4.5 text-amber-400" /> : <Moon className="w-4.5 h-4.5 text-white/60" />}
-                <span>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
-              </button>
-              <button
-                onClick={() => { setMobileOpen(false); handleLogout(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-950/40 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4.5 h-4.5" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* MAIN BODY VIEW */}
         <main className="flex-1 min-w-0 py-5 sm:py-6 overflow-x-hidden print:py-0 print:m-0 print:w-full">

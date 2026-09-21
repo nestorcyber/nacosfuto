@@ -928,3 +928,172 @@ VALUES
     true
   )
 ON CONFLICT (slug) DO NOTHING;
+
+-- =========================================================================
+-- 10. STUDENT RESOURCE HUB & CLOUDFLARE R2 SYSTEM
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS public.resource_categories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  slug VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  icon VARCHAR(50) DEFAULT 'BookOpen',
+  display_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.resources (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
+  description TEXT,
+  category_id UUID REFERENCES public.resource_categories(id) ON DELETE SET NULL,
+  course_code VARCHAR(30),
+  level VARCHAR(20) DEFAULT 'All Levels',
+  session VARCHAR(30) DEFAULT '2026/2027',
+  resource_type VARCHAR(50) DEFAULT 'pdf',
+  file_name VARCHAR(255) NOT NULL,
+  file_extension VARCHAR(20) NOT NULL,
+  mime_type VARCHAR(100) NOT NULL,
+  file_size BIGINT DEFAULT 0,
+  storage_provider VARCHAR(50) DEFAULT 'cloudflare_r2',
+  storage_key TEXT NOT NULL,
+  thumbnail_key TEXT,
+  duration_seconds INTEGER DEFAULT 0,
+  is_public BOOLEAN DEFAULT true,
+  is_active BOOLEAN DEFAULT true,
+  download_count INTEGER DEFAULT 0,
+  view_count INTEGER DEFAULT 0,
+  uploaded_by TEXT,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.resource_downloads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  resource_id UUID REFERENCES public.resources(id) ON DELETE CASCADE NOT NULL,
+  user_id TEXT,
+  ip_hash VARCHAR(64),
+  user_agent TEXT,
+  downloaded_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.resource_views (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  resource_id UUID REFERENCES public.resources(id) ON DELETE CASCADE NOT NULL,
+  user_id TEXT,
+  viewed_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.resource_tags (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(50) NOT NULL UNIQUE,
+  slug VARCHAR(50) NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.resource_tag_assignments (
+  resource_id UUID REFERENCES public.resources(id) ON DELETE CASCADE NOT NULL,
+  tag_id UUID REFERENCES public.resource_tags(id) ON DELETE CASCADE NOT NULL,
+  PRIMARY KEY (resource_id, tag_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_resources_category ON public.resources(category_id);
+CREATE INDEX IF NOT EXISTS idx_resources_course_code ON public.resources(course_code);
+CREATE INDEX IF NOT EXISTS idx_resources_level ON public.resources(level);
+CREATE INDEX IF NOT EXISTS idx_resources_session ON public.resources(session);
+CREATE INDEX IF NOT EXISTS idx_resources_type ON public.resources(resource_type);
+CREATE INDEX IF NOT EXISTS idx_resources_is_active ON public.resources(is_active);
+CREATE INDEX IF NOT EXISTS idx_resources_created_at ON public.resources(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_resources_downloads ON public.resources(download_count DESC);
+
+CREATE OR REPLACE FUNCTION public.increment_resource_download(
+  p_resource_id UUID,
+  p_user_id TEXT DEFAULT NULL,
+  p_ip_hash TEXT DEFAULT NULL,
+  p_user_agent TEXT DEFAULT NULL
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_new_count INTEGER;
+BEGIN
+  INSERT INTO public.resource_downloads (resource_id, user_id, ip_hash, user_agent, downloaded_at)
+  VALUES (p_resource_id, p_user_id, p_ip_hash, p_user_agent, NOW());
+
+  UPDATE public.resources
+  SET 
+    download_count = download_count + 1,
+    updated_at = NOW()
+  WHERE id = p_resource_id
+  RETURNING download_count INTO v_new_count;
+
+  RETURN COALESCE(v_new_count, 0);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.increment_resource_view(
+  p_resource_id UUID,
+  p_user_id TEXT DEFAULT NULL
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_new_count INTEGER;
+BEGIN
+  INSERT INTO public.resource_views (resource_id, user_id, viewed_at)
+  VALUES (p_resource_id, p_user_id, NOW());
+
+  UPDATE public.resources
+  SET 
+    view_count = view_count + 1,
+    updated_at = NOW()
+  WHERE id = p_resource_id
+  RETURNING view_count INTO v_new_count;
+
+  RETURN COALESCE(v_new_count, 0);
+END;
+$$;
+
+ALTER TABLE public.resource_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resource_downloads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resource_views ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resource_tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resource_tag_assignments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read resource categories" ON public.resource_categories;
+CREATE POLICY "Public read resource categories" ON public.resource_categories FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins manage resource categories" ON public.resource_categories;
+CREATE POLICY "Admins manage resource categories" ON public.resource_categories FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "Public read active resources" ON public.resources;
+CREATE POLICY "Public read active resources" ON public.resources FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admins manage resources" ON public.resources;
+CREATE POLICY "Admins manage resources" ON public.resources FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "Public log downloads" ON public.resource_downloads;
+CREATE POLICY "Public log downloads" ON public.resource_downloads FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Admins view all downloads" ON public.resource_downloads;
+CREATE POLICY "Admins view all downloads" ON public.resource_downloads FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public log views" ON public.resource_views;
+CREATE POLICY "Public log views" ON public.resource_views FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Admins view all views" ON public.resource_views;
+CREATE POLICY "Admins view all views" ON public.resource_views FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read tags" ON public.resource_tags;
+CREATE POLICY "Public read tags" ON public.resource_tags FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins manage tags" ON public.resource_tags;
+CREATE POLICY "Admins manage tags" ON public.resource_tags FOR ALL USING (true);
+DROP POLICY IF EXISTS "Public read tag assignments" ON public.resource_tag_assignments;
+CREATE POLICY "Public read tag assignments" ON public.resource_tag_assignments FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins manage tag assignments" ON public.resource_tag_assignments;
+CREATE POLICY "Admins manage tag assignments" ON public.resource_tag_assignments FOR ALL USING (true);
+

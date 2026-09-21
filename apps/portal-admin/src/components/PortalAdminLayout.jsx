@@ -5,6 +5,7 @@ import {
   Users, 
   ShieldCheck, 
   Image as ImageIcon, 
+  BookOpen,
   Settings, 
   LogOut, 
   Menu, 
@@ -95,6 +96,7 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
     { label: 'Portal Overview', path: '/', icon: LayoutDashboard, exact: true },
     { label: 'Student Registry', path: '/students', icon: Users },
     { label: 'ID Card Applications', path: '/id-cards', icon: ShieldCheck },
+    { label: 'Resource Hub', path: '/resources', icon: BookOpen },
     { label: 'Student Media', path: '/media', icon: ImageIcon },
     { label: 'Portal Settings', path: '/settings', icon: Settings }
   ];

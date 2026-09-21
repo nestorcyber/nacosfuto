@@ -7,4 +7,6 @@ export * from './verifiedStudents.js';
 export * from './otpService.js';
 export * from './emailService.js';
 export * from './smsService.js';
+export * from './storageService.js';
+export * from './resources.js';
 export { default } from './client.js';

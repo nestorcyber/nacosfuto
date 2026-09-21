@@ -33,6 +33,8 @@ function App() {
           <Route path="/results" element={<Results />} />
           <Route path="/dues" element={<Dues />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/resources" element={<Courses />} />
+          <Route path="/resource-hub" element={<Courses />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/id-card" element={<IdCard />} />
 

@@ -1,102 +1,210 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Search, FileText, ExternalLink, ChevronDown, Filter } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import {
+  Download,
+  Search,
+  FileText,
+  ExternalLink,
+  ChevronDown,
+  Filter,
+  Eye,
+  Video,
+  Image as ImageIcon,
+  Folder,
+  BookOpen,
+  HelpCircle,
+  FileArchive,
+  Calendar,
+  Sparkles,
+  X,
+  Play,
+  RotateCcw,
+  CheckCircle2,
+  AlertCircle,
+  Share2,
+  Lock,
+  Layers,
+  FileCode
+} from 'lucide-react';
 import PortalLayout from '../components/PortalLayout';
+import { 
+  fetchResources, 
+  fetchResourceCategories, 
+  recordResourceDownload, 
+  recordResourceView,
+  storageService 
+} from '@nacos/supabase';
 
-const ALL_COURSES = [
-  // 100 Level - 1st Semester
+// Static Curriculum Reference Catalog (For Course syllabus & registered module reference)
+const CURRICULUM_COURSES = [
+  // 100 Level
   { code: 'CSC 101', title: 'Introduction to Computing Systems', units: 3, lecturer: 'Dr. C. N. Nwokorie', notesCount: 7, pastQuestions: 6, levelNumber: 100, semesterNumber: 1 },
   { code: 'MTH 101', title: 'Elementary Mathematics I (Algebra & Trig)', units: 3, lecturer: 'Dr. E. O. Opara', notesCount: 5, pastQuestions: 8, levelNumber: 100, semesterNumber: 1 },
   { code: 'PHY 101', title: 'General Physics I (Mechanics)', units: 3, lecturer: 'Prof. B. C. Eze', notesCount: 6, pastQuestions: 7, levelNumber: 100, semesterNumber: 1 },
-  { code: 'CHM 101', title: 'General Chemistry I', units: 3, lecturer: 'Dr. A. I. Onuegbu', notesCount: 4, pastQuestions: 5, levelNumber: 100, semesterNumber: 1 },
-  { code: 'GST 101', title: 'Use of English I', units: 2, lecturer: 'Dr. (Mrs) U. C. Iwuchukwu', notesCount: 5, pastQuestions: 4, levelNumber: 100, semesterNumber: 1 },
-  { code: 'PHY 107', title: 'General Physics Laboratory I', units: 1, lecturer: 'Dept. of Physics', notesCount: 3, pastQuestions: 3, levelNumber: 100, semesterNumber: 1 },
-  { code: 'CHM 107', title: 'General Chemistry Laboratory I', units: 1, lecturer: 'Dept. of Chemistry', notesCount: 3, pastQuestions: 3, levelNumber: 100, semesterNumber: 1 },
-  { code: 'BIO 101', title: 'General Biology I', units: 3, lecturer: 'Dr. P. C. Nwachukwu', notesCount: 4, pastQuestions: 4, levelNumber: 100, semesterNumber: 1 },
-
-  // 100 Level - 2nd Semester
   { code: 'CSC 102', title: 'Introduction to Problem Solving & Programming', units: 3, lecturer: 'Dr. C. N. Nwokorie', notesCount: 8, pastQuestions: 7, levelNumber: 100, semesterNumber: 2 },
   { code: 'MTH 102', title: 'Elementary Mathematics II (Calculus)', units: 3, lecturer: 'Dr. E. O. Opara', notesCount: 6, pastQuestions: 9, levelNumber: 100, semesterNumber: 2 },
-  { code: 'PHY 102', title: 'General Physics II (Electricity & Magnetism)', units: 3, lecturer: 'Prof. B. C. Eze', notesCount: 5, pastQuestions: 6, levelNumber: 100, semesterNumber: 2 },
-  { code: 'CHM 102', title: 'General Chemistry II', units: 3, lecturer: 'Dr. A. I. Onuegbu', notesCount: 4, pastQuestions: 4, levelNumber: 100, semesterNumber: 2 },
-  { code: 'GST 102', title: 'Use of English II', units: 2, lecturer: 'Dr. (Mrs) U. C. Iwuchukwu', notesCount: 4, pastQuestions: 4, levelNumber: 100, semesterNumber: 2 },
-  { code: 'PHY 108', title: 'General Physics Laboratory II', units: 1, lecturer: 'Dept. of Physics', notesCount: 3, pastQuestions: 3, levelNumber: 100, semesterNumber: 2 },
-  { code: 'CHM 108', title: 'General Chemistry Laboratory II', units: 1, lecturer: 'Dept. of Chemistry', notesCount: 3, pastQuestions: 3, levelNumber: 100, semesterNumber: 2 },
-  { code: 'ENR 102', title: 'Engineering Drawing I', units: 2, lecturer: 'Engr. K. O. Okoro', notesCount: 4, pastQuestions: 5, levelNumber: 100, semesterNumber: 2 },
-
-  // 200 Level - 1st Semester
+  // 200 Level
   { code: 'CSC 201', title: 'Computer Programming I (C++)', units: 3, lecturer: 'Dr. G. A. Chukwudebe', notesCount: 7, pastQuestions: 8, levelNumber: 200, semesterNumber: 1 },
   { code: 'CSC 203', title: 'Discrete Structures', units: 3, lecturer: 'Prof. F. E. Onuodu', notesCount: 6, pastQuestions: 6, levelNumber: 200, semesterNumber: 1 },
-  { code: 'MTH 201', title: 'Mathematical Methods I', units: 3, lecturer: 'Dr. N. C. Ihedioha', notesCount: 5, pastQuestions: 7, levelNumber: 200, semesterNumber: 1 },
-  { code: 'PHY 201', title: 'Modern Physics', units: 3, lecturer: 'Prof. B. C. Eze', notesCount: 4, pastQuestions: 5, levelNumber: 200, semesterNumber: 1 },
-  { code: 'STA 211', title: 'Probability & Statistics I', units: 3, lecturer: 'Dr. S. A. Amadi', notesCount: 5, pastQuestions: 6, levelNumber: 200, semesterNumber: 1 },
-  { code: 'GST 201', title: 'Nigerian Peoples and Culture', units: 2, lecturer: 'Directorate of General Studies', notesCount: 4, pastQuestions: 4, levelNumber: 200, semesterNumber: 1 },
-  { code: 'EEE 201', title: 'Applied Electricity I', units: 3, lecturer: 'Engr. D. C. Stanley', notesCount: 5, pastQuestions: 5, levelNumber: 200, semesterNumber: 1 },
-
-  // 200 Level - 2nd Semester
   { code: 'CSC 202', title: 'Computer Programming II (Java)', units: 3, lecturer: 'Dr. G. A. Chukwudebe', notesCount: 8, pastQuestions: 8, levelNumber: 200, semesterNumber: 2 },
-  { code: 'CSC 204', title: 'Fundamentals of Data Processing', units: 2, lecturer: 'Dr. I. C. Obidike', notesCount: 5, pastQuestions: 5, levelNumber: 200, semesterNumber: 2 },
-  { code: 'CSC 206', title: 'Discrete Mathematics for Computing', units: 3, lecturer: 'Prof. F. E. Onuodu', notesCount: 6, pastQuestions: 6, levelNumber: 200, semesterNumber: 2 },
-  { code: 'MTH 202', title: 'Mathematical Methods II', units: 3, lecturer: 'Dr. N. C. Ihedioha', notesCount: 6, pastQuestions: 7, levelNumber: 200, semesterNumber: 2 },
-  { code: 'PHY 202', title: 'Electric Circuits & Electronics', units: 3, lecturer: 'Engr. D. C. Stanley', notesCount: 5, pastQuestions: 6, levelNumber: 200, semesterNumber: 2 },
-  { code: 'STA 212', title: 'Statistics for Physical Sciences', units: 3, lecturer: 'Dr. S. A. Amadi', notesCount: 4, pastQuestions: 5, levelNumber: 200, semesterNumber: 2 },
-  { code: 'GST 222', title: 'Peace & Conflict Studies', units: 2, lecturer: 'Directorate of General Studies', notesCount: 3, pastQuestions: 4, levelNumber: 200, semesterNumber: 2 },
-
-  // 300 Level - 1st Semester
+  // 300 Level
   { code: 'CSC 301', title: 'Structured Programming (C++)', units: 3, lecturer: 'Dr. C. N. Nwokorie', notesCount: 6, pastQuestions: 5, levelNumber: 300, semesterNumber: 1 },
   { code: 'CSC 303', title: 'Data Structures & Algorithms', units: 3, lecturer: 'Prof. F. E. Onuodu', notesCount: 8, pastQuestions: 7, levelNumber: 300, semesterNumber: 1 },
   { code: 'CSC 305', title: 'Operating Systems & Architecture', units: 3, lecturer: 'Dr. G. A. Chukwudebe', notesCount: 5, pastQuestions: 6, levelNumber: 300, semesterNumber: 1 },
-  { code: 'CSC 307', title: 'Object-Oriented Analysis & Design', units: 3, lecturer: 'Engr. D. C. Stanley', notesCount: 4, pastQuestions: 4, levelNumber: 300, semesterNumber: 1 },
-  { code: 'CSC 309', title: 'Database Design & Relational Models', units: 2, lecturer: 'Dr. N. C. Ihedioha', notesCount: 7, pastQuestions: 8, levelNumber: 300, semesterNumber: 1 },
-  { code: 'MTH 311', title: 'Numerical Analysis & Methods', units: 3, lecturer: 'Dr. E. O. Opara', notesCount: 4, pastQuestions: 9, levelNumber: 300, semesterNumber: 1 },
-  { code: 'ENS 301', title: 'Entrepreneurship & Innovation', units: 2, lecturer: 'Centre for Entrepreneurship', notesCount: 3, pastQuestions: 3, levelNumber: 300, semesterNumber: 1 },
-  { code: 'CSC 313', title: 'Compiler Construction Fundamentals', units: 2, lecturer: 'Dr. I. C. Obidike', notesCount: 5, pastQuestions: 4, levelNumber: 300, semesterNumber: 1 },
-
-  // 300 Level - 2nd Semester
-  { code: 'CSC 302', title: 'Operating Systems Principles', units: 3, lecturer: 'Dr. G. A. Chukwudebe', notesCount: 6, pastQuestions: 6, levelNumber: 300, semesterNumber: 2 },
-  { code: 'CSC 304', title: 'Software Engineering Foundations', units: 3, lecturer: 'Engr. D. C. Stanley', notesCount: 7, pastQuestions: 7, levelNumber: 300, semesterNumber: 2 },
-  { code: 'CSC 306', title: 'Automata Theory & Formal Languages', units: 3, lecturer: 'Prof. F. E. Onuodu', notesCount: 5, pastQuestions: 5, levelNumber: 300, semesterNumber: 2 },
   { code: 'CSC 308', title: 'Web Technologies & Internet Programming', units: 3, lecturer: 'Tech Director (NACOS)', notesCount: 8, pastQuestions: 6, levelNumber: 300, semesterNumber: 2 },
-  { code: 'CSC 310', title: 'Computer Architecture & Microprocessors', units: 3, lecturer: 'Dr. I. C. Obidike', notesCount: 5, pastQuestions: 5, levelNumber: 300, semesterNumber: 2 },
-  { code: 'CSC 312', title: 'Systems Analysis and Design', units: 3, lecturer: 'Dr. N. C. Ihedioha', notesCount: 6, pastQuestions: 6, levelNumber: 300, semesterNumber: 2 },
-
-  // 400 Level - 1st Semester
-  { code: 'CSC 401', title: 'Technical Research Methodology', units: 2, lecturer: 'Prof. F. E. Onuodu', notesCount: 5, pastQuestions: 4, levelNumber: 400, semesterNumber: 1 },
+  // 400 Level
   { code: 'CSC 403', title: 'Computer Networks & Security', units: 3, lecturer: 'Dr. G. A. Chukwudebe', notesCount: 7, pastQuestions: 7, levelNumber: 400, semesterNumber: 1 },
-  { code: 'CSC 405', title: 'Software Engineering Methodologies', units: 3, lecturer: 'Engr. D. C. Stanley', notesCount: 6, pastQuestions: 6, levelNumber: 400, semesterNumber: 1 },
   { code: 'CSC 407', title: 'Computer Graphics & Visualization', units: 3, lecturer: 'Dr. C. N. Nwokorie', notesCount: 6, pastQuestions: 5, levelNumber: 400, semesterNumber: 1 },
-  { code: 'CSC 409', title: 'Database Management Systems Implementation', units: 3, lecturer: 'Dr. N. C. Ihedioha', notesCount: 7, pastQuestions: 6, levelNumber: 400, semesterNumber: 1 },
-
-  // 400 Level - 2nd Semester
-  { code: 'CSC 410', title: 'Students Industrial Work Experience Scheme (SIWES)', units: 6, lecturer: 'SIWES Unit & Dept. Supervisors', notesCount: 4, pastQuestions: 3, levelNumber: 400, semesterNumber: 2 },
-
-  // 500 Level - 1st Semester
+  // 500 Level
   { code: 'CSC 501', title: 'Artificial Intelligence & Expert Systems', units: 3, lecturer: 'Dr. (Mrs) N. C. Daniel', notesCount: 8, pastQuestions: 7, levelNumber: 500, semesterNumber: 1 },
-  { code: 'CSC 503', title: 'Distributed Computing Architecture', units: 3, lecturer: 'Dr. G. A. Chukwudebe', notesCount: 6, pastQuestions: 6, levelNumber: 500, semesterNumber: 1 },
   { code: 'CSC 505', title: 'Cryptography & Information Security', units: 3, lecturer: 'Prof. F. E. Onuodu', notesCount: 7, pastQuestions: 6, levelNumber: 500, semesterNumber: 1 },
-  { code: 'CSC 507', title: 'Cloud Computing & Virtualization', units: 3, lecturer: 'Engr. D. C. Stanley', notesCount: 6, pastQuestions: 5, levelNumber: 500, semesterNumber: 1 },
-  { code: 'CSC 509', title: 'Machine Learning & Neural Networks', units: 3, lecturer: 'Dr. C. N. Nwokorie', notesCount: 8, pastQuestions: 7, levelNumber: 500, semesterNumber: 1 },
-
-  // 500 Level - 2nd Semester
-  { code: 'CSC 502', title: 'Mobile Application Development', units: 3, lecturer: 'Tech Director (NACOS)', notesCount: 7, pastQuestions: 6, levelNumber: 500, semesterNumber: 2 },
-  { code: 'CSC 504', title: 'Advanced Computer Algorithms', units: 3, lecturer: 'Prof. F. E. Onuodu', notesCount: 6, pastQuestions: 6, levelNumber: 500, semesterNumber: 2 },
-  { code: 'CSC 599', title: 'Independent Capstone Project / Thesis', units: 6, lecturer: 'Departmental Project Committee', notesCount: 5, pastQuestions: 4, levelNumber: 500, semesterNumber: 2 },
+  { code: 'CSC 509', title: 'Machine Learning & Neural Networks', units: 3, lecturer: 'Dr. C. N. Nwokorie', notesCount: 8, pastQuestions: 7, levelNumber: 500, semesterNumber: 1 }
 ];
 
-const PAST_QUESTIONS = [
-  { id: 1, course: 'CSC 101', session: '2023/2024 Exam & Test Bundle', file: 'CSC101_2023_2024_PastQuestions.pdf', size: '2.1 MB', downloads: 410, levelNumber: 100, semesterNumber: 1 },
-  { id: 2, course: 'CSC 102', session: '2022–2024 Past Questions with Solutions', file: 'CSC102_Solved_PastQuestions.pdf', size: '3.4 MB', downloads: 380, levelNumber: 100, semesterNumber: 2 },
-  { id: 3, course: 'CSC 201', session: '2022–2024 Exam & Mid-Term Solutions', file: 'CSC201_Comprehensive_Pack.pdf', size: '3.6 MB', downloads: 490, levelNumber: 200, semesterNumber: 1 },
-  { id: 4, course: 'CSC 202', session: '2023/2024 Java Exam & Test Papers', file: 'CSC202_Java_PastQuestions.pdf', size: '3.1 MB', downloads: 460, levelNumber: 200, semesterNumber: 2 },
-  { id: 5, course: 'CSC 301', session: '2023/2024 Exam & Test Bundle', file: 'CSC301_2023_2024_PastQuestions.pdf', size: '2.4 MB', downloads: 340, levelNumber: 300, semesterNumber: 1 },
-  { id: 6, course: 'CSC 303', session: '2022–2024 Past Questions with Solutions', file: 'CSC303_Solved_PastQuestions.pdf', size: '4.1 MB', downloads: 512, levelNumber: 300, semesterNumber: 1 },
-  { id: 7, course: 'CSC 305', session: '2019–2024 Mid-Semester Tests & Finals', file: 'CSC305_Comprehensive_Pack.pdf', size: '3.8 MB', downloads: 289, levelNumber: 300, semesterNumber: 1 },
-  { id: 8, course: 'CSC 309', session: 'Database SQL Practical Past Exam Papers', file: 'CSC309_SQL_Exam_Packs.pdf', size: '1.9 MB', downloads: 418, levelNumber: 300, semesterNumber: 1 },
-  { id: 9, course: 'MTH 311', session: 'Numerical Methods Worked Solutions 2018–2023', file: 'MTH311_Worked_Solutions.pdf', size: '5.2 MB', downloads: 620, levelNumber: 300, semesterNumber: 1 },
-  { id: 10, course: 'CSC 403', session: 'Computer Networks & Security Past Exams', file: 'CSC403_Networks_Pack.pdf', size: '4.2 MB', downloads: 295, levelNumber: 400, semesterNumber: 1 },
-  { id: 11, course: 'CSC 501', session: 'AI & Neural Networks Past Exam Solutions', file: 'CSC501_AI_Solutions.pdf', size: '4.8 MB', downloads: 310, levelNumber: 500, semesterNumber: 1 },
+// Fallback seed resources if remote DB is freshly initialized
+const SEED_FALLBACK_RESOURCES = [
+  {
+    id: 'res-pq-csc201',
+    title: 'CSC 201 Comprehensive Examination & Mid-Term Solutions (2022–2024)',
+    slug: 'csc-201-past-questions-bundle',
+    description: 'Complete compilation of past semester examination questions, test solutions, and code traces for C++ Programming I.',
+    category_id: 'cat-past-questions',
+    category: { name: 'Past Questions', slug: 'past-questions', icon: 'HelpCircle' },
+    course_code: 'CSC 201',
+    level: 200,
+    session: '2024/2025',
+    resource_type: 'past_question',
+    file_name: 'CSC201_Comprehensive_Pack.pdf',
+    file_extension: 'pdf',
+    mime_type: 'application/pdf',
+    file_size: 3774873, // 3.6 MB
+    storage_provider: 'cloudflare_r2',
+    storage_key: 'resources/res-pq-csc201/original/CSC201_Comprehensive_Pack.pdf',
+    thumbnail_key: null,
+    download_count: 490,
+    created_at: '2026-08-20T10:00:00Z',
+    is_public: true,
+    is_active: true
+  },
+  {
+    id: 'res-cm-csc303',
+    title: 'Data Structures & Algorithms in C++ Master Lecture Notes',
+    slug: 'csc-303-dsa-lecture-notes',
+    description: 'Detailed lecture slides and code implementations covering Trees, Graphs, Sorting Algorithms, Dynamic Programming, and Big-O Complexity.',
+    category_id: 'cat-course-materials',
+    category: { name: 'Course Materials', slug: 'course-materials', icon: 'BookOpen' },
+    course_code: 'CSC 303',
+    level: 300,
+    session: '2024/2025',
+    resource_type: 'document',
+    file_name: 'CSC303_DSA_Lecture_Master.pdf',
+    file_extension: 'pdf',
+    mime_type: 'application/pdf',
+    file_size: 4309811, // 4.1 MB
+    storage_provider: 'cloudflare_r2',
+    storage_key: 'resources/res-cm-csc303/original/CSC303_DSA_Lecture_Master.pdf',
+    thumbnail_key: null,
+    download_count: 512,
+    created_at: '2026-08-22T14:30:00Z',
+    is_public: true,
+    is_active: true
+  },
+  {
+    id: 'res-vid-webdev',
+    title: 'Modern Web Development & React Framework Video Tutorial (Part 1)',
+    slug: 'modern-web-development-react-tutorial',
+    description: 'Video workshop covering modern component-driven frontends, state management, REST APIs, and portal architecture.',
+    category_id: 'cat-videos',
+    category: { name: 'Videos', slug: 'videos', icon: 'Video' },
+    course_code: 'CSC 308',
+    level: 300,
+    session: '2024/2025',
+    resource_type: 'video',
+    file_name: 'React_Workshop_Session1.mp4',
+    file_extension: 'mp4',
+    mime_type: 'video/mp4',
+    file_size: 48234496, // 46 MB
+    storage_provider: 'cloudflare_r2',
+    storage_key: 'resources/res-vid-webdev/original/React_Workshop_Session1.mp4',
+    thumbnail_key: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800',
+    duration_seconds: 2400,
+    download_count: 275,
+    created_at: '2026-08-25T11:00:00Z',
+    is_public: true,
+    is_active: true
+  },
+  {
+    id: 'res-hb-student-handbook',
+    title: 'NACOS FUTO Official Departmental Student Handbook (Revised Edition)',
+    slug: 'nacos-futo-student-handbook',
+    description: 'Departmental academic curriculum, grading systems, code of conduct, course prerequisites, and faculty advisor directory.',
+    category_id: 'cat-handbooks',
+    category: { name: 'Handbooks', slug: 'handbooks', icon: 'FileText' },
+    course_code: null,
+    level: null,
+    session: '2024/2025',
+    resource_type: 'document',
+    file_name: 'NACOS_FUTO_Departmental_Handbook.pdf',
+    file_extension: 'pdf',
+    mime_type: 'application/pdf',
+    file_size: 5872025, // 5.6 MB
+    storage_provider: 'cloudflare_r2',
+    storage_key: 'resources/res-hb-student-handbook/original/NACOS_FUTO_Departmental_Handbook.pdf',
+    download_count: 890,
+    created_at: '2026-08-10T09:00:00Z',
+    is_public: true,
+    is_active: true
+  },
+  {
+    id: 'res-pq-mth311',
+    title: 'MTH 311 Numerical Methods Worked Solutions & Examination Compendium',
+    slug: 'mth-311-numerical-methods-solutions',
+    description: 'Step-by-step solutions to Newton-Raphson, Runge-Kutta, Gaussian elimination, and numerical integration exam questions.',
+    category_id: 'cat-past-questions',
+    category: { name: 'Past Questions', slug: 'past-questions', icon: 'HelpCircle' },
+    course_code: 'MTH 311',
+    level: 300,
+    session: '2023/2024',
+    resource_type: 'past_question',
+    file_name: 'MTH311_Worked_Solutions.pdf',
+    file_extension: 'pdf',
+    mime_type: 'application/pdf',
+    file_size: 5452595, // 5.2 MB
+    storage_provider: 'cloudflare_r2',
+    storage_key: 'resources/res-pq-mth311/original/MTH311_Worked_Solutions.pdf',
+    download_count: 620,
+    created_at: '2026-08-15T16:00:00Z',
+    is_public: true,
+    is_active: true
+  },
+  {
+    id: 'res-tut-ai-ml',
+    title: 'CSC 501 Artificial Intelligence & Deep Neural Networks Lab Workbook',
+    slug: 'csc-501-ai-ml-workbook',
+    description: 'PyTorch and TensorFlow practical exercises, dataset preprocessing guides, and model evaluation techniques.',
+    category_id: 'cat-tutorials',
+    category: { name: 'Tutorials', slug: 'tutorials', icon: 'Sparkles' },
+    course_code: 'CSC 501',
+    level: 500,
+    session: '2024/2025',
+    resource_type: 'document',
+    file_name: 'CSC501_AI_NeuralNetworks_Lab.pdf',
+    file_extension: 'pdf',
+    mime_type: 'application/pdf',
+    file_size: 5033164, // 4.8 MB
+    storage_provider: 'cloudflare_r2',
+    storage_key: 'resources/res-tut-ai-ml/original/CSC501_AI_NeuralNetworks_Lab.pdf',
+    download_count: 310,
+    created_at: '2026-08-28T12:00:00Z',
+    is_public: true,
+    is_active: true
+  }
 ];
 
 const Courses = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Active User State
   const [user, setUser] = useState(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('nacos_user');
@@ -109,334 +217,773 @@ const Courses = () => {
     return {};
   });
 
-  const [activeTab, setActiveTab] = useState('courses');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Determine current student level (e.g. 100, 200, 300, 400, 500)
+  // Calculate Student Level
   const currentLevel = useMemo(() => {
     const levelStr = (user.level || '').toString();
     const match = levelStr.match(/(\d{3})/);
-    if (match) {
-      return parseInt(match[1], 10);
-    }
-    if (levelStr.toLowerCase().includes('alumni') || levelStr.toLowerCase().includes('graduated')) {
-      return 500;
-    }
-    if (user.role && (user.role.toLowerCase().includes('admin') || user.role.toLowerCase().includes('president'))) {
-      return 500;
-    }
+    if (match) return parseInt(match[1], 10);
+    if (levelStr.toLowerCase().includes('alumni') || levelStr.toLowerCase().includes('graduated')) return 500;
+    if (user.role && (user.role.toLowerCase().includes('admin') || user.role.toLowerCase().includes('president'))) return 500;
     if (user.admission_year) {
       const num = 2026 - parseInt(user.admission_year, 10) + 1;
       if (num >= 5) return 500;
       if (num <= 1) return 100;
       return num * 100;
     }
-    return 300; // default fallback
+    return 300;
   }, [user]);
 
-  // By default, filter sets to current level & current semester (e.g. "300-1" or "500-1")
-  const [selectedFilter, setSelectedFilter] = useState(() => `${currentLevel}-1`);
-  const [hasUserChangedFilter, setHasUserChangedFilter] = useState(false);
+  // Main UI Mode Switcher ('hub' = dynamic resource files, 'curriculum' = catalog syllabus)
+  const [activeView, setActiveView] = useState('hub');
 
+  // Filter States (initialized from URL search params if present)
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState(() => searchParams.get('category') || 'all');
+  const [selectedLevel, setSelectedLevel] = useState(() => searchParams.get('level') || 'all');
+  const [selectedCourseCode, setSelectedCourseCode] = useState(() => searchParams.get('course') || 'all');
+  const [selectedSession, setSelectedSession] = useState(() => searchParams.get('session') || 'all');
+  const [selectedResourceType, setSelectedResourceType] = useState(() => searchParams.get('type') || 'all');
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'newest');
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+
+  // Data States
+  const [categories, setCategories] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [downloadingId, setDownloadingId] = useState(null);
+
+  // Modal / Preview States
+  const [activePreviewResource, setActivePreviewResource] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Debounce search term
   useEffect(() => {
-    const handleUserUpdate = () => {
-      const stored = localStorage.getItem('nacos_user');
-      if (stored) {
-        try {
-          setUser(JSON.parse(stored));
-        } catch (e) {}
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 280);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // Sync Filters to URL Query Parameters
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedCategorySlug && selectedCategorySlug !== 'all') params.set('category', selectedCategorySlug);
+    if (selectedLevel && selectedLevel !== 'all') params.set('level', selectedLevel);
+    if (selectedCourseCode && selectedCourseCode !== 'all') params.set('course', selectedCourseCode);
+    if (selectedSession && selectedSession !== 'all') params.set('session', selectedSession);
+    if (selectedResourceType && selectedResourceType !== 'all') params.set('type', selectedResourceType);
+    if (sortBy && sortBy !== 'newest') params.set('sort', sortBy);
+    if (debouncedSearch) params.set('search', debouncedSearch);
+
+    setSearchParams(params, { replace: true });
+  }, [selectedCategorySlug, selectedLevel, selectedCourseCode, selectedSession, selectedResourceType, sortBy, debouncedSearch, setSearchParams]);
+
+  // Load Categories on mount
+  useEffect(() => {
+    async function loadCategories() {
+      const res = await fetchResourceCategories();
+      if (res.data && res.data.length > 0) {
+        setCategories(res.data);
+      } else {
+        // Fallback default categories
+        setCategories([
+          { id: 'all', name: 'All Resources', slug: 'all', icon: 'Layers' },
+          { id: 'cat-course-materials', name: 'Course Materials', slug: 'course-materials', icon: 'BookOpen' },
+          { id: 'cat-past-questions', name: 'Past Questions', slug: 'past-questions', icon: 'HelpCircle' },
+          { id: 'cat-tutorials', name: 'Tutorials', slug: 'tutorials', icon: 'Sparkles' },
+          { id: 'cat-handbooks', name: 'Handbooks', slug: 'handbooks', icon: 'FileText' },
+          { id: 'cat-videos', name: 'Videos', slug: 'videos', icon: 'Video' },
+          { id: 'cat-forms', name: 'Forms', slug: 'forms', icon: 'FileCode' },
+          { id: 'cat-events', name: 'Events', slug: 'events', icon: 'Calendar' }
+        ]);
       }
-    };
-    handleUserUpdate();
-    window.addEventListener('storage', handleUserUpdate);
-    window.addEventListener('nacos_user_updated', handleUserUpdate);
-    return () => {
-      window.removeEventListener('storage', handleUserUpdate);
-      window.removeEventListener('nacos_user_updated', handleUserUpdate);
-    };
+    }
+    loadCategories();
   }, []);
 
-  // Update default filter when current level resolves, unless user explicitly selected another option
-  useEffect(() => {
-    if (!hasUserChangedFilter) {
-      setSelectedFilter(`${currentLevel}-1`);
+  // Fetch Resources from Database / Fallback Seed
+  const loadResources = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetchResources({
+        categorySlug: selectedCategorySlug,
+        level: selectedLevel,
+        courseCode: selectedCourseCode,
+        session: selectedSession,
+        resourceType: selectedResourceType,
+        search: debouncedSearch,
+        sort: sortBy,
+        page: 1,
+        limit: 50
+      });
+
+      if (res.data && res.data.length > 0) {
+        setResources(res.data);
+        setTotalCount(res.total);
+      } else {
+        // Filter fallback seed items client-side if DB returns empty
+        let filteredSeed = SEED_FALLBACK_RESOURCES.filter(item => {
+          if (selectedCategorySlug !== 'all' && item.category?.slug !== selectedCategorySlug) return false;
+          if (selectedLevel !== 'all' && item.level && item.level.toString() !== selectedLevel) return false;
+          if (selectedCourseCode !== 'all' && item.course_code && !item.course_code.includes(selectedCourseCode)) return false;
+          if (selectedSession !== 'all' && item.session !== selectedSession) return false;
+          if (selectedResourceType !== 'all' && item.resource_type !== selectedResourceType) return false;
+          if (debouncedSearch) {
+            const q = debouncedSearch.toLowerCase();
+            const matchTitle = item.title.toLowerCase().includes(q);
+            const matchDesc = item.description?.toLowerCase().includes(q);
+            const matchCode = item.course_code?.toLowerCase().includes(q);
+            if (!matchTitle && !matchDesc && !matchCode) return false;
+          }
+          return true;
+        });
+
+        // Sort seed items
+        if (sortBy === 'popular') {
+          filteredSeed.sort((a, b) => b.download_count - a.download_count);
+        } else if (sortBy === 'title_asc') {
+          filteredSeed.sort((a, b) => a.title.localeCompare(b.title));
+        } else if (sortBy === 'oldest') {
+          filteredSeed.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        }
+
+        setResources(filteredSeed);
+        setTotalCount(filteredSeed.length);
+      }
+    } catch (err) {
+      console.warn('Resource hub fetch fallback:', err);
+      setResources(SEED_FALLBACK_RESOURCES);
+      setTotalCount(SEED_FALLBACK_RESOURCES.length);
+    } finally {
+      setIsLoading(false);
     }
-  }, [currentLevel, hasUserChangedFilter]);
+  }, [selectedCategorySlug, selectedLevel, selectedCourseCode, selectedSession, selectedResourceType, debouncedSearch, sortBy]);
 
-  // Available levels strictly up to the student's current level
-  const availableLevels = useMemo(() => {
-    const levels = [100, 200, 300, 400, 500];
-    return levels.filter(lvl => lvl <= currentLevel);
-  }, [currentLevel]);
+  useEffect(() => {
+    loadResources();
+  }, [loadResources]);
 
-  // Filter registered courses
-  const filteredCourses = useMemo(() => {
-    return ALL_COURSES.filter(c => {
-      // Must not exceed student's current level
-      if (c.levelNumber > currentLevel) return false;
+  const showToast = (msg, type = 'success') => {
+    setToastMessage({ text: msg, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
-      // Single combined filter
-      if (selectedFilter !== 'all') {
-        const [lvlStr, semStr] = selectedFilter.split('-');
-        if (lvlStr && c.levelNumber.toString() !== lvlStr) return false;
-        if (semStr && semStr !== 'all' && c.semesterNumber.toString() !== semStr) return false;
+  // Trigger Secure Download with Atomic DB Increment
+  const handleDownload = async (resource) => {
+    setDownloadingId(resource.id);
+    try {
+      // 1. Record download atomically in database via RPC
+      recordResourceDownload(resource.id, {
+        userId: user.id || null,
+        userAgent: navigator.userAgent
+      }).catch(err => console.warn(err));
+
+      // Optimistically increment local count
+      setResources(prev => prev.map(r => r.id === resource.id ? { ...r, download_count: (r.download_count || 0) + 1 } : r));
+
+      // 2. Obtain download URL (presigned if Cloudflare R2 or direct public)
+      let url = await storageService.getDownloadUrl(resource.storage_key, {
+        downloadFileName: resource.file_name || `${resource.title}.${resource.file_extension || 'pdf'}`
+      });
+
+      if (!url) {
+        url = `/downloads/${resource.file_name || 'document.pdf'}`;
       }
 
-      // Search term
+      // 3. Initiate browser download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', resource.file_name || `${resource.slug}.${resource.file_extension || 'pdf'}`);
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast(`Downloading "${resource.title}"...`);
+    } catch (err) {
+      showToast('Download failed. Please try again.', 'error');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  // Open Preview Modal
+  const handleOpenPreview = async (resource) => {
+    setActivePreviewResource(resource);
+    setIsLoadingPreview(true);
+    setPreviewUrl(null);
+
+    // Record view in analytics
+    recordResourceView(resource.id, { userId: user.id || null }).catch(err => console.warn(err));
+
+    try {
+      const url = await storageService.getPreviewUrl(resource.storage_key);
+      setPreviewUrl(url || resource.storage_key);
+    } catch (e) {
+      setPreviewUrl(resource.storage_key);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCategorySlug('all');
+    setSelectedLevel('all');
+    setSelectedCourseCode('all');
+    setSelectedSession('all');
+    setSelectedResourceType('all');
+    setSortBy('newest');
+    setSearchTerm('');
+  };
+
+  // Helper formatting
+  const formatFileSize = (bytes) => {
+    if (!bytes || bytes <= 0) return 'Unknown size';
+    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
+    return `${(bytes / 1024).toFixed(0)} KB`;
+  };
+
+  const getFileBadge = (ext, type) => {
+    const clean = (ext || type || 'pdf').toLowerCase();
+    if (clean.includes('pdf')) return { label: 'PDF Document', color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: FileText };
+    if (clean.includes('mp4') || clean.includes('video')) return { label: 'MP4 Video', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: Video };
+    if (clean.includes('doc') || clean.includes('word')) return { label: 'DOCX Document', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: FileText };
+    if (clean.includes('zip') || clean.includes('archive')) return { label: 'ZIP Archive', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: FileArchive };
+    if (clean.includes('jpg') || clean.includes('png') || clean.includes('image')) return { label: 'Image', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: ImageIcon };
+    return { label: ext?.toUpperCase() || 'FILE', color: 'bg-gray-500/10 text-gray-600 dark:text-gray-300 border-gray-500/20', icon: FileText };
+  };
+
+  // Filtered curriculum for the catalog tab
+  const filteredCurriculum = useMemo(() => {
+    return CURRICULUM_COURSES.filter(c => {
+      if (selectedLevel !== 'all' && c.levelNumber.toString() !== selectedLevel) return false;
       if (searchTerm.trim()) {
-        const query = searchTerm.toLowerCase();
-        const matchCode = c.code.toLowerCase().includes(query);
-        const matchTitle = c.title.toLowerCase().includes(query);
-        const matchLecturer = c.lecturer.toLowerCase().includes(query);
-        if (!matchCode && !matchTitle && !matchLecturer) return false;
+        const q = searchTerm.toLowerCase();
+        return c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || c.lecturer.toLowerCase().includes(q);
       }
-
       return true;
     });
-  }, [currentLevel, selectedFilter, searchTerm]);
-
-  // Filter past questions
-  const filteredPQs = useMemo(() => {
-    return PAST_QUESTIONS.filter(pq => {
-      // Must not exceed student's current level
-      if (pq.levelNumber > currentLevel) return false;
-
-      // Single combined filter
-      if (selectedFilter !== 'all') {
-        const [lvlStr, semStr] = selectedFilter.split('-');
-        if (lvlStr && pq.levelNumber.toString() !== lvlStr) return false;
-        if (semStr && semStr !== 'all' && pq.semesterNumber.toString() !== semStr) return false;
-      }
-
-      // Search term
-      if (searchTerm.trim()) {
-        const query = searchTerm.toLowerCase();
-        const matchCourse = pq.course.toLowerCase().includes(query);
-        const matchSession = pq.session.toLowerCase().includes(query);
-        if (!matchCourse && !matchSession) return false;
-      }
-
-      return true;
-    });
-  }, [currentLevel, selectedFilter, searchTerm]);
+  }, [selectedLevel, searchTerm]);
 
   return (
     <PortalLayout>
-      <div className="space-y-5">
+      <div className="space-y-6 font-sans">
         
-        {/* Title Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Toast notification banner */}
+        {toastMessage && (
+          <div className="fixed top-20 right-6 z-50 p-3.5 rounded bg-white dark:bg-[#083002] border border-emerald-500/40 text-gray-900 dark:text-white shadow-xl flex items-center gap-2.5 animate-in fade-in slide-in-from-top-3 duration-200">
+            {toastMessage.type === 'error' ? (
+              <AlertCircle className="w-4 h-4 text-red-500" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
+            )}
+            <span className="text-xs font-semibold">{toastMessage.text}</span>
+          </div>
+        )}
+
+        {/* ─── Hero Header & Search Bar ─── */}
+        <div className="p-6 rounded bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Course Registration & Past Questions
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-green-200/80 font-normal mt-1">
-              Registered semester course modules, lecture slides, and past questions up to your current level ({currentLevel} Level).
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="p-1.5 rounded bg-green-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/20">
+                <BookOpen className="w-4 h-4" />
+              </span>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Student Resource Hub
+              </h1>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
+                Cloud R2 Storage
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-green-200/80 max-w-2xl font-normal leading-relaxed">
+              Discover official course materials, past examination solutions, lecture slides, video tutorials, handbooks, and departmental forms.
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative">
+          {/* Quick Search */}
+          <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 text-gray-400 dark:text-green-300 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search course code, title or lecturer..."
+              placeholder="Search course, title, topic or lecturer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-3.5 py-2 text-xs rounded-xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-green-200/50 focus:outline-none focus:ring-1 focus:ring-[#138601] w-full sm:w-72 font-normal shadow-xs"
+              className="w-full pl-9 pr-8 py-2.5 text-xs rounded bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-green-200/50 focus:outline-none focus:ring-1 focus:ring-[#138601] shadow-xs"
             />
-          </div>
-        </div>
-
-        {/* Tab Switcher */}
-        <div className="flex space-x-2 border-b border-gray-200 dark:border-[#138601]/25 pb-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab('courses')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-              activeTab === 'courses'
-                ? 'bg-[#138601] text-white shadow-xs'
-                : 'text-gray-600 dark:text-green-200 hover:text-gray-900 dark:hover:text-white hover:bg-[#f1f3f5] dark:hover:bg-[#083002]'
-            }`}
-          >
-            Registered Courses ({filteredCourses.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('pq')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-              activeTab === 'pq'
-                ? 'bg-[#138601] text-white shadow-xs'
-                : 'text-gray-600 dark:text-green-200 hover:text-gray-900 dark:hover:text-white hover:bg-[#f1f3f5] dark:hover:bg-[#083002]'
-            }`}
-          >
-            Past Questions Archive ({filteredPQs.length})
-          </button>
-        </div>
-
-        {/* Single Filter Box - Defaults to Current Semester & Level */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-gray-400 dark:text-green-300 shrink-0" />
-            <label className="text-xs font-semibold text-gray-700 dark:text-green-200 whitespace-nowrap">Filter Session / Semester:</label>
-            <div className="relative">
-              <select
-                value={selectedFilter}
-                onChange={(e) => {
-                  setSelectedFilter(e.target.value);
-                  setHasUserChangedFilter(true);
-                }}
-                className="appearance-none px-3.5 py-2 pr-8 text-xs rounded-lg bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer min-w-[240px] sm:min-w-[280px]"
-              >
-                <option value="all">All Levels & Semesters (100L – {currentLevel}L)</option>
-                {availableLevels.map((lvl) => (
-                  <optgroup key={lvl} label={`${lvl} Level`} className="text-gray-900 dark:text-white bg-white dark:bg-[#083002]">
-                    <option value={`${lvl}-all`}>{lvl} Level - All Semesters</option>
-                    <option value={`${lvl}-1`}>
-                      {lvl} Level - 1st Semester {lvl === currentLevel ? '(Current Level)' : ''}
-                    </option>
-                    <option value={`${lvl}-2`}>{lvl} Level - 2nd Semester</option>
-                  </optgroup>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-500 dark:text-green-300 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-green-200/80 font-normal">
-            <span>
-              Showing <strong className="text-gray-900 dark:text-white">{activeTab === 'courses' ? filteredCourses.length : filteredPQs.length}</strong> {activeTab === 'courses' ? 'courses' : 'past questions'}
-            </span>
-            {(selectedFilter !== `${currentLevel}-1` || searchTerm) && (
+            {searchTerm && (
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedFilter(`${currentLevel}-1`);
-                  setHasUserChangedFilter(false);
-                  setSearchTerm('');
-                }}
-                className="text-[#138601] dark:text-[#4bd043] font-semibold hover:underline ml-1 cursor-pointer"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
               >
-                Reset to Current Semester
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Courses Tab */}
-        {activeTab === 'courses' && (
-          filteredCourses.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-2 shadow-xs">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">No courses match your filter criteria.</p>
-              <p className="text-xs text-gray-500 dark:text-green-200/80">Try selecting a different level/semester or resetting the filter.</p>
+        {/* ─── Top Switcher: Resource Hub Files vs Curriculum Syllabus ─── */}
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#138601]/25 pb-2">
+          <div className="flex space-x-2">
+            <button
+              type="button"
+              onClick={() => setActiveView('hub')}
+              className={`px-4 py-2 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 ${
+                activeView === 'hub'
+                  ? 'bg-[#138601] text-white shadow-xs'
+                  : 'text-gray-600 dark:text-green-200 hover:text-gray-900 dark:hover:text-white hover:bg-[#f1f3f5] dark:hover:bg-[#083002]'
+              }`}
+            >
+              <Folder className="w-3.5 h-3.5" />
+              <span>Resource Files & Archives ({totalCount})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveView('curriculum')}
+              className={`px-4 py-2 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 ${
+                activeView === 'curriculum'
+                  ? 'bg-[#138601] text-white shadow-xs'
+                  : 'text-gray-600 dark:text-green-200 hover:text-gray-900 dark:hover:text-white hover:bg-[#f1f3f5] dark:hover:bg-[#083002]'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Departmental Syllabus ({filteredCurriculum.length})</span>
+            </button>
+          </div>
+
+          <span className="hidden sm:inline text-xs text-gray-400 dark:text-green-200/60">
+            Student Level: <strong className="text-gray-900 dark:text-white font-semibold">{currentLevel}L</strong>
+          </span>
+        </div>
+
+        {/* ─── Category Tabs Pill Bar ─── */}
+        {activeView === 'hub' && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <button
+              type="button"
+              onClick={() => setSelectedCategorySlug('all')}
+              className={`px-3.5 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border ${
+                selectedCategorySlug === 'all'
+                  ? 'bg-[#138601] text-white border-[#138601] shadow-xs'
+                  : 'bg-white dark:bg-[#083002] text-gray-700 dark:text-green-200 border-gray-200 dark:border-[#138601]/30 hover:border-[#138601]/60'
+              }`}
+            >
+              All Categories
+            </button>
+            {categories.filter(c => c.slug !== 'all').map((cat) => (
               <button
+                key={cat.id || cat.slug}
                 type="button"
-                onClick={() => {
-                  setSelectedFilter(`${currentLevel}-1`);
-                  setHasUserChangedFilter(false);
-                  setSearchTerm('');
-                }}
-                className="mt-2 inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
+                onClick={() => setSelectedCategorySlug(cat.slug)}
+                className={`px-3.5 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border flex items-center gap-1.5 ${
+                  selectedCategorySlug === cat.slug
+                    ? 'bg-[#138601] text-white border-[#138601] shadow-xs'
+                    : 'bg-white dark:bg-[#083002] text-gray-700 dark:text-green-200 border-gray-200 dark:border-[#138601]/30 hover:border-[#138601]/60'
+                }`}
               >
-                Reset to Current Semester
+                <span>{cat.name}</span>
               </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredCourses.map((course, idx) => (
-                <div
-                  key={idx}
-                  className="p-5 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#138601] transition-all space-y-2.5 shadow-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{course.code}</span>
-                      <span className="text-[10px] sm:text-xs font-medium bg-[#f1f3f5] dark:bg-[#041801] text-gray-600 dark:text-green-200 px-2.5 py-0.5 rounded-full">
-                        {course.levelNumber}L • Sem {course.semesterNumber}
-                      </span>
-                    </div>
-                    <span className="text-xs font-semibold bg-[#ebf3ff] dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] px-2.5 py-0.5 rounded-full">
-                      {course.units} Credit Units
-                    </span>
-                  </div>
-
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{course.title}</h4>
-                    <p className="text-xs text-gray-500 dark:text-green-200/80 mt-0.5 font-normal">Lecturer: {course.lecturer}</p>
-                  </div>
-
-                  <div className="pt-2.5 border-t border-gray-100 dark:border-[#138601]/20 flex items-center justify-between text-xs">
-                    <span className="text-gray-500 dark:text-green-200/70 font-normal">{course.notesCount} lecture slides • {course.pastQuestions} past questions</span>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#138601] dark:text-[#4bd043] hover:underline transition-colors cursor-pointer"
-                    >
-                      <span>View Module</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
+            ))}
+          </div>
         )}
 
-        {/* Past Questions Tab */}
-        {activeTab === 'pq' && (
-          filteredPQs.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 text-center space-y-2 shadow-xs">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">No past questions match your filter criteria.</p>
-              <p className="text-xs text-gray-500 dark:text-green-200/80">Try selecting a different level/semester or resetting the filter.</p>
+        {/* ─── Filter & Sorting Control Strip ─── */}
+        <div className="p-4 rounded bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 shadow-xs flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Level Filter */}
+            <div className="flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-gray-600 dark:text-green-200">Level:</label>
+              <select
+                value={selectedLevel}
+                onChange={(e) => setSelectedLevel(e.target.value)}
+                className="px-2.5 py-1.5 text-xs rounded bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer"
+              >
+                <option value="all">All Levels</option>
+                <option value="100">100 Level</option>
+                <option value="200">200 Level</option>
+                <option value="300">300 Level</option>
+                <option value="400">400 Level</option>
+                <option value="500">500 Level</option>
+              </select>
+            </div>
+
+            {/* Resource Type Filter */}
+            {activeView === 'hub' && (
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-gray-600 dark:text-green-200">Type:</label>
+                <select
+                  value={selectedResourceType}
+                  onChange={(e) => setSelectedResourceType(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs rounded bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer"
+                >
+                  <option value="all">All File Types</option>
+                  <option value="document">PDF & Documents</option>
+                  <option value="past_question">Past Questions</option>
+                  <option value="video">Video Tutorials</option>
+                  <option value="image">Images & Graphics</option>
+                  <option value="archive">ZIP / Code Archives</option>
+                </select>
+              </div>
+            )}
+
+            {/* Academic Session Filter */}
+            {activeView === 'hub' && (
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-gray-600 dark:text-green-200">Session:</label>
+                <select
+                  value={selectedSession}
+                  onChange={(e) => setSelectedSession(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs rounded bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer"
+                >
+                  <option value="all">All Academic Sessions</option>
+                  <option value="2025/2026">2025/2026 (Current)</option>
+                  <option value="2024/2025">2024/2025</option>
+                  <option value="2023/2024">2023/2024</option>
+                  <option value="2022/2023">2022/2023</option>
+                </select>
+              </div>
+            )}
+
+            {/* Sort Filter */}
+            {activeView === 'hub' && (
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-gray-600 dark:text-green-200">Sort:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs rounded bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/40 text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#138601] cursor-pointer"
+                >
+                  <option value="newest">Newest Uploads</option>
+                  <option value="popular">Most Downloaded</option>
+                  <option value="title_asc">Title (A – Z)</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Reset Filters */}
+          <div className="flex items-center gap-3">
+            {(selectedCategorySlug !== 'all' || selectedLevel !== 'all' || selectedResourceType !== 'all' || selectedSession !== 'all' || searchTerm) && (
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedFilter(`${currentLevel}-1`);
-                  setHasUserChangedFilter(false);
-                  setSearchTerm('');
-                }}
-                className="mt-2 inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
+                onClick={handleResetFilters}
+                className="inline-flex items-center gap-1 text-xs text-[#138601] dark:text-[#4bd043] font-semibold hover:underline cursor-pointer"
               >
-                Reset to Current Semester
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset Filters</span>
               </button>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {filteredPQs.map((pq) => (
-                <div
-                  key={pq.id}
-                  className="p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-xl bg-[#f1f3f5] dark:bg-[#041801] flex items-center justify-center text-[#138601] dark:text-[#4bd043] shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">{pq.course}</span>
-                        <span className="text-[10px] sm:text-xs font-medium bg-[#f1f3f5] dark:bg-[#041801] text-gray-600 dark:text-green-200 px-2.5 py-0.5 rounded-full">
-                          {pq.levelNumber}L • Sem {pq.semesterNumber}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-green-300 font-normal">({pq.size})</span>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-green-200/80 font-normal mt-0.5">{pq.session}</p>
-                    </div>
-                  </div>
+            )}
+            <span className="text-xs text-gray-500 dark:text-green-200/70">
+              Showing <strong className="text-gray-900 dark:text-white">{activeView === 'hub' ? resources.length : filteredCurriculum.length}</strong> items
+            </span>
+          </div>
+        </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3">
-                    <span className="text-xs text-gray-500 dark:text-green-200/70 font-normal">{pq.downloads} downloads</span>
-                    <a
-                      href={`/downloads/${pq.file}`}
-                      download
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors shadow-xs"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Download PDF</span>
-                    </a>
+        {/* ─── VIEW 1: DYNAMIC RESOURCE HUB GRID ─── */}
+        {activeView === 'hub' && (
+          <>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="p-5 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 animate-pulse space-y-3">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                    <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
                   </div>
+                ))}
+              </div>
+            ) : resources.length === 0 ? (
+              <div className="p-12 text-center rounded bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 space-y-3 shadow-xs">
+                <Folder className="w-12 h-12 text-gray-400 mx-auto" />
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">No matching resources found</h3>
+                <p className="text-xs text-gray-500 dark:text-green-200/70 max-w-sm mx-auto">
+                  We couldn't find any student materials matching your active search and filter criteria.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Clear All Filters</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {resources.map((item) => {
+                  const badge = getFileBadge(item.file_extension, item.resource_type);
+                  const Icon = badge.icon;
+                  const isVideo = item.resource_type === 'video' || item.file_extension === 'mp4';
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-5 rounded bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#138601] transition-all flex flex-col justify-between space-y-4 shadow-xs group"
+                    >
+                      {/* Top Badges & Course code */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {item.course_code && (
+                              <span className="text-xs font-bold px-2 py-0.5 rounded bg-green-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
+                                {item.course_code}
+                              </span>
+                            )}
+                            {item.level && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-100 dark:bg-[#041801] text-gray-600 dark:text-green-200">
+                                {item.level}L
+                              </span>
+                            )}
+                            <span className="text-[10px] font-medium text-gray-500 dark:text-green-200/70">
+                              {item.session || '2024/2025'}
+                            </span>
+                          </div>
+
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 ${badge.color}`}>
+                            <Icon className="w-3 h-3" />
+                            <span>{badge.label}</span>
+                          </span>
+                        </div>
+
+                        {/* Title & Description */}
+                        <div>
+                          <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#138601] dark:group-hover:text-[#4bd043] transition-colors">
+                            {item.title}
+                          </h3>
+                          <p className="text-xs text-gray-500 dark:text-green-200/80 mt-1.5 line-clamp-2 font-normal leading-relaxed">
+                            {item.description || 'Departmental resource material uploaded for computer science undergraduates.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Video Thumbnail (if present) */}
+                      {isVideo && item.thumbnail_key && (
+                        <div 
+                          onClick={() => handleOpenPreview(item)}
+                          className="relative aspect-video rounded overflow-hidden bg-black/80 cursor-pointer group/thumb border border-gray-200 dark:border-[#138601]/20"
+                        >
+                          <img 
+                            src={item.thumbnail_key} 
+                            alt={item.title} 
+                            className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                          />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-[#138601] text-white flex items-center justify-center shadow-lg group-hover/thumb:scale-110 transition-transform">
+                              <Play className="w-5 h-5 ml-0.5" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bottom Strip: Metadata & Action Buttons */}
+                      <div className="pt-3 border-t border-gray-100 dark:border-[#138601]/20 space-y-3">
+                        <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-green-200/70 font-mono">
+                          <span>{formatFileSize(item.file_size)}</span>
+                          <span>{item.download_count || 0} downloads</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenPreview(item)}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-semibold bg-gray-100 dark:bg-[#041801] hover:bg-gray-200 dark:hover:bg-[#138601]/20 text-gray-700 dark:text-green-200 border border-gray-200 dark:border-[#138601]/30 transition-colors cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Preview</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={downloadingId === item.id}
+                            onClick={() => handleDownload(item)}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>{downloadingId === item.id ? 'Loading...' : 'Download'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ─── VIEW 2: CURRICULUM & SYLLABUS DIRECTORY ─── */}
+        {activeView === 'curriculum' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredCurriculum.map((course, idx) => (
+              <div
+                key={idx}
+                className="p-5 rounded bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#138601] transition-all space-y-2.5 shadow-xs"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{course.code}</span>
+                    <span className="text-[10px] font-medium bg-[#f1f3f5] dark:bg-[#041801] text-gray-600 dark:text-green-200 px-2 py-0.5 rounded">
+                      {course.levelNumber}L • Sem {course.semesterNumber}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold bg-green-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] px-2.5 py-0.5 rounded border border-[#138601]/30">
+                    {course.units} Credit Units
+                  </span>
                 </div>
-              ))}
+
+                <div>
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{course.title}</h4>
+                  <p className="text-xs text-gray-500 dark:text-green-200/80 mt-0.5 font-normal">Lecturer: {course.lecturer}</p>
+                </div>
+
+                <div className="pt-2.5 border-t border-gray-100 dark:border-[#138601]/20 flex items-center justify-between text-xs">
+                  <span className="text-gray-500 dark:text-green-200/70 font-normal">{course.notesCount} lecture modules • {course.pastQuestions} past exam packs</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveView('hub');
+                      setSelectedCourseCode(course.code);
+                      setSearchTerm(course.code);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#138601] dark:text-[#4bd043] hover:underline cursor-pointer"
+                  >
+                    <span>View Hub Files</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ─── RESOURCE PREVIEW MODAL (PDF Viewer, Video Player, Image, Meta) ─── */}
+        {activePreviewResource && (
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              
+              {/* Modal Header */}
+              <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-[#138601]/25 flex items-center justify-between gap-3 shrink-0">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    {activePreviewResource.course_code && (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-green-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
+                        {activePreviewResource.course_code}
+                      </span>
+                    )}
+                    <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">
+                      {activePreviewResource.title}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-green-200/70 font-mono mt-0.5 truncate">
+                    {activePreviewResource.file_name} • {formatFileSize(activePreviewResource.file_size)}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(activePreviewResource)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Download</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePreviewResource(null);
+                      setPreviewUrl(null);
+                    }}
+                    className="p-1.5 rounded text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#041801] transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content Body */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                {isLoadingPreview ? (
+                  <div className="flex flex-col items-center justify-center py-20 space-y-3">
+                    <div className="w-8 h-8 border-3 border-[#138601] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-xs text-gray-500 dark:text-green-200/70 font-medium">Generating secure resource preview...</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* PDF Viewer */}
+                    {(activePreviewResource.file_extension === 'pdf' || activePreviewResource.mime_type === 'application/pdf') && (
+                      <div className="w-full h-[65vh] rounded border border-gray-200 dark:border-[#138601]/30 bg-gray-100 dark:bg-[#041801] overflow-hidden">
+                        <iframe
+                          src={previewUrl ? `${previewUrl}#toolbar=0` : ''}
+                          title={activePreviewResource.title}
+                          className="w-full h-full border-0"
+                        />
+                      </div>
+                    )}
+
+                    {/* HTML5 Streaming Video Player */}
+                    {(activePreviewResource.resource_type === 'video' || activePreviewResource.file_extension === 'mp4') && (
+                      <div className="w-full rounded border border-gray-200 dark:border-[#138601]/30 bg-black overflow-hidden aspect-video flex items-center justify-center">
+                        <video
+                          src={previewUrl}
+                          controls
+                          controlsList="nodownload"
+                          preload="metadata"
+                          className="w-full h-full max-h-[60vh] object-contain"
+                        >
+                          Your browser does not support HTML5 video streaming.
+                        </video>
+                      </div>
+                    )}
+
+                    {/* Image Viewer */}
+                    {(activePreviewResource.resource_type === 'image' || ['jpg', 'jpeg', 'png', 'webp'].includes(activePreviewResource.file_extension)) && (
+                      <div className="w-full rounded border border-gray-200 dark:border-[#138601]/30 bg-[#041801] p-4 flex items-center justify-center min-h-[300px]">
+                        <img
+                          src={previewUrl}
+                          alt={activePreviewResource.title}
+                          className="max-h-[60vh] max-w-full object-contain rounded"
+                        />
+                      </div>
+                    )}
+
+                    {/* Unsupported Preview Format (Word / Excel / ZIP) */}
+                    {!['pdf', 'mp4', 'jpg', 'jpeg', 'png', 'webp'].includes(activePreviewResource.file_extension) && (
+                      <div className="p-8 rounded border border-gray-200 dark:border-[#138601]/30 bg-gray-50 dark:bg-[#041801] text-center space-y-3">
+                        <FileText className="w-12 h-12 text-[#138601] dark:text-[#4bd043] mx-auto" />
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-white">Document Preview Not Supported</h4>
+                        <p className="text-xs text-gray-500 dark:text-green-200/70 max-w-md mx-auto">
+                          This file ({activePreviewResource.file_name}) cannot be rendered directly in the web browser. Click download below to view it locally.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(activePreviewResource)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download {activePreviewResource.file_extension?.toUpperCase()} File</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Resource Description Details */}
+                    <div className="p-4 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200/80 dark:border-[#138601]/20 space-y-1.5 text-xs">
+                      <span className="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-[10px]">Resource Details</span>
+                      <p className="text-gray-600 dark:text-green-200/80 leading-relaxed font-normal">
+                        {activePreviewResource.description || 'No additional description provided for this academic resource.'}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          )
+          </div>
         )}
 
       </div>
