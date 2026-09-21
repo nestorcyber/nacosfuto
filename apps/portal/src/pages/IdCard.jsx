@@ -23,6 +23,7 @@ import {
 import { 
   getIdCardSettings,
   getStudentIdApplication,
+  subscribeToIdCardUpdates,
   createIdCardApplication,
   verifyAndLinkPayment,
   recordStudentPayment,
@@ -57,12 +58,8 @@ const IdCard = () => {
   const [uploadError, setUploadError] = useState('');
   const [notification, setNotification] = useState({ message: '', type: '' });
 
-  useEffect(() => {
-    loadStudentAndApplication();
-  }, []);
-
-  const loadStudentAndApplication = async () => {
-    setLoading(true);
+  const loadStudentAndApplication = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     const stored = localStorage.getItem('nacos_user');
     if (!stored) {
       navigate('/login');
@@ -77,16 +74,48 @@ const IdCard = () => {
       const cfg = await getIdCardSettings();
       if (cfg) setSettings(cfg);
 
-      // Load application
+      // Load application directly from database
       const matric = parsed.matric || parsed.registration_number;
-      const app = await getStudentIdApplication(matric);
-      setApplication(app);
+      if (matric) {
+        const app = await getStudentIdApplication(matric);
+        setApplication(prev => {
+          if (prev && app && prev.status !== app.status) {
+            if (app.status === 'generated') {
+              showNotification('Your ID Card is ready and generated!', 'success');
+            } else if (app.payment_status === 'verified' && prev.payment_status !== 'verified') {
+              showNotification('Payment verified in database! Status updated.', 'success');
+            }
+          }
+          return app;
+        });
+      }
     } catch (err) {
-      console.error(err);
+      console.error('ID Card fetch error:', err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadStudentAndApplication(true);
+
+    const stored = localStorage.getItem('nacos_user');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const matric = parsed.matric || parsed.registration_number;
+        if (matric) {
+          // Subscribe to real-time database changes, cross-device payments & mobile sync
+          const unsubscribe = subscribeToIdCardUpdates(matric, () => {
+            loadStudentAndApplication(false);
+          });
+          return () => {
+            unsubscribe();
+          };
+        }
+      } catch (e) {}
+    }
+  }, []);
 
   // Redraw canvas whenever application reaches 'generated' state
   useEffect(() => {

@@ -378,15 +378,16 @@ export async function recordStudentPayment(matricNumber, amount = 2500) {
 }
 
 /**
- * Fetch the active ID card application for a student.
+ * Fetch the active ID card application for a student directly from database.
  * Returns null if student has never applied (State 1: Not Applied).
+ * Auto-syncs status when payment or admin approvals change across devices.
  */
 export async function getStudentIdApplication(matricOrId) {
   if (!matricOrId) return null;
 
   const cleanMatric = String(matricOrId).trim().toUpperCase();
 
-  // 1. Try Supabase remote
+  // 1. Try Supabase remote first (authoritative database status)
   try {
     const { data, error } = await supabase
       .from('id_card_applications')
@@ -397,20 +398,158 @@ export async function getStudentIdApplication(matricOrId) {
       .maybeSingle();
 
     if (!error && data) {
+      // Check if student has verified dues payment in DB that hasn't synced to ID application
+      const paymentCheck = await checkStudentPaymentStatus(cleanMatric);
+      if (paymentCheck.isPaid && data.status === 'pending_payment') {
+        const updatedStatus = data.passport_url ? 'ready_to_submit' : 'photo_required';
+        data.status = updatedStatus;
+        data.payment_status = 'verified';
+        data.payment_reference = data.payment_reference || paymentCheck.payment?.payment_reference || `NACOS-FUTO-2026-PAY-${Math.floor(10000 + Math.random() * 90000)}`;
+        data.updated_at = new Date().toISOString();
+
+        // Sync back to Supabase in background
+        supabase.from('id_card_applications').update({
+          status: updatedStatus,
+          payment_status: 'verified',
+          payment_reference: data.payment_reference,
+          updated_at: data.updated_at
+        }).eq('id', data.id).then(() => {}).catch(() => {});
+      }
+
+      // Update local storage cache with latest remote data
+      try {
+        const apps = getLocalIdApplicationsDatabase();
+        const existingIdx = apps.findIndex(a => a.id === data.id || (a.matric_number && a.matric_number.toUpperCase() === cleanMatric));
+        if (existingIdx >= 0) {
+          apps[existingIdx] = { ...apps[existingIdx], ...data };
+        } else {
+          apps.unshift(data);
+        }
+        saveLocalIdApplications(apps);
+      } catch (e) {}
+
       return data;
     }
   } catch (e) {
-    // offline
+    // Offline fallback
   }
 
-  // 2. Local storage
+  // 2. Local storage fallback
   const apps = getLocalIdApplicationsDatabase();
   const app = apps.find(a => 
     (a.matric_number && a.matric_number.toUpperCase() === cleanMatric) ||
     a.student_id === matricOrId
   );
 
-  return app || null;
+  if (app) {
+    const paymentCheck = await checkStudentPaymentStatus(cleanMatric);
+    if (paymentCheck.isPaid && app.status === 'pending_payment') {
+      app.status = app.passport_url ? 'ready_to_submit' : 'photo_required';
+      app.payment_status = 'verified';
+      app.payment_reference = app.payment_reference || paymentCheck.payment?.payment_reference;
+      saveLocalIdApplications(apps);
+    }
+    return app;
+  }
+
+  return null;
+}
+
+/**
+ * Real-time Multi-Device & Mobile Synchronization for ID Card & Dues Status.
+ * Listens to Supabase Realtime Channels, Window Focus, Visibility Change, and Storage Events.
+ */
+export function subscribeToIdCardUpdates(matricOrId, onUpdate) {
+  if (!matricOrId || typeof onUpdate !== 'function') return () => {};
+
+  const cleanMatric = String(matricOrId).trim().toUpperCase();
+
+  // 1. Supabase Realtime Channel
+  let channel = null;
+  try {
+    channel = supabase
+      .channel(`id-card-sync-${cleanMatric}-${Math.random().toString(36).slice(2, 7)}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'id_card_applications' },
+        (payload) => {
+          onUpdate(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'departmental_dues' },
+        (payload) => {
+          onUpdate(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'dues_payments' },
+        (payload) => {
+          onUpdate(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        (payload) => {
+          onUpdate(payload);
+        }
+      )
+      .subscribe();
+  } catch (e) {
+    console.warn('Realtime subscription error:', e);
+  }
+
+  // 2. Cross-tab & Multi-window LocalStorage listener
+  const handleStorage = (e) => {
+    if (
+      !e.key ||
+      e.key === ID_APPLICATIONS_STORAGE_KEY ||
+      e.key === PAYMENTS_STORAGE_KEY ||
+      e.key === 'nacos_user' ||
+      e.key === 'nacos_dues_cleared'
+    ) {
+      onUpdate({ type: 'storage', key: e.key });
+    }
+  };
+  if (typeof window !== 'undefined') {
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('nacos_user_updated', handleStorage);
+  }
+
+  // 3. Tab Visibility & Focus listener (when user switches back to tab or unlocks mobile phone)
+  const handleVisibilityOrFocus = () => {
+    if (typeof document !== 'undefined' && (document.visibilityState === 'visible' || document.hasFocus())) {
+      onUpdate({ type: 'visibility_change' });
+    }
+  };
+  if (typeof window !== 'undefined') {
+    window.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+  }
+
+  // 4. Liveness Polling Interval (every 5 seconds) to ensure real-time mobile sync even when WebSockets sleep
+  const pollInterval = setInterval(() => {
+    onUpdate({ type: 'poll' });
+  }, 5000);
+
+  // Return cleanup function
+  return () => {
+    if (channel) {
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {}
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('nacos_user_updated', handleStorage);
+      window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+    }
+    clearInterval(pollInterval);
+  };
 }
 
 /**

@@ -144,6 +144,8 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    let channel = null;
+
     const handleUserUpdate = async () => {
       const stored = localStorage.getItem('nacos_user');
       if (!stored) {
@@ -163,14 +165,44 @@ const Dashboard = () => {
     };
 
     handleUserUpdate();
+
+    // Realtime Supabase Channel for instant cross-device updates
+    try {
+      const userId = user?.id || '';
+      channel = supabase
+        .channel(`dashboard-sync-${userId || 'global'}-${Math.random().toString(36).slice(2, 7)}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'departmental_dues' }, handleUserUpdate)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'dues_payments' }, handleUserUpdate)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'id_card_applications' }, handleUserUpdate)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, handleUserUpdate)
+        .subscribe();
+    } catch (e) {}
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible' || document.hasFocus()) {
+        handleUserUpdate();
+      }
+    };
+
     window.addEventListener('storage', handleUserUpdate);
     window.addEventListener('nacos_user_updated', handleUserUpdate);
+    window.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+
+    const pollInterval = setInterval(handleUserUpdate, 5000);
+
     return () => {
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch (e) {}
+      }
       window.removeEventListener('storage', handleUserUpdate);
       window.removeEventListener('nacos_user_updated', handleUserUpdate);
+      window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      clearInterval(pollInterval);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.id, user?.registration_number]);
 
   const getFirstName = () => {
     if (user.firstName && !user.firstName.toLowerCase().includes('president')) return user.firstName;
