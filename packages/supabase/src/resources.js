@@ -1,6 +1,7 @@
 /**
  * @file resources.js
  * Student Resource Hub Data Access & Business Logic for NACOS FUTO.
+ * Storage Provider: Backblaze B2 (S3 API abstraction via storageService).
  * Provides client methods for public/student discovery, atomic download/view tracking,
  * and comprehensive administrative resource management.
  */
@@ -9,7 +10,7 @@ import { supabase } from './client.js';
 import { storageService } from './storageService.js';
 
 /**
- * Fetch all active resource categories (sorted by name)
+ * Fetch all active resource categories (sorted by display order / name)
  */
 export async function fetchResourceCategories(options = { includeInactive: false }) {
   if (!supabase) return { data: [], error: 'Supabase client not initialized' };
@@ -18,6 +19,7 @@ export async function fetchResourceCategories(options = { includeInactive: false
     let query = supabase
       .from('resource_categories')
       .select('*')
+      .order('display_order', { ascending: true })
       .order('name', { ascending: true });
 
     if (!options.includeInactive) {
@@ -42,6 +44,7 @@ export async function fetchResources({
   level = null,
   courseCode = null,
   session = null,
+  semester = null,
   resourceType = null,
   search = '',
   sort = 'newest',
@@ -59,16 +62,15 @@ export async function fetchResources({
         category:resource_categories(id, name, slug, icon, description)
       `, { count: 'exact' });
 
-    // Active status filter
+    // Active & published filter
     if (!includeInactive) {
-      query = query.eq('is_active', true);
+      query = query.eq('is_active', true).eq('is_published', true);
     }
 
     // Category filter
-    if (categoryId) {
+    if (categoryId && categoryId !== 'all') {
       query = query.eq('category_id', categoryId);
     } else if (categorySlug && categorySlug !== 'all') {
-      // Find category by slug
       const { data: catData } = await supabase
         .from('resource_categories')
         .select('id')
@@ -85,6 +87,8 @@ export async function fetchResources({
       const parsedLevel = parseInt(level, 10);
       if (!isNaN(parsedLevel)) {
         query = query.eq('level', parsedLevel);
+      } else {
+        query = query.eq('level', level);
       }
     }
 
@@ -93,20 +97,25 @@ export async function fetchResources({
       query = query.ilike('course_code', `%${courseCode.trim()}%`);
     }
 
-    // Session filter (e.g., '2024/2025')
+    // Session filter (e.g. '2024/2025')
     if (session && session !== 'all') {
       query = query.eq('session', session.trim());
     }
 
-    // Resource Type filter (document, video, past_question, etc.)
+    // Semester filter
+    if (semester && semester !== 'all') {
+      query = query.eq('semester', semester.trim());
+    }
+
+    // Resource Type filter (document, past_question, video, archive, image, etc.)
     if (resourceType && resourceType !== 'all') {
       query = query.eq('resource_type', resourceType);
     }
 
-    // Search filter across title, description, and course_code
+    // Search filter across title, description, course_code, and course_title
     if (search && search.trim().length > 0) {
       const term = search.trim();
-      query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%,course_code.ilike.%${term}%`);
+      query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%,course_code.ilike.%${term}%,course_title.ilike.%${term}%`);
     }
 
     // Sorting
@@ -229,18 +238,23 @@ export async function adminCreateResource(resourceData) {
       description: resourceData.description || '',
       category_id: resourceData.categoryId || resourceData.category_id,
       course_code: resourceData.courseCode ? resourceData.courseCode.toUpperCase().trim() : null,
-      level: resourceData.level ? parseInt(resourceData.level, 10) : null,
+      course_title: resourceData.courseTitle || null,
+      level: resourceData.level ? resourceData.level.toString() : '300',
       session: resourceData.session || '2024/2025',
+      semester: resourceData.semester || 'First Semester',
       resource_type: resourceData.resourceType || 'document',
       file_name: resourceData.fileName,
+      file_type: resourceData.fileType || resourceData.fileExtension || 'pdf',
       file_extension: resourceData.fileExtension,
       mime_type: resourceData.mimeType,
       file_size: resourceData.fileSize || 0,
-      storage_provider: resourceData.storageProvider || 'cloudflare_r2',
+      storage_provider: resourceData.storageProvider || 'backblaze_b2',
+      storage_bucket: resourceData.storageBucket || 'nacos-resources',
       storage_key: resourceData.storageKey,
-      thumbnail_key: resourceData.thumbnailKey || null,
-      duration_seconds: resourceData.durationSeconds || null,
+      thumbnail_storage_key: resourceData.thumbnailStorageKey || resourceData.thumbnailKey || null,
+      duration_seconds: resourceData.durationSeconds || 0,
       is_public: resourceData.isPublic !== undefined ? resourceData.isPublic : true,
+      is_published: resourceData.isPublished !== undefined ? resourceData.isPublished : (resourceData.isActive !== undefined ? resourceData.isActive : true),
       is_active: resourceData.isActive !== undefined ? resourceData.isActive : true,
       uploaded_by: resourceData.uploadedBy || null
     };
@@ -275,6 +289,10 @@ export async function adminUpdateResource(id, updateData) {
       payload.course_code = payload.courseCode.toUpperCase().trim();
       delete payload.courseCode;
     }
+    if (payload.courseTitle) {
+      payload.course_title = payload.courseTitle;
+      delete payload.courseTitle;
+    }
     if (payload.resourceType) {
       payload.resource_type = payload.resourceType;
       delete payload.resourceType;
@@ -283,8 +301,13 @@ export async function adminUpdateResource(id, updateData) {
       payload.is_public = payload.isPublic;
       delete payload.isPublic;
     }
+    if (payload.isPublished !== undefined) {
+      payload.is_published = payload.isPublished;
+      delete payload.isPublished;
+    }
     if (payload.isActive !== undefined) {
       payload.is_active = payload.isActive;
+      payload.is_published = payload.isActive;
       delete payload.isActive;
     }
 
@@ -304,13 +327,13 @@ export async function adminUpdateResource(id, updateData) {
 }
 
 /**
- * Admin: Delete resource record and clean up associated storage files.
+ * Admin: Delete resource record and clean up associated Backblaze B2 storage files.
  */
 export async function adminDeleteResource(id, storageKey = null, thumbnailKey = null) {
   if (!supabase || !id) return { success: false, error: 'Missing ID' };
 
   try {
-    // 1. Delete associated R2 files
+    // 1. Delete associated Backblaze B2 files
     if (storageKey) {
       await storageService.delete(storageKey);
     }
@@ -346,20 +369,20 @@ export async function adminGetResourceAnalytics() {
 
     if (cErr) throw cErr;
 
-    // Total active
+    // Total active / published
     const { count: activeResources } = await supabase
       .from('resources')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true);
 
-    // Total downloads sum & top 5 most downloaded
+    // Top 5 most downloaded
     const { data: topDownloaded } = await supabase
       .from('resources')
       .select('id, title, course_code, level, download_count, resource_type, category:resource_categories(name)')
       .order('download_count', { ascending: false })
       .limit(5);
 
-    // Fetch all download counts to compute aggregate
+    // Compute aggregate downloads and storage bytes
     const { data: allResources } = await supabase
       .from('resources')
       .select('download_count, category_id, resource_type, file_size');

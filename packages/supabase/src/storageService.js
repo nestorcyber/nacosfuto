@@ -1,18 +1,18 @@
 /**
  * @file storageService.js
  * Centralized Storage Provider Abstraction for NACOS FUTO Monorepo.
- * Primary Provider: Cloudflare R2 Object Storage.
+ * Primary Provider: Backblaze B2 Cloud Object Storage (S3-Compatible API).
  * 
  * Supports:
- * - Direct Pre-Signed URL Uploads & Downloads (Zero private credentials exposed to frontend)
+ * - Direct Pre-Signed URL Uploads & Downloads (Zero private B2 credentials exposed to frontend)
  * - File sanitization & path traversal prevention
- * - Predictable object key structure: resources/{resourceId}/original/{filename}
- * - Modular provider interface (easy to swap or extend)
+ * - Logical object key structure: nacos/resources/{resourceId}/{timestamp}-{sanitizedFilename}
+ * - Modular provider interface (easy to swap or extend to S3, R2, or Supabase Storage)
  */
 
 import { supabase } from './client.js';
 
-const R2_PUBLIC_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_R2_PUBLIC_URL) || 'https://r2.nacosfuto.org';
+const B2_PUBLIC_BASE_URL = (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_B2_PUBLIC_URL || import.meta.env?.VITE_R2_PUBLIC_URL)) || 'https://f005.backblazeb2.com/file/nacos-resources';
 
 /**
  * Sanitize filename to prevent directory traversal and special character corruption
@@ -27,19 +27,26 @@ export function sanitizeFilename(filename = 'unnamed-file') {
 }
 
 /**
- * Build standard storage key for resource assets
+ * Build standard Backblaze B2 storage key for resource assets
+ * Format: nacos/resources/{resourceId}/{timestamp}-{sanitizedFilename}
+ * Thumbnails: nacos/resource-thumbnails/{resourceId}/{timestamp}-{sanitizedFilename}
  */
 export function buildResourceStorageKey(resourceId, filename, type = 'original') {
   const cleanId = String(resourceId).replace(/[^a-zA-Z0-9-]/g, '');
   const cleanFile = sanitizeFilename(filename);
-  return `resources/${cleanId}/${type}/${cleanFile}`;
+  const timestamp = Date.now();
+  
+  if (type === 'thumbnail') {
+    return `nacos/resource-thumbnails/${cleanId}/${timestamp}-${cleanFile}`;
+  }
+  return `nacos/resources/${cleanId}/${timestamp}-${cleanFile}`;
 }
 
 export const storageService = {
   /**
-   * Upload a file to Cloudflare R2 / Storage Provider.
-   * If presigned upload URL is available, streams directly to R2.
-   * Otherwise falls back to Supabase Edge Function or Storage Proxy.
+   * Upload a file to Backblaze B2 / Storage Provider.
+   * Requests a presigned upload URL from the server-side Edge Function and streams directly to B2.
+   * Falls back to Supabase storage proxy in offline/local mode.
    */
   async upload(file, options = {}) {
     if (!file) throw new Error('No file provided for upload.');
@@ -50,7 +57,7 @@ export const storageService = {
     const storageKey = options.storageKey || buildResourceStorageKey(resourceId, fileName, type);
     const mimeType = options.mimeType || file.type || 'application/octet-stream';
 
-    // 1. Try Requesting Presigned Upload URL from Edge Function (Best for large files/videos)
+    // 1. Request Presigned Upload URL from Edge Function (Direct-to-B2 streaming)
     try {
       if (supabase && typeof supabase.functions?.invoke === 'function') {
         const { data: presignData, error: presignError } = await supabase.functions.invoke('resource-storage', {
@@ -63,7 +70,7 @@ export const storageService = {
         });
 
         if (!presignError && presignData?.uploadUrl) {
-          // Direct PUT to Cloudflare R2 with progress tracking
+          // Direct HTTP PUT to Backblaze B2 with progress tracking
           await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open('PUT', presignData.uploadUrl, true);
@@ -82,19 +89,20 @@ export const storageService = {
               if (xhr.status >= 200 && xhr.status < 300) {
                 resolve();
               } else {
-                reject(new Error(`Upload to R2 failed with status ${xhr.status}`));
+                reject(new Error(`Upload to Backblaze B2 failed with status ${xhr.status}`));
               }
             };
 
-            xhr.onerror = () => reject(new Error('Network error during file upload to R2.'));
+            xhr.onerror = () => reject(new Error('Network error during file upload to Backblaze B2.'));
             xhr.send(file);
           });
 
           return {
             success: true,
             storageKey,
-            storageProvider: 'cloudflare_r2',
-            publicUrl: `${R2_PUBLIC_BASE_URL}/${storageKey}`,
+            storageProvider: 'backblaze_b2',
+            storageBucket: presignData.bucket || 'nacos-resources',
+            publicUrl: presignData.publicUrl || `${B2_PUBLIC_BASE_URL}/${storageKey}`,
             fileSize: file.size,
             fileName: sanitizeFilename(fileName),
             mimeType
@@ -102,7 +110,7 @@ export const storageService = {
         }
       }
     } catch (e) {
-      console.warn('Presigned R2 upload notice:', e);
+      console.warn('Presigned B2 upload notice:', e);
     }
 
     // 2. Fallback: Upload via Supabase Storage bucket ('resources')
@@ -121,7 +129,8 @@ export const storageService = {
             success: true,
             storageKey,
             storageProvider: 'supabase_storage',
-            publicUrl: publicUrlData?.publicUrl || `${R2_PUBLIC_BASE_URL}/${storageKey}`,
+            storageBucket: 'resources',
+            publicUrl: publicUrlData?.publicUrl || `${B2_PUBLIC_BASE_URL}/${storageKey}`,
             fileSize: file.size,
             fileName: sanitizeFilename(fileName),
             mimeType
@@ -132,12 +141,13 @@ export const storageService = {
       console.warn('Fallback storage notice:', fallbackErr);
     }
 
-    // Return predictable storage key metadata even in local / offline mode
+    // Return structured metadata even in local/demo environment
     return {
       success: true,
       storageKey,
-      storageProvider: 'cloudflare_r2',
-      publicUrl: `${R2_PUBLIC_BASE_URL}/${storageKey}`,
+      storageProvider: 'backblaze_b2',
+      storageBucket: 'nacos-resources',
+      publicUrl: `${B2_PUBLIC_BASE_URL}/${storageKey}`,
       fileSize: file.size,
       fileName: sanitizeFilename(fileName),
       mimeType
@@ -145,13 +155,13 @@ export const storageService = {
   },
 
   /**
-   * Delete object from storage provider
+   * Delete object from Backblaze B2 / Storage Provider
    */
   async delete(storageKey) {
     if (!storageKey) return { success: false, error: 'No storage key provided.' };
 
     try {
-      // 1. Invoke Edge Function to delete from R2 securely
+      // 1. Invoke Edge Function to delete from Backblaze B2 securely
       if (supabase && typeof supabase.functions?.invoke === 'function') {
         const { data, error } = await supabase.functions.invoke('resource-storage', {
           body: { action: 'delete', storageKey }
@@ -202,8 +212,8 @@ export const storageService = {
       }
     } catch (e) {}
 
-    // Fallback: public R2 URL or Supabase public URL
-    return `${R2_PUBLIC_BASE_URL}/${storageKey}`;
+    // Fallback: public B2 URL
+    return `${B2_PUBLIC_BASE_URL}/${storageKey}`;
   },
 
   /**
@@ -224,7 +234,7 @@ export const storageService = {
       }
     } catch (e) {}
 
-    return `${R2_PUBLIC_BASE_URL}/${storageKey}`;
+    return `${B2_PUBLIC_BASE_URL}/${storageKey}`;
   },
 
   /**
@@ -239,5 +249,25 @@ export const storageService = {
     } catch (e) {
       return false;
     }
+  },
+
+  /**
+   * Retrieve storage metadata
+   */
+  async getMetadata(storageKey) {
+    if (!storageKey) return null;
+    try {
+      const url = await this.getPreviewUrl(storageKey);
+      const res = await fetch(url, { method: 'HEAD' });
+      if (res.ok) {
+        return {
+          contentLength: parseInt(res.headers.get('content-length') || '0', 10),
+          contentType: res.headers.get('content-type'),
+          lastModified: res.headers.get('last-modified'),
+          etag: res.headers.get('etag')
+        };
+      }
+    } catch (e) {}
+    return null;
   }
 };

@@ -384,8 +384,8 @@ const Dashboard = () => {
                   <BookOpen className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Student Resource Hub</h4>
-                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-green-200/80 font-normal mt-0.5">Course materials, past questions & tutorials</p>
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Registered Courses</h4>
+                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-green-200/80 font-normal mt-0.5">Curriculum syllabus, modules & lecturers</p>
                 </div>
               </div>
               <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-[#138601] dark:group-hover:text-[#4bd043] transition-colors shrink-0" />

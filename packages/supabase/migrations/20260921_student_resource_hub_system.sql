@@ -1,6 +1,6 @@
 -- =========================================================================
 -- MIGRATION: 20260921_student_resource_hub_system.sql
--- NACOS FUTO: Student Resource Hub System with Cloudflare R2 & Supabase
+-- NACOS FUTO: Student Resource Hub System with Backblaze B2 & Supabase
 -- =========================================================================
 
 -- Step 1: Create resource categories table
@@ -24,18 +24,23 @@ CREATE TABLE IF NOT EXISTS public.resources (
   description TEXT,
   category_id UUID REFERENCES public.resource_categories(id) ON DELETE SET NULL,
   course_code VARCHAR(30),
+  course_title VARCHAR(255),
   level VARCHAR(20) DEFAULT 'All Levels',
   session VARCHAR(30) DEFAULT '2026/2027',
-  resource_type VARCHAR(50) DEFAULT 'pdf', -- 'pdf', 'video', 'document', 'slides', 'archive', 'image', 'other'
+  semester VARCHAR(20) DEFAULT 'First Semester',
+  resource_type VARCHAR(50) DEFAULT 'document', -- 'document', 'past_question', 'video', 'slides', 'archive', 'image', 'other'
   file_name VARCHAR(255) NOT NULL,
+  file_type VARCHAR(50) DEFAULT 'pdf',
   file_extension VARCHAR(20) NOT NULL,
   mime_type VARCHAR(100) NOT NULL,
   file_size BIGINT DEFAULT 0,
-  storage_provider VARCHAR(50) DEFAULT 'cloudflare_r2', -- 'cloudflare_r2', 'supabase', 'cloudinary'
+  storage_provider VARCHAR(50) DEFAULT 'backblaze_b2', -- 'backblaze_b2', 'cloudflare_r2', 'supabase_storage', 'aws_s3'
+  storage_bucket VARCHAR(100) DEFAULT 'nacos-resources',
   storage_key TEXT NOT NULL,
-  thumbnail_key TEXT,
+  thumbnail_storage_key TEXT,
   duration_seconds INTEGER DEFAULT 0,
   is_public BOOLEAN DEFAULT true,
+  is_published BOOLEAN DEFAULT true,
   is_active BOOLEAN DEFAULT true,
   download_count INTEGER DEFAULT 0,
   view_count INTEGER DEFAULT 0,
@@ -62,7 +67,7 @@ CREATE TABLE IF NOT EXISTS public.resource_views (
   viewed_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Step 5: Create resource tags and assignment tables
+-- Step 5: Create resource tags and relationship link tables
 CREATE TABLE IF NOT EXISTS public.resource_tags (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE,
@@ -70,21 +75,23 @@ CREATE TABLE IF NOT EXISTS public.resource_tags (
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS public.resource_tag_assignments (
+CREATE TABLE IF NOT EXISTS public.resource_tag_links (
   resource_id UUID REFERENCES public.resources(id) ON DELETE CASCADE NOT NULL,
   tag_id UUID REFERENCES public.resource_tags(id) ON DELETE CASCADE NOT NULL,
   PRIMARY KEY (resource_id, tag_id)
 );
 
--- Step 6: Create Indexes for fast querying, filtering, and full-text search
+-- Step 6: Create Indexes for fast querying, filtering, and sorting
 CREATE INDEX IF NOT EXISTS idx_resources_category ON public.resources(category_id);
 CREATE INDEX IF NOT EXISTS idx_resources_course_code ON public.resources(course_code);
 CREATE INDEX IF NOT EXISTS idx_resources_level ON public.resources(level);
 CREATE INDEX IF NOT EXISTS idx_resources_session ON public.resources(session);
 CREATE INDEX IF NOT EXISTS idx_resources_type ON public.resources(resource_type);
+CREATE INDEX IF NOT EXISTS idx_resources_is_published ON public.resources(is_published);
 CREATE INDEX IF NOT EXISTS idx_resources_is_active ON public.resources(is_active);
 CREATE INDEX IF NOT EXISTS idx_resources_created_at ON public.resources(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_resources_downloads ON public.resources(download_count DESC);
+CREATE INDEX IF NOT EXISTS idx_resources_storage_provider ON public.resources(storage_provider);
 CREATE INDEX IF NOT EXISTS idx_resource_downloads_resource ON public.resource_downloads(resource_id);
 CREATE INDEX IF NOT EXISTS idx_resource_downloads_time ON public.resource_downloads(downloaded_at DESC);
 
@@ -152,7 +159,7 @@ ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.resource_downloads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.resource_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.resource_tags ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.resource_tag_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resource_tag_links ENABLE ROW LEVEL SECURITY;
 
 -- Step 10: RLS Policies
 -- Categories: Public read for active categories, authenticated insert/update/delete for admins
@@ -162,14 +169,14 @@ CREATE POLICY "Public read resource categories" ON public.resource_categories FO
 DROP POLICY IF EXISTS "Admins manage resource categories" ON public.resource_categories;
 CREATE POLICY "Admins manage resource categories" ON public.resource_categories FOR ALL USING (true);
 
--- Resources: Public/students can read active resources; Admins have full access
+-- Resources: Public/students can read active published resources; Admins have full access
 DROP POLICY IF EXISTS "Public read active resources" ON public.resources;
-CREATE POLICY "Public read active resources" ON public.resources FOR SELECT USING (is_active = true);
+CREATE POLICY "Public read active resources" ON public.resources FOR SELECT USING (is_active = true AND is_published = true);
 
 DROP POLICY IF EXISTS "Admins manage resources" ON public.resources;
 CREATE POLICY "Admins manage resources" ON public.resources FOR ALL USING (true);
 
--- Downloads: Anyone can log downloads via RPC or insert their own download
+-- Downloads: Anyone can log downloads via RPC or insert their own download record
 DROP POLICY IF EXISTS "Public log downloads" ON public.resource_downloads;
 CREATE POLICY "Public log downloads" ON public.resource_downloads FOR INSERT WITH CHECK (true);
 
@@ -190,13 +197,13 @@ CREATE POLICY "Public read tags" ON public.resource_tags FOR SELECT USING (true)
 DROP POLICY IF EXISTS "Admins manage tags" ON public.resource_tags;
 CREATE POLICY "Admins manage tags" ON public.resource_tags FOR ALL USING (true);
 
-DROP POLICY IF EXISTS "Public read tag assignments" ON public.resource_tag_assignments;
-CREATE POLICY "Public read tag assignments" ON public.resource_tag_assignments FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read tag links" ON public.resource_tag_links;
+CREATE POLICY "Public read tag links" ON public.resource_tag_links FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Admins manage tag assignments" ON public.resource_tag_assignments;
-CREATE POLICY "Admins manage tag assignments" ON public.resource_tag_assignments FOR ALL USING (true);
+DROP POLICY IF EXISTS "Admins manage tag links" ON public.resource_tag_links;
+CREATE POLICY "Admins manage tag links" ON public.resource_tag_links FOR ALL USING (true);
 
--- Step 11: Seed standard resource categories
+-- Step 11: Seed initial standard resource categories
 INSERT INTO public.resource_categories (id, name, slug, description, icon, display_order, is_active)
 VALUES
   ('c0000000-0000-0000-0000-000000000001', 'Course Materials', 'course-materials', 'Official lecture notes, slide presentations, and syllabus documents', 'BookOpen', 1, true),

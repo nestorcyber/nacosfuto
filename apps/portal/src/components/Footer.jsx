@@ -41,7 +41,7 @@ const Footer = () => {
               <li><Link to="/dashboard" className="hover:text-[#4bd043] transition-colors">Dashboard Overview</Link></li>
               <li><Link to="/results" className="hover:text-[#4bd043] transition-colors">Academic Results Checker</Link></li>
               <li><Link to="/dues" className="hover:text-[#4bd043] transition-colors">Dues & Digital Receipt</Link></li>
-              <li><Link to="/courses" className="hover:text-[#4bd043] transition-colors">Course Notes & Past Questions</Link></li>
+              <li><Link to="/courses" className="hover:text-[#4bd043] transition-colors">Registered Courses</Link></li>
               <li><Link to="/profile" className="hover:text-[#4bd043] transition-colors">Digital Student ID E-Card</Link></li>
             </ul>
           </div>

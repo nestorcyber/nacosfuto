@@ -287,7 +287,7 @@ const PortalLayout = ({ children }) => {
     { label: 'Dues & Clearance', path: '/dues', icon: CreditCard },
     { label: 'ID Card Application', path: '/id-card', icon: ShieldCheck },
     { label: 'Academic Results', path: '/results', icon: GraduationCap },
-    { label: 'Student Resource Hub', path: '/courses', icon: BookOpen },
+    { label: 'Registered Courses', path: '/courses', icon: BookOpen },
     { label: 'Student Profile', path: '/profile', icon: User }
   ];
 
