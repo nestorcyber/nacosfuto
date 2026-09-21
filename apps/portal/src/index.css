@@ -51,24 +51,24 @@ body {
   --gutter-tablet: 20px;        /* Tablet gutter standard (20px) */
   --gutter-desktop: 24px;       /* Desktop gutter standard (24px) */
 
-  /* ─── Universal 4px Border Radius System ─── */
-  --radius: 4px;
-  --radius-sm: 4px;
-  --radius-md: 4px;
-  --radius-lg: 4px;
-  --radius-xl: 4px;
-  --radius-2xl: 4px;
-  --radius-3xl: 4px;
+  /* ─── Universal 5px Border Radius System ─── */
+  --radius: 5px;
+  --radius-sm: 5px;
+  --radius-md: 5px;
+  --radius-lg: 5px;
+  --radius-xl: 5px;
+  --radius-2xl: 5px;
+  --radius-3xl: 5px;
   --radius-full: 9999px;
 
   /* Override Tailwind v3 border-radius CSS variables */
-  --rounded: 4px;
-  --rounded-sm: 4px;
-  --rounded-md: 4px;
-  --rounded-lg: 4px;
-  --rounded-xl: 4px;
-  --rounded-2xl: 4px;
-  --rounded-3xl: 4px;
+  --rounded: 5px;
+  --rounded-sm: 5px;
+  --rounded-md: 5px;
+  --rounded-lg: 5px;
+  --rounded-xl: 5px;
+  --rounded-2xl: 5px;
+  --rounded-3xl: 5px;
 }
 
 .padding-global,
@@ -201,30 +201,31 @@ body {
     line-height: 1.6;
   }
 
-  /* ─── Universal 4px Radius Override for all Tailwind rounded-* classes ─── */
-  /* rounded-sm, rounded, rounded-md, rounded-lg, rounded-xl, rounded-2xl, rounded-3xl → 4px */
+  /* ─── Universal 5px Radius Override for all Tailwind rounded-* classes ─── */
+  /* rounded-sm, rounded, rounded-md, rounded-lg, rounded-xl, rounded-2xl, rounded-3xl → 5px */
   /* rounded-full stays 9999px for avatars, chips, pills */
-  .rounded-sm   { border-radius: 4px !important; }
-  .rounded      { border-radius: 4px !important; }
-  .rounded-md   { border-radius: 4px !important; }
-  .rounded-lg   { border-radius: 4px !important; }
-  .rounded-xl   { border-radius: 4px !important; }
-  .rounded-2xl  { border-radius: 4px !important; }
-  .rounded-3xl  { border-radius: 4px !important; }
+  .rounded-sm   { border-radius: 5px !important; }
+  .rounded      { border-radius: 5px !important; }
+  .rounded-md   { border-radius: 5px !important; }
+  .rounded-lg   { border-radius: 5px !important; }
+  .rounded-xl   { border-radius: 5px !important; }
+  .rounded-2xl  { border-radius: 5px !important; }
+  .rounded-3xl  { border-radius: 5px !important; }
 
-  /* Directional variants → 4px */
-  .rounded-t    { border-top-left-radius: 4px !important; border-top-right-radius: 4px !important; }
+  /* Directional variants → 5px */
+  .rounded-t    { border-top-left-radius: 5px !important; border-top-right-radius: 5px !important; }
   .rounded-t-sm, .rounded-t-md, .rounded-t-lg, .rounded-t-xl, .rounded-t-2xl, .rounded-t-3xl
-               { border-top-left-radius: 4px !important; border-top-right-radius: 4px !important; }
-  .rounded-b    { border-bottom-left-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+               { border-top-left-radius: 5px !important; border-top-right-radius: 5px !important; }
+  .rounded-b    { border-bottom-left-radius: 5px !important; border-bottom-right-radius: 5px !important; }
   .rounded-b-sm, .rounded-b-md, .rounded-b-lg, .rounded-b-xl, .rounded-b-2xl, .rounded-b-3xl
-               { border-bottom-left-radius: 4px !important; border-bottom-right-radius: 4px !important; }
-  .rounded-l    { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
+               { border-bottom-left-radius: 5px !important; border-bottom-right-radius: 5px !important; }
+  .rounded-l    { border-top-left-radius: 5px !important; border-bottom-left-radius: 5px !important; }
   .rounded-l-sm, .rounded-l-md, .rounded-l-lg, .rounded-l-xl, .rounded-l-2xl, .rounded-l-3xl
-               { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
-  .rounded-r    { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+               { border-top-left-radius: 5px !important; border-bottom-left-radius: 5px !important; }
+  .rounded-r    { border-top-right-radius: 5px !important; border-bottom-right-radius: 5px !important; }
   .rounded-r-sm, .rounded-r-md, .rounded-r-lg, .rounded-r-xl, .rounded-r-2xl, .rounded-r-3xl
-               { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+               { border-top-right-radius: 5px !important; border-bottom-right-radius: 5px !important; }
+}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -239,7 +240,7 @@ body {
 }
 ::-webkit-scrollbar-thumb {
   background: #94a3b8;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 .dark ::-webkit-scrollbar-thumb {
   background: #138601;
@@ -261,9 +262,80 @@ body {
 }
 .sidebar-scroll::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.4);
-  border-radius: 4px;
+  border-radius: 5px;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(19, 134, 1, 0.7);
 }
+
+/* ─── Webflow/Modern Portal Card & Button System (5px Border Radius) ─── */
+.btn-primary,
+.btn-primary-lg,
+.btn-primary-sm,
+.btn-nacos,
+.btn-global {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  min-height: 42px;
+  padding: 0.625rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  background-color: #138601;
+  border-radius: 5px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.btn-primary:hover,
+.btn-primary-lg:hover,
+.btn-primary-sm:hover,
+.btn-nacos:hover,
+.btn-global:hover {
+  background-color: #0f6c01;
+  color: #ffffff;
+}
+
+.btn-secondary,
+.btn-secondary-lg,
+.btn-secondary-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  min-height: 42px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #111827;
+  background-color: #f1f3f5;
+  border-radius: 5px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.btn-secondary:hover,
+.btn-secondary-lg:hover,
+.btn-secondary-sm:hover {
+  background-color: #e9ecef;
+  color: #111827;
+}
+
+.portal-card,
+.card-portal,
+.card {
+  border-radius: 5px;
+}
+
 

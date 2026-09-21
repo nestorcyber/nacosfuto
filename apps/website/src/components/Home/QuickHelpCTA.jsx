@@ -23,7 +23,7 @@ const QuickHelpCTA = () => {
                         </div>
                     </div>
 
-                    {/* CTA Buttons (Matching Login Button Style: 42px height, #138601 green, 4px rounded radius) */}
+                    {/* CTA Buttons (Matching Login Button Style: 42px height, #138601 green, 5px rounded radius) */}
                     <div className="relative flex flex-col sm:flex-row gap-3 flex-shrink-0 w-full sm:w-auto">
                         <ScrollToTopLink
                             to="/contact"

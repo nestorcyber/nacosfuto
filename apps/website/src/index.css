@@ -30,14 +30,14 @@
   --color-primary-dark: #083002;
   --color-primary-light: #4bd043;
 
-  /* ─── Universal 4px Border Radius System ─── */
-  --radius: 4px;
-  --radius-sm: 4px;
-  --radius-md: 4px;
-  --radius-lg: 4px;
-  --radius-xl: 4px;
-  --radius-2xl: 4px;
-  --radius-3xl: 4px;
+  /* ─── Universal 5px Border Radius System ─── */
+  --radius: 5px;
+  --radius-sm: 5px;
+  --radius-md: 5px;
+  --radius-lg: 5px;
+  --radius-xl: 5px;
+  --radius-2xl: 5px;
+  --radius-3xl: 5px;
   --radius-full: 9999px;
 }
 
@@ -65,14 +65,14 @@ body {
   --gutter-tablet: 20px;        /* Tablet gutter standard (20px) */
   --gutter-desktop: 24px;       /* Desktop gutter standard (24px) */
 
-  /* Override Tailwind v4 border-radius tokens to 4px universally */
-  --rounded-sm: 4px;
-  --rounded:    4px;
-  --rounded-md: 4px;
-  --rounded-lg: 4px;
-  --rounded-xl: 4px;
-  --rounded-2xl: 4px;
-  --rounded-3xl: 4px;
+  /* Override Tailwind v4 border-radius tokens to 5px universally */
+  --rounded-sm: 5px;
+  --rounded:    5px;
+  --rounded-md: 5px;
+  --rounded-lg: 5px;
+  --rounded-xl: 5px;
+  --rounded-2xl: 5px;
+  --rounded-3xl: 5px;
 }
 
 .padding-global,
@@ -230,29 +230,29 @@ p {
   color: #ffffff;
 }
 
-/* ─── Universal 4px Radius — enforced on all Tailwind rounded-* classes ─── */
+/* ─── Universal 5px Radius — enforced on all Tailwind rounded-* classes ─── */
 /* rounded-full (9999px) is intentionally excluded to preserve pills & avatars */
-.rounded-sm  { border-radius: 4px !important; }
-.rounded     { border-radius: 4px !important; }
-.rounded-md  { border-radius: 4px !important; }
-.rounded-lg  { border-radius: 4px !important; }
-.rounded-xl  { border-radius: 4px !important; }
-.rounded-2xl { border-radius: 4px !important; }
-.rounded-3xl { border-radius: 4px !important; }
-.rounded-t   { border-top-left-radius: 4px !important; border-top-right-radius: 4px !important; }
+.rounded-sm  { border-radius: 5px !important; }
+.rounded     { border-radius: 5px !important; }
+.rounded-md  { border-radius: 5px !important; }
+.rounded-lg  { border-radius: 5px !important; }
+.rounded-xl  { border-radius: 5px !important; }
+.rounded-2xl { border-radius: 5px !important; }
+.rounded-3xl { border-radius: 5px !important; }
+.rounded-t   { border-top-left-radius: 5px !important; border-top-right-radius: 5px !important; }
 .rounded-t-sm, .rounded-t-md, .rounded-t-lg, .rounded-t-xl, .rounded-t-2xl, .rounded-t-3xl
-             { border-top-left-radius: 4px !important; border-top-right-radius: 4px !important; }
-.rounded-b   { border-bottom-left-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+             { border-top-left-radius: 5px !important; border-top-right-radius: 5px !important; }
+.rounded-b   { border-bottom-left-radius: 5px !important; border-bottom-right-radius: 5px !important; }
 .rounded-b-sm, .rounded-b-md, .rounded-b-lg, .rounded-b-xl, .rounded-b-2xl, .rounded-b-3xl
-             { border-bottom-left-radius: 4px !important; border-bottom-right-radius: 4px !important; }
-.rounded-l   { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
+             { border-bottom-left-radius: 5px !important; border-bottom-right-radius: 5px !important; }
+.rounded-l   { border-top-left-radius: 5px !important; border-bottom-left-radius: 5px !important; }
 .rounded-l-sm, .rounded-l-md, .rounded-l-lg, .rounded-l-xl, .rounded-l-2xl, .rounded-l-3xl
-             { border-top-left-radius: 4px !important; border-bottom-left-radius: 4px !important; }
-.rounded-r   { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+             { border-top-left-radius: 5px !important; border-bottom-left-radius: 5px !important; }
+.rounded-r   { border-top-right-radius: 5px !important; border-bottom-right-radius: 5px !important; }
 .rounded-r-sm, .rounded-r-md, .rounded-r-lg, .rounded-r-xl, .rounded-r-2xl, .rounded-r-3xl
-             { border-top-right-radius: 4px !important; border-bottom-right-radius: 4px !important; }
+             { border-top-right-radius: 5px !important; border-bottom-right-radius: 5px !important; }
 
-/* Webflow-style Clean Button System (42px Height, #138601 Green, 4px Radius) */
+/* Webflow-style Clean Button System (42px Height, #138601 Green, 5px Radius) */
 .btn-primary,
 .btn-primary-lg,
 .btn-primary-sm,
@@ -269,7 +269,7 @@ p {
   letter-spacing: -0.01em;
   color: #ffffff;
   background-color: #138601;
-  border-radius: 0.25rem;
+  border-radius: 5px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
   cursor: pointer;
@@ -301,7 +301,7 @@ p {
   letter-spacing: -0.01em;
   color: #111827;
   background-color: #f1f3f5;
-  border-radius: 0.25rem;
+  border-radius: 5px;
   transition: background-color 0.2s ease, color 0.2s ease;
   cursor: pointer;
   border: 1px solid transparent;
@@ -350,7 +350,7 @@ p {
 
 ::-webkit-scrollbar-thumb {
   background: #138601;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
