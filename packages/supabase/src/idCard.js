@@ -84,50 +84,25 @@ export function getLocalPaymentsDatabase() {
   const stored = localStorage.getItem(PAYMENTS_STORAGE_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        // Scrub out dummy seed payments
+        const cleaned = parsed.filter(p =>
+          !String(p.id || '').startsWith('pay-seed-') &&
+          p.student_matric !== '20251545321' &&
+          p.student_matric !== '20261699999'
+        );
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(PAYMENTS_STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      }
     } catch (e) {
       console.error(e);
     }
   }
 
-  const initialPayments = [
-    {
-      id: 'pay-seed-1',
-      student_matric: '20241429481',
-      session: '2026/2027',
-      amount: 2500,
-      payment_type: 'id_card',
-      payment_reference: 'NACOS-FUTO-2026-PAY-98124',
-      status: 'successful',
-      purpose: 'Departmental Dues & Digital Student ID Card',
-      created_at: '2026-08-20T10:30:00Z'
-    },
-    {
-      id: 'pay-seed-b',
-      student_matric: '20251545321',
-      session: '2026/2027',
-      amount: 2500,
-      payment_type: 'id_card',
-      payment_reference: 'NACOS-FUTO-2026-PAY-54321',
-      status: 'successful',
-      purpose: 'Departmental Dues & Digital Student ID Card',
-      created_at: '2026-08-22T14:10:00Z'
-    },
-    {
-      id: 'pay-seed-c',
-      student_matric: '20261699999',
-      session: '2026/2027',
-      amount: 2500,
-      payment_type: 'id_card',
-      payment_reference: 'NACOS-FUTO-2026-PAY-99999',
-      status: 'failed',
-      purpose: 'Departmental Dues & Digital Student ID Card',
-      created_at: '2026-08-25T09:45:00Z'
-    }
-  ];
-
-  localStorage.setItem(PAYMENTS_STORAGE_KEY, JSON.stringify(initialPayments));
-  return initialPayments;
+  return [];
 }
 
 /**
@@ -149,70 +124,26 @@ export function getLocalIdApplicationsDatabase() {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      // Auto-migrate legacy entries containing letters or old NACOS-FUTO sequences
-      if (Array.isArray(parsed) && parsed.some(a => (a.matric_number && /[a-zA-Z]/.test(a.matric_number)) || (a.id_card_number && a.id_card_number.startsWith('NACOS-FUTO-')))) {
-        localStorage.removeItem(ID_APPLICATIONS_STORAGE_KEY);
-      } else {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        // Scrub out dummy seed applications
+        const cleaned = parsed.filter(a =>
+          !String(a.id || '').startsWith('app-seed-') &&
+          a.matric_number !== '20251545321' &&
+          a.matric_number !== '20261699999' &&
+          a.registration_number !== '20251545321' &&
+          a.registration_number !== '20261699999'
+        );
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(ID_APPLICATIONS_STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
       }
     } catch (e) {
       console.error(e);
     }
   }
 
-  const seededApplications = [
-    {
-      id: 'app-seed-1',
-      student_id: 'student-seed-1',
-      matric_number: '20241429481',
-      application_number: 'APP-2026-000001',
-      id_card_number: '20241429481',
-      status: 'generated',
-      payment_status: 'verified',
-      payment_reference: 'NACOS-FUTO-2026-PAY-98124',
-      amount: 2500,
-      passport_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-      cloudinary_public_id: 'nacos/students/20241429481_passport',
-      submitted_at: '2026-08-20T11:00:00Z',
-      approved_at: '2026-08-21T09:30:00Z',
-      generated_at: '2026-08-21T10:00:00Z',
-      created_at: '2026-08-20T10:30:00Z',
-      updated_at: '2026-08-21T10:00:00Z'
-    },
-    {
-      id: 'app-seed-2',
-      student_id: 'student-seed-b',
-      matric_number: '20251545321',
-      application_number: 'APP-2026-000002',
-      id_card_number: null,
-      status: 'photo_required',
-      payment_status: 'verified',
-      payment_reference: 'NACOS-FUTO-2026-PAY-54321',
-      amount: 2500,
-      passport_url: null,
-      cloudinary_public_id: null,
-      created_at: '2026-08-22T14:10:00Z',
-      updated_at: '2026-08-22T14:10:00Z'
-    },
-    {
-      id: 'app-seed-3',
-      student_id: 'student-seed-c',
-      matric_number: '20261699999',
-      application_number: 'APP-2026-000003',
-      id_card_number: null,
-      status: 'pending_payment',
-      payment_status: 'pending',
-      payment_reference: null,
-      amount: 2500,
-      passport_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
-      cloudinary_public_id: null,
-      created_at: '2026-08-25T09:45:00Z',
-      updated_at: '2026-08-25T09:45:00Z'
-    }
-  ];
-
-  localStorage.setItem(ID_APPLICATIONS_STORAGE_KEY, JSON.stringify(seededApplications));
-  return seededApplications;
+  return [];
 }
 
 function saveLocalIdApplications(apps) {
@@ -391,23 +322,32 @@ export async function getStudentIdApplication(matricOrId) {
     const { data, error } = await supabase
       .from('id_card_applications')
       .select('*')
-      .or(`matric_number.eq.${cleanMatric},student_id.eq.${matricOrId}`)
+      .or(`registration_number.eq.${cleanMatric},registration_number.ilike.${cleanMatric}`)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!error && data) {
-      return data;
+      return {
+        ...data,
+        matric_number: data.registration_number || data.matric_number || cleanMatric,
+        registration_number: data.registration_number || data.matric_number || cleanMatric,
+        passport_url: data.passport_photo_url || data.passport_url || null,
+        passport_photo_url: data.passport_photo_url || data.passport_url || null,
+        full_name: data.full_name || 'Student Member'
+      };
     }
   } catch (e) {
-    // offline
+    console.warn('getStudentIdApplication remote query:', e);
   }
 
-  // 2. Local storage
+  // 2. Local storage fallback
   const apps = getLocalIdApplicationsDatabase();
   const app = apps.find(a =>
+    (a.registration_number && a.registration_number.toUpperCase() === cleanMatric) ||
     (a.matric_number && a.matric_number.toUpperCase() === cleanMatric) ||
-    a.student_id === matricOrId
+    a.student_id === matricOrId ||
+    a.id === matricOrId
   );
 
   return app || null;
@@ -462,11 +402,15 @@ export async function createIdCardApplication(student) {
   }
 
   const appNumber = `APP-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+  const studentName = student.full_name || student.name || `${student.first_name || ''} ${student.last_name || ''}`.trim() || 'Student Member';
 
   const newApp = {
     id: 'app-' + Date.now(),
     student_id: studentId,
     matric_number: cleanMatric,
+    registration_number: cleanMatric,
+    full_name: studentName,
+    level: student.level || '300 Level',
     application_number: appNumber,
     id_card_number: null,
     status: initialStatus,
@@ -474,6 +418,7 @@ export async function createIdCardApplication(student) {
     payment_reference: paymentRef,
     amount: fee,
     passport_url: existingPhoto || null,
+    passport_photo_url: existingPhoto || null,
     cloudinary_public_id: student.cloudinary_public_id || null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -483,11 +428,34 @@ export async function createIdCardApplication(student) {
   apps.unshift(newApp);
   saveLocalIdApplications(apps);
 
-  // Sync with Supabase
+  // Sync with Supabase (send schema-compliant payload; DB generates valid UUID for id)
   try {
-    await supabase.from('id_card_applications').insert([newApp]);
+    const dbPayload = {
+      registration_number: cleanMatric,
+      full_name: studentName,
+      level: student.level || '300 Level',
+      passport_photo_url: existingPhoto || null,
+      status: initialStatus,
+      qr_verification_code: appNumber,
+      submitted_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: inserted, error: insertErr } = await supabase
+      .from('id_card_applications')
+      .insert([dbPayload])
+      .select()
+      .maybeSingle();
+
+    if (!insertErr && inserted) {
+      newApp.id = inserted.id;
+      newApp.created_at = inserted.created_at;
+      saveLocalIdApplications(apps);
+      return { success: true, application: { ...newApp, ...inserted } };
+    }
   } catch (e) {
-    // Offline
+    console.warn('createIdCardApplication Supabase insert error:', e);
   }
 
   return { success: true, application: newApp };
@@ -802,7 +770,7 @@ export async function portalAdminGetApplications(options = {}) {
   try {
     let query = supabase
       .from('id_card_applications')
-      .select('*, profiles:student_id(full_name, registration_number, department, programme, admission_year)')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (status && status !== 'ALL') {
@@ -810,24 +778,63 @@ export async function portalAdminGetApplications(options = {}) {
     }
 
     const { data, error } = await query;
-    if (!error && data && data.length > 0) {
-      list = data;
-    }
-  } catch (e) { }
+    if (!error && Array.isArray(data)) {
+      // Enrich with matching profile details
+      const regNos = data.map(d => d.registration_number || d.matric_number).filter(Boolean);
+      let profilesMap = {};
+      if (regNos.length > 0) {
+        try {
+          const { data: profs } = await supabase
+            .from('profiles')
+            .select('id, registration_number, full_name, name, department, programme, level, admission_year, profile_photo_url, avatar_url')
+            .in('registration_number', regNos);
+          if (Array.isArray(profs)) {
+            profs.forEach(p => {
+              if (p.registration_number) {
+                profilesMap[p.registration_number.toUpperCase()] = p;
+              }
+            });
+          }
+        } catch (profErr) {
+          console.warn('Could not enrich applications with profiles:', profErr);
+        }
+      }
 
-  if (list.length === 0) {
+      list = data.map(app => {
+        const reg = (app.registration_number || app.matric_number || '').toUpperCase();
+        const profile = profilesMap[reg] || {};
+        return {
+          ...app,
+          matric_number: app.registration_number || app.matric_number || profile.registration_number || reg,
+          registration_number: app.registration_number || app.matric_number || profile.registration_number || reg,
+          student_name: app.full_name || profile.full_name || profile.name || 'Student Member',
+          full_name: app.full_name || profile.full_name || profile.name || 'Student Member',
+          programme: app.programme || profile.programme || 'B.Tech Computer Science',
+          department: app.department || profile.department || 'Computer Science',
+          level: app.level || profile.level || '300 Level',
+          passport_url: app.passport_photo_url || app.passport_url || profile.profile_photo_url || profile.avatar_url || null,
+          passport_photo_url: app.passport_photo_url || app.passport_url || profile.profile_photo_url || profile.avatar_url || null
+        };
+      });
+    }
+  } catch (e) {
+    console.warn('portalAdminGetApplications Supabase fetch error:', e);
+  }
+
+  // Fallback to local storage only if remote query failed or offline
+  if (list.length === 0 && (!supabase || (typeof navigator !== 'undefined' && !navigator.onLine))) {
     const apps = getLocalIdApplicationsDatabase();
     const students = getLocalStudentsDatabase();
 
     list = apps.map(app => {
       const student = students.find(s =>
         s.id === app.student_id ||
-        s.registration_number.toUpperCase() === app.matric_number.toUpperCase()
+        (s.registration_number && app.matric_number && s.registration_number.toUpperCase() === app.matric_number.toUpperCase())
       ) || {};
 
       return {
         ...app,
-        student_name: student.full_name || student.name || 'Student Member',
+        student_name: app.student_name || student.full_name || student.name || 'Student Member',
         programme: student.programme || 'B.Tech Computer Science',
         department: student.department || 'Computer Science',
         level: student.level || '300 Level'
@@ -1641,4 +1648,74 @@ export function downloadIdCardAsPdf(frontCanvasOrUrl, filename = 'NACOS-Student-
     </html>
   `);
   printWindow.document.close();
+}
+
+/**
+ * Subscribe to real-time ID card and payment updates across devices/tabs
+ */
+export function subscribeToIdCardUpdates(matricOrId, callback) {
+  if (typeof window === 'undefined' || !callback) return () => {};
+
+  const cleanMatric = matricOrId ? String(matricOrId).trim().toUpperCase() : null;
+
+  // 1. Supabase Realtime Channel
+  let channel = null;
+  try {
+    if (supabase && typeof supabase.channel === 'function') {
+      channel = supabase
+        .channel(`id_card_updates_${cleanMatric || 'all'}_${Date.now()}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'id_card_applications' },
+          (payload) => {
+            const row = payload.new || payload.old;
+            if (!cleanMatric || (row && (
+              (row.registration_number && row.registration_number.toUpperCase() === cleanMatric) ||
+              (row.matric_number && row.matric_number.toUpperCase() === cleanMatric) ||
+              row.id === matricOrId
+            ))) {
+              callback(payload);
+            }
+          }
+        )
+        .subscribe();
+    }
+  } catch (err) {
+    console.warn('Realtime channel error:', err);
+  }
+
+  // 2. Storage event listener (for multi-tab sync)
+  const handleStorage = (e) => {
+    if (e.key === ID_APPLICATIONS_STORAGE_KEY || e.key === PAYMENTS_STORAGE_KEY) {
+      callback({ type: 'storage', key: e.key });
+    }
+  };
+  window.addEventListener('storage', handleStorage);
+
+  // 3. Visibility and focus listeners (triggers live re-check when switching back to tab/phone)
+  const handleFocus = () => {
+    callback({ type: 'focus' });
+  };
+  window.addEventListener('focus', handleFocus);
+  const handleVisibility = () => {
+    if (document.visibilityState === 'visible') {
+      callback({ type: 'visibility' });
+    }
+  };
+  document.addEventListener('visibilitychange', handleVisibility);
+
+  // 4. Polling fallback (every 5 seconds)
+  const intervalId = setInterval(() => {
+    callback({ type: 'poll' });
+  }, 5000);
+
+  return () => {
+    if (channel && typeof supabase.removeChannel === 'function') {
+      supabase.removeChannel(channel);
+    }
+    window.removeEventListener('storage', handleStorage);
+    window.removeEventListener('focus', handleFocus);
+    document.removeEventListener('visibilitychange', handleVisibility);
+    clearInterval(intervalId);
+  };
 }

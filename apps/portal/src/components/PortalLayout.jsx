@@ -319,26 +319,9 @@ const PortalLayout = ({ children }) => {
         }`}>
         <div className="site-container h-16 flex items-center justify-between">
 
-          {/* Brand: logo always visible, menu/X button always in same spot */}
+          {/* Left: Logo and Desktop Sidebar Toggle */}
           <div className="flex items-center gap-3">
-            {/* Menu toggle — always in same spot, icons cross-fade */}
-            <button
-              type="button"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className={`md:hidden p-2.5 rounded-xl cursor-pointer transition-colors relative w-10 h-10 flex items-center justify-center ${isDark ? 'text-gray-200 hover:text-white bg-[#041801] border border-[#138601]/30' : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200'
-                }`}
-              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            >
-              {/* Hamburger icon — fades out when open */}
-              <Menu className={`w-5 h-5 absolute transition-all duration-200 ${mobileOpen ? 'opacity-0 scale-75 rotate-90' : 'opacity-100 scale-100 rotate-0'
-                }`} />
-              {/* X icon — fades in when open */}
-              <X className={`w-5 h-5 absolute transition-all duration-200 ${mobileOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-75 -rotate-90'
-                }`} />
-            </button>
-
-            {/* Logo — always visible in same position, no subtitle text */}
-            <Link to="/dashboard" className="flex items-center">
+            <Link to="/dashboard" className="flex items-center shrink-0">
               <img src={isDark ? logoDark : logoLight} alt="NACOS FUTO Logo" className="h-8 md:h-9 w-auto object-contain" />
             </Link>
 
@@ -358,7 +341,7 @@ const PortalLayout = ({ children }) => {
             </button>
           </div>
 
-          {/* Right actions: Notifications, Settings, Theme toggle, Profile Avatar Dropdown */}
+          {/* Right actions: Notifications, Settings, Theme toggle, Profile Avatar, and Mobile Menu Toggle */}
           <div className="flex items-center space-x-2 sm:space-x-3">
 
             {/* Notification Bell Icon & Dropdown */}
@@ -529,6 +512,21 @@ const PortalLayout = ({ children }) => {
                 </div>
               )}
             </div>
+
+            {/* Mobile Hamburger / X Menu Button on the RIGHT (matching main website) */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className={`md:hidden p-2 rounded cursor-pointer transition-colors relative w-9 h-9 flex items-center justify-center border ${
+                isDark 
+                  ? 'text-gray-200 hover:text-white bg-[#041801] hover:bg-[#138601]/20 border-[#138601]/30' 
+                  : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border-gray-200'
+              }`}
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            >
+              <Menu className={`w-4.5 h-4.5 absolute transition-all duration-200 ${mobileOpen ? 'opacity-0 scale-75 rotate-90' : 'opacity-100 scale-100 rotate-0'}`} />
+              <X className={`w-4.5 h-4.5 absolute transition-all duration-200 ${mobileOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-75 -rotate-90'}`} />
+            </button>
 
           </div>
 

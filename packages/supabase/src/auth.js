@@ -84,152 +84,26 @@ export function getLocalStudentsDatabase() {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      // Auto-migrate legacy entries containing letters to canonical digits-only format
-      if (Array.isArray(parsed) && parsed.some(s => s.registration_number && /[a-zA-Z]/.test(s.registration_number))) {
-        localStorage.removeItem(STORAGE_KEY);
-      } else {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        // Scrub out any dummy seed records (student-seed-a, student-seed-b, student-seed-c)
+        const cleaned = parsed.filter(s =>
+          s.id !== 'student-seed-a' &&
+          s.id !== 'student-seed-b' &&
+          s.id !== 'student-seed-c' &&
+          s.registration_number !== '20251545321' &&
+          s.registration_number !== '20261699999'
+        );
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
       }
     } catch (e) {
       console.error('Failed to parse local students DB', e);
     }
   }
 
-  // Pre-seed with the required canonical test students (Students A, B, C & demo users)
-  const seeded = [
-    {
-      id: 'student-seed-nestor-2024',
-      registration_number: '20241450682',
-      surname: 'Anyanwu',
-      first_name: 'Nestor',
-      middle_name: 'Ifeanyi',
-      last_name: 'Anyanwu',
-      full_name: 'Anyanwu Nestor Ifeanyi',
-      email: 'neorxpro@gmail.com',
-      phone_number: '+234 814 506 8200',
-      admission_year: 2024,
-      programme: 'B.Tech Computer Science',
-      department: 'Computer Science',
-      faculty: 'School of Information & Communication Tech (SICT)',
-      programme_duration: 5,
-      password_hash: '0c72b5bd44ae98f639e6d29d0429f1fade10ee23cd770e5b8fc9bd2ba248aeb6', // 'password'
-      role: 'Student Member',
-      is_active: true,
-      created_at: '2024-10-15T09:00:00Z'
-    },
-    {
-      id: 'student-seed-a',
-      registration_number: '20241429481',
-      full_name: 'Nestor Anyanwu',
-      email: 'nestor.anyanwu@futo.edu.ng',
-      phone_number: '+234 801 234 5678',
-      admission_year: 2024,
-      programme: 'B.Tech Computer Science',
-      department: 'Computer Science',
-      faculty: 'School of Information & Communication Tech (SICT)',
-      programme_duration: 5,
-      password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // 'password'
-      profile_photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-      role: 'Student Member',
-      is_active: true,
-      created_at: '2024-10-15T09:00:00Z'
-    },
-    {
-      id: 'student-seed-b',
-      registration_number: '20251545321',
-      full_name: 'Chioma Eze',
-      email: 'chioma.eze@futo.edu.ng',
-      phone_number: '+234 809 876 5432',
-      admission_year: 2025,
-      programme: 'B.Sc Software Engineering',
-      department: 'Computer Science',
-      faculty: 'School of Information & Communication Tech (SICT)',
-      programme_duration: 4,
-      password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
-      profile_photo_url: null, // Missing photo (Test B)
-      avatar_url: null,
-      role: 'Student Member',
-      is_active: true,
-      created_at: '2025-10-15T09:00:00Z'
-    },
-    {
-      id: 'student-seed-c',
-      registration_number: '20261699999',
-      full_name: 'Emeka Okoro',
-      email: 'emeka.okoro@futo.edu.ng',
-      phone_number: '+234 812 345 6789',
-      admission_year: 2026,
-      programme: 'B.Tech Computer Science',
-      department: 'Computer Science',
-      faculty: 'School of Information & Communication Tech (SICT)',
-      programme_duration: 5,
-      password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
-      profile_photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
-      avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
-      role: 'Student Member',
-      is_active: true,
-      created_at: '2026-08-01T09:00:00Z'
-    },
-    {
-      id: 'student-seed-david',
-      registration_number: '20221239481',
-      full_name: 'David Okonkwo',
-      email: 'david.okonkwo@futo.edu.ng',
-      phone_number: '+234 814 592 0184',
-      admission_year: 2022,
-      programme: 'B.Tech Computer Science',
-      department: 'Computer Science',
-      faculty: 'School of Information & Communication Tech (SICT)',
-      programme_duration: 5,
-      password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
-      profile_photo_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=400',
-      avatar_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=400',
-      role: 'Student Member',
-      is_active: true,
-      created_at: '2022-10-10T09:00:00Z'
-    },
-    {
-      id: 'student-seed-pres',
-      registration_number: '20201012948',
-      full_name: 'Emmanuel Irechukwu',
-      first_name: 'Emmanuel',
-      surname: 'Irechukwu',
-      email: 'president.futo@nacos.org.ng',
-      phone_number: '+234 803 112 3456',
-      admission_year: 2021,
-      programme: 'B.Tech Computer Science',
-      department: 'Computer Science',
-      faculty: 'School of Information & Communication Tech (SICT)',
-      programme_duration: 5,
-      password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
-      role: 'Chapter President',
-      is_active: true,
-      created_at: '2021-10-10T09:00:00Z'
-    }
-  ];
-
-  // Auto-migrate legacy Chapter President (FUTO) name if present in localStorage
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      let updated = false;
-      const migrated = parsed.map(s => {
-        if (s.registration_number === '20201012948' && (s.full_name?.includes('President') || s.name?.includes('President'))) {
-          updated = true;
-          return { ...s, full_name: 'Emmanuel Irechukwu', first_name: 'Emmanuel', surname: 'Irechukwu', admission_year: 2021 };
-        }
-        return s;
-      });
-      if (updated) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-        return migrated;
-      }
-    } catch (e) {}
-  }
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-  return seeded;
+  return [];
 }
 
 function saveLocalStudentsDatabase(students) {
@@ -464,7 +338,7 @@ export async function adminGetAllStudents() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && Array.isArray(data) && data.length > 0) {
+    if (!error && Array.isArray(data)) {
       return data.map(s => enrichStudentProfile(s));
     }
   } catch (e) {
