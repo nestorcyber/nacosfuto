@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import PortalAdminLayout from '../components/PortalAdminLayout';
-import { 
-  ShieldCheck, 
-  Search, 
-  Filter, 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle, 
-  Clock, 
-  RefreshCw, 
-  Eye, 
-  RotateCcw, 
-  DollarSign, 
-  Download, 
-  ShieldAlert, 
+import {
+  ShieldCheck,
+  Search,
+  Filter,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Clock,
+  RefreshCw,
+  Eye,
+  RotateCcw,
+  DollarSign,
+  Download,
+  ShieldAlert,
   ExternalLink,
   Edit2,
   FileCheck,
   User
 } from 'lucide-react';
-import { 
-  portalAdminGetApplications, 
-  portalAdminApproveApplication, 
-  portalAdminRejectApplication, 
-  portalAdminRevokeIdCard, 
+import {
+  portalAdminGetApplications,
+  portalAdminApproveApplication,
+  portalAdminRejectApplication,
+  portalAdminRevokeIdCard,
   portalAdminRegenerateIdCard,
   getIdCardSettings,
   updateIdCardFee,
@@ -64,7 +64,7 @@ const AdminIdCards = () => {
     if (stored) {
       try {
         setAdminUser(JSON.parse(stored));
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [statusFilter]);
 
@@ -119,9 +119,9 @@ const AdminIdCards = () => {
         };
         img.src = selectedApp.passport_url;
       } else {
-        drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp, { 
-          templateImgUrl: masterTemplateAsset, 
-          frameImgUrl: frameAsset 
+        drawIdCardOnCanvas(adminCanvasRef.current, studentObj, null, selectedApp, {
+          templateImgUrl: masterTemplateAsset,
+          frameImgUrl: frameAsset
         });
       }
     }
@@ -230,7 +230,7 @@ const AdminIdCards = () => {
   return (
     <PortalAdminLayout>
       <div className="space-y-6 w-full">
-        
+
         {/* Header with Fee Config Button */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/30 shadow-sm">
           <div>
@@ -259,11 +259,10 @@ const AdminIdCards = () => {
 
         {/* Global Feedback Alert */}
         {feedback.message && (
-          <div className={`p-4 rounded text-xs font-semibold flex items-center gap-2.5 shadow-sm ${
-            feedback.type === 'error'
+          <div className={`p-4 rounded text-xs font-semibold flex items-center gap-2.5 shadow-sm ${feedback.type === 'error'
               ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-300'
               : 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-950/60 dark:text-green-300'
-          }`}>
+            }`}>
             {feedback.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
             <span>{feedback.message}</span>
           </div>
@@ -297,11 +296,10 @@ const AdminIdCards = () => {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 rounded text-xs font-semibold capitalize transition-colors cursor-pointer ${
-                  statusFilter === status
+                className={`px-3 py-1.5 rounded text-xs font-semibold capitalize transition-colors cursor-pointer ${statusFilter === status
                     ? 'bg-[#138601] text-white shadow-sm'
                     : 'bg-gray-100 dark:bg-[#041801] text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
-                }`}
+                  }`}
               >
                 {status.replace(/_/g, ' ')}
               </button>
@@ -384,25 +382,23 @@ const AdminIdCards = () => {
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
-                          app.payment_status === 'verified'
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${app.payment_status === 'verified'
                             ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300'
                             : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                        }`}>
+                          }`}>
                           {app.payment_status === 'verified' ? '₦' + (app.amount || 2500) + ' Paid' : 'Pending'}
                         </span>
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold capitalize ${
-                          app.status === 'generated'
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold capitalize ${app.status === 'generated'
                             ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
                             : app.status === 'submitted' || app.status === 'processing'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
-                            : app.status === 'rejected' || app.status === 'revoked'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
-                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                        }`}>
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                              : app.status === 'rejected' || app.status === 'revoked'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
+                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                          }`}>
                           {app.status.replace(/_/g, ' ')}
                         </span>
                       </td>
@@ -430,13 +426,13 @@ const AdminIdCards = () => {
           )}
         </div>
 
-                {/* -------------------------------------------------------------------
+        {/* -------------------------------------------------------------------
             MODAL 1: APPLICATION REVIEW & APPROVAL DRAWER
             ------------------------------------------------------------------- */}
         {isReviewModalOpen && selectedApp && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
             <div className="w-full max-w-lg rounded bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 p-6 space-y-5 shadow-2xl">
-              
+
               <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#138601]/20">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-[#138601] dark:text-[#4bd043]" />
@@ -492,22 +488,20 @@ const AdminIdCards = () => {
                       <button
                         type="button"
                         onClick={() => setAdminViewSide('front')}
-                        className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
-                          adminViewSide === 'front'
+                        className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${adminViewSide === 'front'
                             ? 'bg-[#138601] text-white'
                             : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
-                        }`}
+                          }`}
                       >
                         Front
                       </button>
                       <button
                         type="button"
                         onClick={() => setAdminViewSide('back')}
-                        className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
-                          adminViewSide === 'back'
+                        className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${adminViewSide === 'back'
                             ? 'bg-[#138601] text-white'
                             : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
-                        }`}
+                          }`}
                       >
                         Back
                       </button>

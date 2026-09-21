@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  GraduationCap, 
-  CreditCard, 
-  BookOpen, 
-  User, 
-  ArrowUpRight, 
-  CheckCircle, 
+import {
+  GraduationCap,
+  CreditCard,
+  BookOpen,
+  User,
+  ArrowUpRight,
+  CheckCircle,
   TrendingUp,
   Info,
   BarChart3,
@@ -26,7 +26,7 @@ const Dashboard = () => {
       if (stored) {
         try {
           return JSON.parse(stored);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
     return {};
@@ -41,8 +41,8 @@ const Dashboard = () => {
 
     // 1. Direct profile flags
     if (
-      currentUser?.dues_cleared === true || 
-      currentUser?.has_paid_dues === true || 
+      currentUser?.dues_cleared === true ||
+      currentUser?.has_paid_dues === true ||
       ['cleared', 'successful', 'verified', 'paid'].includes(String(currentUser?.payment_status).toLowerCase())
     ) {
       setIsPaid(true);
@@ -144,8 +144,6 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    let channel = null;
-
     const handleUserUpdate = async () => {
       const stored = localStorage.getItem('nacos_user');
       if (!stored) {
@@ -165,44 +163,14 @@ const Dashboard = () => {
     };
 
     handleUserUpdate();
-
-    // Realtime Supabase Channel for instant cross-device updates
-    try {
-      const userId = user?.id || '';
-      channel = supabase
-        .channel(`dashboard-sync-${userId || 'global'}-${Math.random().toString(36).slice(2, 7)}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'departmental_dues' }, handleUserUpdate)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'dues_payments' }, handleUserUpdate)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'id_card_applications' }, handleUserUpdate)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, handleUserUpdate)
-        .subscribe();
-    } catch (e) {}
-
-    const handleVisibilityOrFocus = () => {
-      if (document.visibilityState === 'visible' || document.hasFocus()) {
-        handleUserUpdate();
-      }
-    };
-
     window.addEventListener('storage', handleUserUpdate);
     window.addEventListener('nacos_user_updated', handleUserUpdate);
-    window.addEventListener('visibilitychange', handleVisibilityOrFocus);
-    window.addEventListener('focus', handleVisibilityOrFocus);
-
-    const pollInterval = setInterval(handleUserUpdate, 5000);
-
     return () => {
-      if (channel) {
-        try { supabase.removeChannel(channel); } catch (e) {}
-      }
       window.removeEventListener('storage', handleUserUpdate);
       window.removeEventListener('nacos_user_updated', handleUserUpdate);
-      window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-      window.removeEventListener('focus', handleVisibilityOrFocus);
-      clearInterval(pollInterval);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, user?.registration_number]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getFirstName = () => {
     if (user.firstName && !user.firstName.toLowerCase().includes('president')) return user.firstName;
@@ -243,7 +211,7 @@ const Dashboard = () => {
   return (
     <PortalLayout>
       <div className="space-y-5">
-        
+
         {/* Welcome Header */}
         <div className="pb-1">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
@@ -280,7 +248,7 @@ const Dashboard = () => {
 
         {/* 3 Clean Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
+
           {/* Card 1: Courses Registered */}
           <div className="p-5 rounded-2xl bg-[#ebf3ff] dark:bg-[#083002] border border-blue-100/70 dark:border-[#138601]/30 flex flex-col justify-between min-h-[125px] shadow-xs">
             <div className="text-blue-600 dark:text-[#4bd043]">
@@ -312,32 +280,28 @@ const Dashboard = () => {
           </div>
 
           {/* Card 3: Fees Paid */}
-          <div className={`p-5 rounded-2xl border flex flex-col justify-between min-h-[125px] shadow-xs transition-colors ${
-            isPaid 
-              ? 'bg-[#bbf0b7] dark:bg-[#138601]/30 border-green-200/70 dark:border-[#138601]/40' 
+          <div className={`p-5 rounded-2xl border flex flex-col justify-between min-h-[125px] shadow-xs transition-colors ${isPaid
+              ? 'bg-[#bbf0b7] dark:bg-[#138601]/30 border-green-200/70 dark:border-[#138601]/40'
               : 'bg-amber-50/80 dark:bg-[#083002] border-amber-200/80 dark:border-amber-700/40'
-          }`}>
+            }`}>
             <div className={isPaid ? 'text-[#083002] dark:text-[#4bd043]' : 'text-amber-600 dark:text-amber-400'}>
               <Wallet className="w-6 h-6" />
             </div>
             <div className="mt-3 space-y-1.5">
               <div className="flex items-center justify-between">
-                <h4 className={`text-xs sm:text-sm font-normal ${
-                  isPaid ? 'text-gray-800 dark:text-white' : 'text-gray-700 dark:text-gray-200'
-                }`}>
+                <h4 className={`text-xs sm:text-sm font-normal ${isPaid ? 'text-gray-800 dark:text-white' : 'text-gray-700 dark:text-gray-200'
+                  }`}>
                   Fees paid
                 </h4>
-                <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
-                  isPaid 
-                    ? 'bg-white/80 dark:bg-[#041801]/60 text-[#138601] dark:text-[#4bd043]' 
+                <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${isPaid
+                    ? 'bg-white/80 dark:bg-[#041801]/60 text-[#138601] dark:text-[#4bd043]'
                     : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
-                }`}>
+                  }`}>
                   {isPaid ? 'Cleared' : 'Not Paid'}
                 </span>
               </div>
-              <div className={`text-sm sm:text-base font-bold ${
-                isPaid ? 'text-gray-900 dark:text-white' : 'text-amber-700 dark:text-amber-400'
-              }`}>
+              <div className={`text-sm sm:text-base font-bold ${isPaid ? 'text-gray-900 dark:text-white' : 'text-amber-700 dark:text-amber-400'
+                }`}>
                 {isPaid ? '2,500 NGN' : '0 NGN'}
               </div>
             </div>
@@ -348,28 +312,26 @@ const Dashboard = () => {
         {/* Quick Student Actions */}
         <div className="space-y-3">
           <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">Quick Student Actions</h3>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
             <Link
               to="/dues"
               className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 hover:border-[#138601] dark:hover:border-[#138601] transition-all group shadow-xs"
             >
               <div className="flex items-center space-x-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
-                  isPaid 
-                    ? 'bg-[#f1f3f5] dark:bg-[#041801] text-gray-700 dark:text-[#4bd043] group-hover:bg-[#138601] group-hover:text-white' 
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${isPaid
+                    ? 'bg-[#f1f3f5] dark:bg-[#041801] text-gray-700 dark:text-[#4bd043] group-hover:bg-[#138601] group-hover:text-white'
                     : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 group-hover:bg-amber-600 group-hover:text-white'
-                }`}>
+                  }`}>
                   <CreditCard className="w-4.5 h-4.5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Dues Clearance Receipt</h4>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      isPaid 
-                        ? 'bg-green-100 text-green-800 dark:bg-[#138601]/20 dark:text-[#4bd043]' 
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${isPaid
+                        ? 'bg-green-100 text-green-800 dark:bg-[#138601]/20 dark:text-[#4bd043]'
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
-                    }`}>
+                      }`}>
                       {isPaid ? 'Cleared' : 'Not Paid'}
                     </span>
                   </div>

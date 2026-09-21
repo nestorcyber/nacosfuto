@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  Clock, 
-  QrCode, 
-  ShieldCheck, 
-  ShieldAlert, 
-  Printer, 
+import {
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  QrCode,
+  ShieldCheck,
+  ShieldAlert,
+  Printer,
   CreditCard,
   Check
 } from 'lucide-react';
@@ -28,7 +28,7 @@ const Dues = () => {
       if (stored) {
         try {
           return JSON.parse(stored);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
     return {};
@@ -53,8 +53,8 @@ const Dues = () => {
 
     // 1. Check user profile object flags
     if (
-      currentUser?.dues_cleared === true || 
-      currentUser?.has_paid_dues === true || 
+      currentUser?.dues_cleared === true ||
+      currentUser?.has_paid_dues === true ||
       ['cleared', 'successful', 'verified', 'paid'].includes(String(currentUser?.payment_status).toLowerCase())
     ) {
       setIsPaid(true);
@@ -87,7 +87,7 @@ const Dues = () => {
               month: 'long',
               year: 'numeric'
             }) + ' (' + new Date(found.created_at).toLocaleTimeString('en-GB') + ' GMT+1)' : 'Current Session';
-            
+
             setPaymentData({
               receiptNo: found.payment_reference || `NACOS-FUTO-${cleanMatric}`,
               paymentDate: dateStr,
@@ -141,8 +141,6 @@ const Dues = () => {
   };
 
   useEffect(() => {
-    let channel = null;
-
     const handleUserUpdate = () => {
       const stored = localStorage.getItem('nacos_user');
       if (stored) {
@@ -158,42 +156,13 @@ const Dues = () => {
     };
 
     handleUserUpdate();
-
-    // Supabase Realtime for instant cross-device sync
-    try {
-      const matric = user?.registration_number || user?.matric || '';
-      channel = supabase
-        .channel(`dues-sync-${matric || 'global'}-${Math.random().toString(36).slice(2, 7)}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'departmental_dues' }, handleUserUpdate)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'dues_payments' }, handleUserUpdate)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, handleUserUpdate)
-        .subscribe();
-    } catch (e) {}
-
-    const handleVisibilityOrFocus = () => {
-      if (document.visibilityState === 'visible' || document.hasFocus()) {
-        handleUserUpdate();
-      }
-    };
-
     window.addEventListener('storage', handleUserUpdate);
     window.addEventListener('nacos_user_updated', handleUserUpdate);
-    window.addEventListener('visibilitychange', handleVisibilityOrFocus);
-    window.addEventListener('focus', handleVisibilityOrFocus);
-
-    const pollInterval = setInterval(handleUserUpdate, 5000);
-
     return () => {
-      if (channel) {
-        try { supabase.removeChannel(channel); } catch (e) {}
-      }
       window.removeEventListener('storage', handleUserUpdate);
       window.removeEventListener('nacos_user_updated', handleUserUpdate);
-      window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-      window.removeEventListener('focus', handleVisibilityOrFocus);
-      clearInterval(pollInterval);
     };
-  }, [user?.registration_number, user?.matric, user?.id]);
+  }, []);
 
   // Allow user to pay dues and immediately update status
   const handlePayDues = async () => {
@@ -202,9 +171,9 @@ const Dues = () => {
       const matric = user.registration_number || user.matric || user.matricNumber || '20241450682';
       const res = await recordStudentPayment(matric, 2500);
       if (res.success) {
-        const updatedUser = { 
-          ...user, 
-          dues_cleared: true, 
+        const updatedUser = {
+          ...user,
+          dues_cleared: true,
           has_paid_dues: true,
           payment_status: 'cleared',
           receipt_no: res.payment.payment_reference,
@@ -228,14 +197,14 @@ const Dues = () => {
 
   // Derive dynamic live student information
   const rawName = (
-    user.full_name || 
-    user.fullName || 
-    [user.surname, user.first_name, user.middle_name].filter(Boolean).join(' ') || 
-    user.name || 
+    user.full_name ||
+    user.fullName ||
+    [user.surname, user.first_name, user.middle_name].filter(Boolean).join(' ') ||
+    user.name ||
     ''
   ).trim();
-  const studentName = rawName.toLowerCase().includes('president') || rawName.toLowerCase().includes('irechukwu') 
-    ? 'Emmanuel Irechukwu' 
+  const studentName = rawName.toLowerCase().includes('president') || rawName.toLowerCase().includes('irechukwu')
+    ? 'Emmanuel Irechukwu'
     : (rawName || 'Student Member');
 
   const matricNo = user.registration_number || user.matric || user.matricNumber || 'N/A';
@@ -282,7 +251,7 @@ const Dues = () => {
   return (
     <PortalLayout>
       <div className="space-y-6">
-        
+
         {/* Title Header */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 print:hidden">
           <div>
@@ -328,19 +297,18 @@ const Dues = () => {
                 type="button"
                 onClick={handlePrint}
                 disabled={isPrinting}
-                className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                  isPaid 
-                    ? 'text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs' 
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isPaid
+                    ? 'text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs'
                     : 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-[#083002] hover:bg-gray-200 dark:hover:bg-[#062402] border border-gray-200/80 dark:border-[#138601]/30'
-                }`}
+                  }`}
               >
                 <Printer className="w-4 h-4" />
                 <span>
-                  {isPrinting 
-                    ? 'Generating Printout...' 
-                    : isPaid 
-                    ? 'Print Official Receipt' 
-                    : 'Print Payment Slip'}
+                  {isPrinting
+                    ? 'Generating Printout...'
+                    : isPaid
+                      ? 'Print Official Receipt'
+                      : 'Print Payment Slip'}
                 </span>
               </button>
             </div>
@@ -349,19 +317,17 @@ const Dues = () => {
 
         {/* 3 Overview Info Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:hidden">
-          
+
           {/* Card 1: Clearance Status */}
-          <div className={`p-5 rounded-2xl bg-white dark:bg-[#083002] border space-y-1 shadow-xs ${
-            isPaid 
-              ? 'border-gray-200/80 dark:border-[#138601]/30' 
+          <div className={`p-5 rounded-2xl bg-white dark:bg-[#083002] border space-y-1 shadow-xs ${isPaid
+              ? 'border-gray-200/80 dark:border-[#138601]/30'
               : 'border-amber-200/80 dark:border-amber-700/40 bg-amber-50/30'
-          }`}>
-            <span className="text-xs font-medium text-gray-500 dark:text-green-200/80">Clearance Status</span>
-            <div className={`flex items-center gap-2 text-lg font-bold ${
-              isPaid 
-                ? 'text-[#138601] dark:text-[#4bd043]' 
-                : 'text-amber-600 dark:text-amber-400'
             }`}>
+            <span className="text-xs font-medium text-gray-500 dark:text-green-200/80">Clearance Status</span>
+            <div className={`flex items-center gap-2 text-lg font-bold ${isPaid
+                ? 'text-[#138601] dark:text-[#4bd043]'
+                : 'text-amber-600 dark:text-amber-400'
+              }`}>
               {isPaid ? (
                 <>
                   <CheckCircle className="w-4.5 h-4.5" />
@@ -389,17 +355,15 @@ const Dues = () => {
           </div>
 
           {/* Card 3: Electronic Receipt Number */}
-          <div className={`p-5 rounded-2xl bg-white dark:bg-[#083002] border space-y-1 shadow-xs ${
-            isPaid 
-              ? 'border-gray-200/80 dark:border-[#138601]/30' 
+          <div className={`p-5 rounded-2xl bg-white dark:bg-[#083002] border space-y-1 shadow-xs ${isPaid
+              ? 'border-gray-200/80 dark:border-[#138601]/30'
               : 'border-amber-200/80 dark:border-amber-700/40'
-          }`}>
-            <span className="text-xs font-medium text-gray-500 dark:text-green-200/80">Electronic Receipt Number</span>
-            <div className={`text-xs sm:text-sm font-semibold font-mono ${
-              isPaid 
-                ? 'text-gray-900 dark:text-white' 
-                : 'text-amber-700 dark:text-amber-400'
             }`}>
+            <span className="text-xs font-medium text-gray-500 dark:text-green-200/80">Electronic Receipt Number</span>
+            <div className={`text-xs sm:text-sm font-semibold font-mono ${isPaid
+                ? 'text-gray-900 dark:text-white'
+                : 'text-amber-700 dark:text-amber-400'
+              }`}>
               {paymentRecord.receiptNo}
             </div>
             {isPaid ? (
@@ -416,7 +380,7 @@ const Dues = () => {
 
         {/* Official Printable Electronic Receipt Box */}
         <div className="p-5 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 space-y-5 shadow-xs print:border-none print:shadow-none print:p-0 overflow-hidden">
-          
+
           {/* Receipt Header */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-[#138601]/25 text-center sm:text-left">
             <div className="flex items-center space-x-3">
@@ -469,18 +433,16 @@ const Dues = () => {
 
             <div>
               <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Payment Date &amp; Time</span>
-              <span className={`font-semibold text-xs sm:text-sm break-words ${
-                isPaid ? 'text-gray-900 dark:text-white' : 'text-amber-700 dark:text-amber-400 font-normal italic'
-              }`}>
+              <span className={`font-semibold text-xs sm:text-sm break-words ${isPaid ? 'text-gray-900 dark:text-white' : 'text-amber-700 dark:text-amber-400 font-normal italic'
+                }`}>
                 {paymentRecord.paymentDate}
               </span>
             </div>
 
             <div>
               <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Payment Method</span>
-              <span className={`font-semibold text-xs sm:text-sm break-words ${
-                isPaid ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 font-normal italic'
-              }`}>
+              <span className={`font-semibold text-xs sm:text-sm break-words ${isPaid ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 font-normal italic'
+                }`}>
                 {paymentRecord.paymentMethod}
               </span>
             </div>
@@ -488,9 +450,8 @@ const Dues = () => {
             <div className="sm:col-span-2 pt-3.5 border-t border-gray-100 dark:border-[#138601]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <span className="text-gray-500 dark:text-green-200/70 block mb-0.5 text-[11px]">Amount Paid</span>
-                <span className={`text-xl sm:text-2xl font-bold ${
-                  isPaid ? 'text-[#138601] dark:text-[#4bd043]' : 'text-amber-600 dark:text-amber-400'
-                }`}>
+                <span className={`text-xl sm:text-2xl font-bold ${isPaid ? 'text-[#138601] dark:text-[#4bd043]' : 'text-amber-600 dark:text-amber-400'
+                  }`}>
                   {paymentRecord.amount}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-green-200/70 block italic font-normal mt-0.5">
@@ -498,14 +459,12 @@ const Dues = () => {
                 </span>
               </div>
 
-              <div className={`flex items-center space-x-2.5 p-3 rounded-xl border ${
-                isPaid 
-                  ? 'bg-[#f1f3f5] dark:bg-[#041801] border-gray-200/80 dark:border-[#138601]/30' 
+              <div className={`flex items-center space-x-2.5 p-3 rounded-xl border ${isPaid
+                  ? 'bg-[#f1f3f5] dark:bg-[#041801] border-gray-200/80 dark:border-[#138601]/30'
                   : 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/30'
-              }`}>
-                <QrCode className={`w-8 h-8 ${
-                  isPaid ? 'text-gray-700 dark:text-[#4bd043]' : 'text-amber-600 dark:text-amber-400'
-                }`} />
+                }`}>
+                <QrCode className={`w-8 h-8 ${isPaid ? 'text-gray-700 dark:text-[#4bd043]' : 'text-amber-600 dark:text-amber-400'
+                  }`} />
                 <div className="text-[11px] text-gray-600 dark:text-green-200/80 font-normal">
                   <div className="font-semibold text-gray-900 dark:text-white">
                     {isPaid ? 'Scan to Verify' : 'Payment Pending'}
@@ -522,8 +481,8 @@ const Dues = () => {
           <div className="pt-4 border-t border-gray-100 dark:border-[#138601]/20 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 dark:text-green-200/70 gap-2 text-center sm:text-left font-normal">
             <span>Authorized by: {paymentRecord.authorizedBy}</span>
             <span>
-              {isPaid 
-                ? 'This is a computer-generated receipt. No physical stamp required.' 
+              {isPaid
+                ? 'This is a computer-generated receipt. No physical stamp required.'
                 : 'This is a pro-forma payment slip. Official clearance receipt will be issued upon payment.'}
             </span>
           </div>

@@ -1,37 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PortalLayout from '../components/PortalLayout';
-import { 
-  CreditCard, 
-  Camera, 
-  CheckCircle, 
-  AlertCircle, 
-  Download, 
-  Printer, 
-  RefreshCw, 
-  ShieldCheck, 
-  ShieldAlert, 
-  Clock, 
-  FileText, 
-  ArrowRight, 
+import {
+  CreditCard,
+  Camera,
+  CheckCircle,
+  AlertCircle,
+  Download,
+  Printer,
+  RefreshCw,
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  FileText,
+  ArrowRight,
   Info,
   Sparkles,
   ExternalLink,
   ChevronRight,
   RotateCcw
 } from 'lucide-react';
-import { 
+import {
   getIdCardSettings,
   getStudentIdApplication,
-  subscribeToIdCardUpdates,
   createIdCardApplication,
   verifyAndLinkPayment,
   recordStudentPayment,
   savePassportToApplication,
   linkPassportUrlToApplication,
   submitIdApplication,
-  drawIdCardOnCanvas, 
-  downloadIdCardAsImage, 
+  drawIdCardOnCanvas,
+  downloadIdCardAsImage,
   downloadIdCardAsPdf,
   saveGeneratedIdCardAsset
 } from '@nacos/supabase/idCard';
@@ -58,8 +57,12 @@ const IdCard = () => {
   const [uploadError, setUploadError] = useState('');
   const [notification, setNotification] = useState({ message: '', type: '' });
 
-  const loadStudentAndApplication = async (showLoading = true) => {
-    if (showLoading) setLoading(true);
+  useEffect(() => {
+    loadStudentAndApplication();
+  }, []);
+
+  const loadStudentAndApplication = async () => {
+    setLoading(true);
     const stored = localStorage.getItem('nacos_user');
     if (!stored) {
       navigate('/login');
@@ -74,48 +77,16 @@ const IdCard = () => {
       const cfg = await getIdCardSettings();
       if (cfg) setSettings(cfg);
 
-      // Load application directly from database
+      // Load application
       const matric = parsed.matric || parsed.registration_number;
-      if (matric) {
-        const app = await getStudentIdApplication(matric);
-        setApplication(prev => {
-          if (prev && app && prev.status !== app.status) {
-            if (app.status === 'generated') {
-              showNotification('Your ID Card is ready and generated!', 'success');
-            } else if (app.payment_status === 'verified' && prev.payment_status !== 'verified') {
-              showNotification('Payment verified in database! Status updated.', 'success');
-            }
-          }
-          return app;
-        });
-      }
+      const app = await getStudentIdApplication(matric);
+      setApplication(app);
     } catch (err) {
-      console.error('ID Card fetch error:', err);
+      console.error(err);
     } finally {
-      if (showLoading) setLoading(false);
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadStudentAndApplication(true);
-
-    const stored = localStorage.getItem('nacos_user');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        const matric = parsed.matric || parsed.registration_number;
-        if (matric) {
-          // Subscribe to real-time database changes, cross-device payments & mobile sync
-          const unsubscribe = subscribeToIdCardUpdates(matric, () => {
-            loadStudentAndApplication(false);
-          });
-          return () => {
-            unsubscribe();
-          };
-        }
-      } catch (e) {}
-    }
-  }, []);
 
   // Redraw canvas whenever application reaches 'generated' state
   useEffect(() => {
@@ -131,7 +102,7 @@ const IdCard = () => {
               const dataUrl = canvasRef.current.toDataURL('image/png');
               saveGeneratedIdCardAsset(application.id, dataUrl);
               setApplication(prev => ({ ...prev, id_card_image_url: dataUrl }));
-            } catch (e) {}
+            } catch (e) { }
           }
         });
       };
@@ -231,7 +202,7 @@ const IdCard = () => {
     if (!application?.id) return;
     setIsSubmitting(true);
     const photoUrl = application.passport_url || student?.profile_photo_url || student?.avatar_url;
-    
+
     // Ensure photo is linked in DB before submission
     const matric = student?.matric || student?.registration_number;
     if (photoUrl) {
@@ -317,7 +288,7 @@ const IdCard = () => {
   return (
     <PortalLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        
+
         {/* Title Header Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 shadow-xs">
           <div>
@@ -334,13 +305,12 @@ const IdCard = () => {
 
           <div className="flex items-center gap-2">
             {application && (
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                isState7 
-                  ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700/50' 
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isState7
+                  ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700/50'
                   : isState8 || isState9
-                  ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700/50'
-                  : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50'
-              }`}>
+                    ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700/50'
+                    : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50'
+                }`}>
                 {isState7 ? <CheckCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
                 <span className="capitalize">
                   {isState7 ? 'Active & Cleared' : (application.status || 'In Progress').replace(/_/g, ' ')}
@@ -352,11 +322,10 @@ const IdCard = () => {
 
         {/* Global Notification Banner */}
         {notification.message && (
-          <div className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 shadow-xs transition-all ${
-            notification.type === 'error' 
-              ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800' 
+          <div className={`p-4 rounded-xl text-xs font-semibold flex items-center gap-2.5 shadow-xs transition-all ${notification.type === 'error'
+              ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800'
               : 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-950/60 dark:text-green-300 dark:border-green-800'
-          }`}>
+            }`}>
             {notification.type === 'error' ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle className="w-4 h-4 shrink-0" />}
             <span>{notification.message}</span>
           </div>
@@ -513,10 +482,10 @@ const IdCard = () => {
               {(student?.profile_photo_url || student?.avatar_url) && (
                 <div className="pt-2 border-t border-gray-100 dark:border-[#138601]/20 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <img 
-                      src={student.profile_photo_url || student.avatar_url} 
-                      alt="Current Avatar" 
-                      className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-[#138601]/40" 
+                    <img
+                      src={student.profile_photo_url || student.avatar_url}
+                      alt="Current Avatar"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-[#138601]/40"
                     />
                     <span className="text-[11px] text-gray-600 dark:text-green-200">Use current profile photo</span>
                   </div>
@@ -673,7 +642,7 @@ const IdCard = () => {
             ==================================================================== */}
         {isState7 && (
           <div className="space-y-6">
-            
+
             {/* Visual Canvas Two-Sided ID Card Preview Container */}
             <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200/80 dark:border-[#138601]/30 shadow-xs space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-[#138601]/20 pb-4">
@@ -697,22 +666,20 @@ const IdCard = () => {
                     <button
                       type="button"
                       onClick={() => setCurrentSide('front')}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        currentSide === 'front'
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${currentSide === 'front'
                           ? 'bg-[#138601] text-white shadow-xs'
                           : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
-                      }`}
+                        }`}
                     >
                       Front Side
                     </button>
                     <button
                       type="button"
                       onClick={() => setCurrentSide('back')}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        currentSide === 'back'
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${currentSide === 'back'
                           ? 'bg-[#138601] text-white shadow-xs'
                           : 'text-gray-600 dark:text-green-200/70 hover:text-black dark:hover:text-white'
-                      }`}
+                        }`}
                     >
                       Back Side
                     </button>
@@ -742,7 +709,7 @@ const IdCard = () => {
               {/* Card Sides Preview Area (Portrait CR-80 Card: 662 × 1075 px) */}
               <div className="flex justify-center items-center py-4">
                 <div className="max-w-xs sm:max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl border-2 border-[#138601]/50 bg-[#083002]">
-                  
+
                   {/* FRONT SIDE */}
                   <div className={`${currentSide === 'front' ? 'block' : 'hidden'}`}>
                     <canvas

@@ -275,15 +275,15 @@ export async function checkStudentPaymentStatus(matricNumber) {
 
   // 2. Check local payments database
   const payments = getLocalPaymentsDatabase();
-  const payment = payments.find(p => 
-    p.student_matric.toUpperCase() === cleanMatric && 
+  const payment = payments.find(p =>
+    p.student_matric.toUpperCase() === cleanMatric &&
     (p.status === 'verified' || p.status === 'successful' || p.status === 'cleared')
   );
 
   if (payment) {
     // Check local id_card_applications for renewal
     const apps = getLocalIdApplicationsDatabase();
-    const app = apps.find(a => 
+    const app = apps.find(a =>
       (a.matric_number && a.matric_number.toUpperCase() === cleanMatric) ||
       (a.student_id && a.student_id.toUpperCase() === cleanMatric)
     );
@@ -378,16 +378,15 @@ export async function recordStudentPayment(matricNumber, amount = 2500) {
 }
 
 /**
- * Fetch the active ID card application for a student directly from database.
+ * Fetch the active ID card application for a student.
  * Returns null if student has never applied (State 1: Not Applied).
- * Auto-syncs status when payment or admin approvals change across devices.
  */
 export async function getStudentIdApplication(matricOrId) {
   if (!matricOrId) return null;
 
   const cleanMatric = String(matricOrId).trim().toUpperCase();
 
-  // 1. Try Supabase remote first (authoritative database status)
+  // 1. Try Supabase remote
   try {
     const { data, error } = await supabase
       .from('id_card_applications')
@@ -398,158 +397,20 @@ export async function getStudentIdApplication(matricOrId) {
       .maybeSingle();
 
     if (!error && data) {
-      // Check if student has verified dues payment in DB that hasn't synced to ID application
-      const paymentCheck = await checkStudentPaymentStatus(cleanMatric);
-      if (paymentCheck.isPaid && data.status === 'pending_payment') {
-        const updatedStatus = data.passport_url ? 'ready_to_submit' : 'photo_required';
-        data.status = updatedStatus;
-        data.payment_status = 'verified';
-        data.payment_reference = data.payment_reference || paymentCheck.payment?.payment_reference || `NACOS-FUTO-2026-PAY-${Math.floor(10000 + Math.random() * 90000)}`;
-        data.updated_at = new Date().toISOString();
-
-        // Sync back to Supabase in background
-        supabase.from('id_card_applications').update({
-          status: updatedStatus,
-          payment_status: 'verified',
-          payment_reference: data.payment_reference,
-          updated_at: data.updated_at
-        }).eq('id', data.id).then(() => {}).catch(() => {});
-      }
-
-      // Update local storage cache with latest remote data
-      try {
-        const apps = getLocalIdApplicationsDatabase();
-        const existingIdx = apps.findIndex(a => a.id === data.id || (a.matric_number && a.matric_number.toUpperCase() === cleanMatric));
-        if (existingIdx >= 0) {
-          apps[existingIdx] = { ...apps[existingIdx], ...data };
-        } else {
-          apps.unshift(data);
-        }
-        saveLocalIdApplications(apps);
-      } catch (e) {}
-
       return data;
     }
   } catch (e) {
-    // Offline fallback
+    // offline
   }
 
-  // 2. Local storage fallback
+  // 2. Local storage
   const apps = getLocalIdApplicationsDatabase();
-  const app = apps.find(a => 
+  const app = apps.find(a =>
     (a.matric_number && a.matric_number.toUpperCase() === cleanMatric) ||
     a.student_id === matricOrId
   );
 
-  if (app) {
-    const paymentCheck = await checkStudentPaymentStatus(cleanMatric);
-    if (paymentCheck.isPaid && app.status === 'pending_payment') {
-      app.status = app.passport_url ? 'ready_to_submit' : 'photo_required';
-      app.payment_status = 'verified';
-      app.payment_reference = app.payment_reference || paymentCheck.payment?.payment_reference;
-      saveLocalIdApplications(apps);
-    }
-    return app;
-  }
-
-  return null;
-}
-
-/**
- * Real-time Multi-Device & Mobile Synchronization for ID Card & Dues Status.
- * Listens to Supabase Realtime Channels, Window Focus, Visibility Change, and Storage Events.
- */
-export function subscribeToIdCardUpdates(matricOrId, onUpdate) {
-  if (!matricOrId || typeof onUpdate !== 'function') return () => {};
-
-  const cleanMatric = String(matricOrId).trim().toUpperCase();
-
-  // 1. Supabase Realtime Channel
-  let channel = null;
-  try {
-    channel = supabase
-      .channel(`id-card-sync-${cleanMatric}-${Math.random().toString(36).slice(2, 7)}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'id_card_applications' },
-        (payload) => {
-          onUpdate(payload);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'departmental_dues' },
-        (payload) => {
-          onUpdate(payload);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'dues_payments' },
-        (payload) => {
-          onUpdate(payload);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
-        (payload) => {
-          onUpdate(payload);
-        }
-      )
-      .subscribe();
-  } catch (e) {
-    console.warn('Realtime subscription error:', e);
-  }
-
-  // 2. Cross-tab & Multi-window LocalStorage listener
-  const handleStorage = (e) => {
-    if (
-      !e.key ||
-      e.key === ID_APPLICATIONS_STORAGE_KEY ||
-      e.key === PAYMENTS_STORAGE_KEY ||
-      e.key === 'nacos_user' ||
-      e.key === 'nacos_dues_cleared'
-    ) {
-      onUpdate({ type: 'storage', key: e.key });
-    }
-  };
-  if (typeof window !== 'undefined') {
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('nacos_user_updated', handleStorage);
-  }
-
-  // 3. Tab Visibility & Focus listener (when user switches back to tab or unlocks mobile phone)
-  const handleVisibilityOrFocus = () => {
-    if (typeof document !== 'undefined' && (document.visibilityState === 'visible' || document.hasFocus())) {
-      onUpdate({ type: 'visibility_change' });
-    }
-  };
-  if (typeof window !== 'undefined') {
-    window.addEventListener('visibilitychange', handleVisibilityOrFocus);
-    window.addEventListener('focus', handleVisibilityOrFocus);
-  }
-
-  // 4. Liveness Polling Interval (every 5 seconds) to ensure real-time mobile sync even when WebSockets sleep
-  const pollInterval = setInterval(() => {
-    onUpdate({ type: 'poll' });
-  }, 5000);
-
-  // Return cleanup function
-  return () => {
-    if (channel) {
-      try {
-        supabase.removeChannel(channel);
-      } catch (e) {}
-    }
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('nacos_user_updated', handleStorage);
-      window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-      window.removeEventListener('focus', handleVisibilityOrFocus);
-    }
-    clearInterval(pollInterval);
-  };
+  return app || null;
 }
 
 /**
@@ -753,7 +614,7 @@ export async function savePassportToApplication(applicationId, file, student) {
       userObj.photo_url = photoUrl;
       userObj.cloudinary_public_id = publicId;
       localStorage.setItem('nacos_user', JSON.stringify(userObj));
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 5. Supabase sync
@@ -798,8 +659,8 @@ export async function linkPassportUrlToApplication(applicationId, matric, photoU
 
   // 1. Update in local applications DB
   const apps = getLocalIdApplicationsDatabase();
-  const index = apps.findIndex(a => 
-    a.id === applicationId || 
+  const index = apps.findIndex(a =>
+    a.id === applicationId ||
     (a.matric_number && a.matric_number.toUpperCase() === cleanMatric)
   );
 
@@ -817,8 +678,8 @@ export async function linkPassportUrlToApplication(applicationId, matric, photoU
 
   // 2. Update in local students DB & nacos_user
   const students = getLocalStudentsDatabase();
-  const sIndex = students.findIndex(s => 
-    (s.registration_number && s.registration_number.toUpperCase() === cleanMatric) || 
+  const sIndex = students.findIndex(s =>
+    (s.registration_number && s.registration_number.toUpperCase() === cleanMatric) ||
     s.id === cleanMatric
   );
   if (sIndex !== -1) {
@@ -838,7 +699,7 @@ export async function linkPassportUrlToApplication(applicationId, matric, photoU
       userObj.photo_url = photoUrl;
       if (publicId) userObj.cloudinary_public_id = publicId;
       localStorage.setItem('nacos_user', JSON.stringify(userObj));
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 3. Supabase sync
@@ -879,7 +740,7 @@ export async function submitIdApplication(applicationId, passportUrlOverride = n
         apps.push(data);
         index = apps.length - 1;
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (index === -1) {
@@ -902,7 +763,7 @@ export async function submitIdApplication(applicationId, passportUrlOverride = n
           app.passport_url = u.profile_photo_url || u.avatar_url || u.photo_url;
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (app.payment_status !== 'verified') {
@@ -925,7 +786,7 @@ export async function submitIdApplication(applicationId, passportUrlOverride = n
       submitted_at: app.submitted_at,
       updated_at: app.updated_at
     }).eq('id', app.id);
-  } catch (e) {}
+  } catch (e) { }
 
   return { success: true, application: app };
 }
@@ -952,15 +813,15 @@ export async function portalAdminGetApplications(options = {}) {
     if (!error && data && data.length > 0) {
       list = data;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   if (list.length === 0) {
     const apps = getLocalIdApplicationsDatabase();
     const students = getLocalStudentsDatabase();
 
     list = apps.map(app => {
-      const student = students.find(s => 
-        s.id === app.student_id || 
+      const student = students.find(s =>
+        s.id === app.student_id ||
         s.registration_number.toUpperCase() === app.matric_number.toUpperCase()
       ) || {};
 
@@ -981,7 +842,7 @@ export async function portalAdminGetApplications(options = {}) {
 
   if (search) {
     const q = search.trim().toLowerCase();
-    list = list.filter(a => 
+    list = list.filter(a =>
       (a.matric_number && a.matric_number.toLowerCase().includes(q)) ||
       (a.application_number && a.application_number.toLowerCase().includes(q)) ||
       (a.id_card_number && a.id_card_number.toLowerCase().includes(q)) ||
@@ -1035,7 +896,7 @@ export async function portalAdminApproveApplication(applicationId, adminUser) {
       reviewed_by: app.reviewed_by,
       updated_at: app.updated_at
     }).eq('id', app.id);
-  } catch (e) {}
+  } catch (e) { }
 
   return { success: true, application: app };
 }
@@ -1071,7 +932,7 @@ export async function portalAdminRejectApplication(applicationId, reason, adminU
       reviewed_by: app.reviewed_by,
       updated_at: app.updated_at
     }).eq('id', app.id);
-  } catch (e) {}
+  } catch (e) { }
 
   return { success: true, application: app };
 }
@@ -1107,7 +968,7 @@ export async function portalAdminRevokeIdCard(applicationId, reason, adminUser) 
       reviewed_by: app.reviewed_by,
       updated_at: app.updated_at
     }).eq('id', app.id);
-  } catch (e) {}
+  } catch (e) { }
 
   return { success: true, application: app };
 }
@@ -1142,7 +1003,7 @@ export async function portalAdminRegenerateIdCard(applicationId, adminUser) {
       reviewed_by: app.reviewed_by,
       updated_at: app.updated_at
     }).eq('id', app.id);
-  } catch (e) {}
+  } catch (e) { }
 
   return { success: true, application: app };
 }
@@ -1168,7 +1029,7 @@ export async function saveGeneratedIdCardAsset(applicationId, imageUrl) {
       id_card_back_url: ID_CARD_TEMPLATE.masterBackUrl,
       updated_at: new Date().toISOString()
     }).eq('id', applicationId);
-  } catch (e) {}
+  } catch (e) { }
 
   return { success: true, imageUrl };
 }
@@ -1230,11 +1091,11 @@ export async function verifyIdCardPublic(idCardNumber) {
         message: 'This application is currently undergoing processing.'
       };
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // 2. Fallback to local storage
   const apps = getLocalIdApplicationsDatabase();
-  const app = apps.find(a => 
+  const app = apps.find(a =>
     (a.id_card_number && a.id_card_number.toUpperCase() === cleanNum) ||
     (a.application_number && a.application_number.toUpperCase() === cleanNum) ||
     (a.matric_number && a.matric_number.toUpperCase() === cleanNum)
@@ -1245,8 +1106,8 @@ export async function verifyIdCardPublic(idCardNumber) {
   }
 
   const students = getLocalStudentsDatabase();
-  const student = students.find(s => 
-    s.id === app.student_id || 
+  const student = students.find(s =>
+    s.id === app.student_id ||
     s.registration_number.toUpperCase() === app.matric_number.toUpperCase()
   ) || {};
 
@@ -1385,7 +1246,7 @@ export async function drawIdCardOnCanvas(canvas, student, photoImg, cardInfo = n
   // 1. Load Master Template Image (Priority: options URL -> static asset -> Cloudinary URL)
   const templateSrc = options.templateImgUrl || options.templateUrl || t.masterTemplateUrl;
   const templateImg = options.templateImg || await loadTemplateImage(
-    templateSrc, 
+    templateSrc,
     '/nacos_id_template_master.jpg'
   );
 
@@ -1682,8 +1543,8 @@ function triggerFileDownload(urlOrDataUrl, filename) {
  * Supports downloading Front, Back, or Both sides
  */
 export async function downloadIdCardAsImage(frontCanvasOrUrl, filename = 'NACOS-Student-ID-Card', side = 'both') {
-  const frontDataUrl = typeof frontCanvasOrUrl === 'string' 
-    ? frontCanvasOrUrl 
+  const frontDataUrl = typeof frontCanvasOrUrl === 'string'
+    ? frontCanvasOrUrl
     : frontCanvasOrUrl?.toDataURL('image/png');
 
   const backUrl = ID_CARD_TEMPLATE.masterBackUrl || '/nacos_id_template_back.jpg';

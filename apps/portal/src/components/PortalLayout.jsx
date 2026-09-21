@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  GraduationCap, 
-  CreditCard, 
-  BookOpen, 
-  User, 
+import {
+  LayoutDashboard,
+  GraduationCap,
+  CreditCard,
+  BookOpen,
+  User,
   Users,
-  LogOut, 
-  Menu, 
-  X, 
+  LogOut,
+  Menu,
+  X,
   ChevronRight,
   ChevronDown,
   ShieldCheck,
@@ -62,7 +62,7 @@ const PortalLayout = ({ children }) => {
       if (stored) {
         try {
           return JSON.parse(stored);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
     return {};
@@ -195,10 +195,10 @@ const PortalLayout = ({ children }) => {
       if (studentsRaw) {
         try {
           students = JSON.parse(studentsRaw);
-        } catch (err) {}
+        } catch (err) { }
       }
 
-      const studentIdx = students.findIndex(s => 
+      const studentIdx = students.findIndex(s =>
         (s.registration_number && s.registration_number.toUpperCase() === regNo) ||
         (s.matric && s.matric.toUpperCase() === regNo)
       );
@@ -220,7 +220,7 @@ const PortalLayout = ({ children }) => {
       // 1. Update remote Supabase profile if available
       try {
         if (supabase && (regNo || user.id)) {
-          const query = user.id 
+          const query = user.id
             ? supabase.from('profiles').update({ password_hash: newHash, updated_at: new Date().toISOString() }).eq('id', user.id)
             : supabase.from('profiles').update({ password_hash: newHash, updated_at: new Date().toISOString() }).eq('registration_number', regNo);
           await query;
@@ -280,53 +280,64 @@ const PortalLayout = ({ children }) => {
     .join('')
     .slice(0, 2)
     .toUpperCase() || 'ST';
-  const displayFirstName = (user.firstName && !user.firstName.toLowerCase().includes('president')) 
-    ? user.firstName 
+  const displayFirstName = (user.firstName && !user.firstName.toLowerCase().includes('president'))
+    ? user.firstName
     : (user.first_name && !user.first_name.toLowerCase().includes('president'))
-    ? user.first_name
-    : displayName.split(' ')[0];
+      ? user.first_name
+      : displayName.split(' ')[0];
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-[#041801] text-gray-900 dark:text-white flex flex-col font-sans selection:bg-[#138601] selection:text-white">
-      
+
       {/* Top Header */}
-      <header className={`sticky top-0 z-40 w-full border-b print:hidden ${
-        isDark 
-          ? 'bg-[#083002] border-[#138601]/25 text-white' 
+      <header className={`sticky top-0 z-40 w-full border-b print:hidden ${isDark
+          ? 'bg-[#083002] border-[#138601]/25 text-white'
           : 'bg-white border-gray-200 text-gray-900'
-      }`}>
+        }`}>
         <div className="site-container h-16 flex items-center justify-between">
-          
+
           {/* Brand: logo always visible, menu/X button always in same spot */}
           <div className="flex items-center gap-3">
             {/* Menu toggle — always in same spot, icons cross-fade */}
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className={`md:hidden p-2.5 rounded-xl cursor-pointer transition-colors relative w-10 h-10 flex items-center justify-center ${
-                isDark ? 'text-gray-200 hover:text-white bg-[#041801] border border-[#138601]/30' : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200'
-              }`}
+              className={`md:hidden p-2.5 rounded-xl cursor-pointer transition-colors relative w-10 h-10 flex items-center justify-center ${isDark ? 'text-gray-200 hover:text-white bg-[#041801] border border-[#138601]/30' : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200'
+                }`}
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             >
               {/* Hamburger icon — fades out when open */}
-              <Menu className={`w-5 h-5 absolute transition-all duration-200 ${
-                mobileOpen ? 'opacity-0 scale-75 rotate-90' : 'opacity-100 scale-100 rotate-0'
-              }`} />
+              <Menu className={`w-5 h-5 absolute transition-all duration-200 ${mobileOpen ? 'opacity-0 scale-75 rotate-90' : 'opacity-100 scale-100 rotate-0'
+                }`} />
               {/* X icon — fades in when open */}
-              <X className={`w-5 h-5 absolute transition-all duration-200 ${
-                mobileOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-75 -rotate-90'
-              }`} />
+              <X className={`w-5 h-5 absolute transition-all duration-200 ${mobileOpen ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-75 -rotate-90'
+                }`} />
             </button>
 
             {/* Logo — always visible in same position, no subtitle text */}
             <Link to="/dashboard" className="flex items-center">
               <img src={isDark ? logoDark : logoLight} alt="NACOS FUTO Logo" className="h-8 md:h-9 w-auto object-contain" />
             </Link>
+
+            {/* Desktop Sidebar Collapse / Expand Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleCollapse}
+              className={`hidden md:flex items-center justify-center p-2 rounded transition-colors cursor-pointer border ${
+                isDark
+                  ? 'text-gray-300 hover:text-white bg-[#041801] hover:bg-[#138601]/20 border-[#138601]/30'
+                  : 'text-gray-600 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200 border-gray-200'
+              }`}
+              title={isCollapsed ? "Expand navigation sidebar" : "Collapse navigation to icons"}
+              aria-label={isCollapsed ? "Expand navigation sidebar" : "Collapse navigation to icons"}
+            >
+              {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
           </div>
 
           {/* Right actions: Notifications, Settings, Theme toggle, Profile Avatar Dropdown */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            
+
             {/* Notification Bell Icon & Dropdown */}
             <div className="relative" ref={notifRef}>
               <button
@@ -335,9 +346,8 @@ const PortalLayout = ({ children }) => {
                   setNotificationsOpen(!notificationsOpen);
                   setProfileDropdownOpen(false);
                 }}
-                className={`p-2 rounded text-gray-600 dark:text-green-300 hover:bg-gray-100 dark:hover:bg-[#041801] border border-transparent dark:border-[#138601]/20 transition-colors relative cursor-pointer ${
-                  notificationsOpen ? 'bg-gray-100 dark:bg-[#041801]' : ''
-                }`}
+                className={`p-2 rounded text-gray-600 dark:text-green-300 hover:bg-gray-100 dark:hover:bg-[#041801] border border-transparent dark:border-[#138601]/20 transition-colors relative cursor-pointer ${notificationsOpen ? 'bg-gray-100 dark:bg-[#041801]' : ''
+                  }`}
                 aria-label="View notifications"
                 title="Notifications"
               >
@@ -381,10 +391,10 @@ const PortalLayout = ({ children }) => {
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-[#138601] flex items-center justify-center text-white font-bold text-xs ring-2 ring-[#138601]/30 shrink-0">
                   {avatarUrl ? (
-                    <img 
-                      src={avatarUrl} 
-                      alt={displayName} 
-                      className="w-full h-full object-cover" 
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.style.display = 'none';
@@ -623,62 +633,114 @@ const PortalLayout = ({ children }) => {
       )}
 
       <div className="flex-1 flex site-container w-full gap-5 lg:gap-8 min-h-0 print:p-0 print:m-0 print:max-w-none print:w-full overflow-x-hidden">
-        
-        {/* DESKTOP SIDEBAR: Sticky, Independent Scroll & Spacious */}
-        <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-6 pr-1.5 justify-between sidebar-scroll print:hidden">
-          
-          <div className="space-y-4">
-            {/* Navigation Links with comfortable padding and text-sm size */}
-            <nav className="space-y-1.5">
-              {navItems.map((item) => {
-                const active = location.pathname === item.path;
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      active
-                        ? 'bg-[#138601] text-white shadow-xs font-semibold'
-                        : isDark
-                        ? 'text-green-100/90 hover:text-white hover:bg-[#083002]/80 border border-transparent hover:border-[#138601]/20'
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-[#f1f3f5] border border-transparent'
-                    }`}
+
+        {/* DESKTOP SIDEBAR WRAPPER: Collapsible into Icons with Hover Expansion */}
+        <div className={`hidden md:block shrink-0 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
+          <aside
+            onMouseEnter={() => isCollapsed && setIsHovered(true)}
+            onMouseLeave={() => isCollapsed && setIsHovered(false)}
+            className={`fixed md:sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden py-6 flex flex-col justify-between sidebar-scroll print:hidden transition-all duration-300 ease-in-out ${
+              isCollapsed
+                ? isHovered
+                  ? 'w-64 z-40 bg-white dark:bg-[#083002] shadow-2xl px-3 border-r border-gray-200 dark:border-[#138601]/30 rounded-r-xl'
+                  : 'w-16 px-2'
+                : 'w-64 px-1 pr-2'
+            }`}
+          >
+            <div className="space-y-4">
+              {/* Header inside sidebar with expand/collapse control */}
+              <div className="flex items-center justify-between px-2 pb-1">
+                {isExpanded ? (
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-green-300/70">
+                      Menu Navigation
+                    </span>
+                    <button
+                      type="button"
+                      onClick={toggleCollapse}
+                      className="p-1 rounded text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#041801] transition-colors cursor-pointer"
+                      title={isCollapsed ? "Pin sidebar open" : "Collapse into icons"}
+                    >
+                      <PanelLeftClose className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={toggleCollapse}
+                    className="w-full flex items-center justify-center p-1.5 rounded text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#041801] transition-colors cursor-pointer"
+                    title="Click to expand sidebar"
                   >
-                    <div className="flex items-center space-x-3">
-                      <Icon className={`w-4.5 h-4.5 ${active ? 'text-white' : isDark ? 'text-[#4bd043]' : 'text-gray-500'}`} />
-                      <span>{item.label}</span>
-                    </div>
-                    {active && <ChevronRight className="w-4 h-4 text-white" />}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
+                    <PanelLeftOpen className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
 
-          {/* Bottom Semester Progress Bar */}
-          <div className={`p-4 rounded border mt-4 shrink-0 space-y-2.5 ${
-            isDark ? 'bg-[#083002] border-[#138601]/30' : 'bg-white border-gray-200/80'
-          }`}>
-            <div className="flex items-center justify-between text-xs font-semibold text-gray-700 dark:text-green-200">
-              <span>Semester 1 of 2</span>
-              <span className="text-[#138601] dark:text-[#4bd043]">2025/2026</span>
-            </div>
-            {/* Clean Progress Track */}
-            <div className="w-full h-1.5 bg-gray-200 dark:bg-[#041801] rounded-full overflow-hidden">
-              <div className="h-full bg-[#138601] w-3/5 rounded-full"></div>
-            </div>
-            <div className="text-[11px] text-gray-500 dark:text-green-200/70 font-normal">
-              First Semester Examinations
-            </div>
-          </div>
+              {/* Navigation Links */}
+              <nav className="space-y-1.5">
+                {navItems.map((item) => {
+                  const active = location.pathname === item.path;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      title={!isExpanded ? item.label : undefined}
+                      className={`group relative flex items-center rounded text-sm font-medium transition-all cursor-pointer ${
+                        isExpanded 
+                          ? 'justify-between px-3.5 py-2.5' 
+                          : 'justify-center h-11 w-11 mx-auto'
+                      } ${
+                        active
+                          ? 'bg-[#138601] text-white shadow-xs font-semibold'
+                          : isDark
+                          ? 'text-green-100/90 hover:text-white hover:bg-[#083002]/80 border border-transparent hover:border-[#138601]/20'
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-[#f1f3f5] border border-transparent'
+                      }`}
+                    >
+                      <div className={`flex items-center ${isExpanded ? 'space-x-3' : 'justify-center'}`}>
+                        <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : isDark ? 'text-[#4bd043]' : 'text-gray-500'}`} />
+                        {isExpanded && <span className="truncate">{item.label}</span>}
+                      </div>
+                      {isExpanded && active && <ChevronRight className="w-4 h-4 text-white shrink-0" />}
 
-        </aside>
+                      {/* Floating Tooltip when icon-only */}
+                      {!isExpanded && (
+                        <span className="absolute left-full ml-3 px-2.5 py-1 text-xs font-semibold text-white bg-gray-900 dark:bg-[#041801] border border-gray-700 dark:border-[#138601]/40 rounded shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+                          {item.label}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Bottom Semester Progress Bar */}
+            {isExpanded && (
+              <div className={`p-4 rounded border mt-4 shrink-0 space-y-2.5 animate-in fade-in duration-200 ${
+                isDark ? 'bg-[#083002] border-[#138601]/30' : 'bg-white border-gray-200/80'
+              }`}>
+                <div className="flex items-center justify-between text-xs font-semibold text-gray-700 dark:text-green-200">
+                  <span>Semester 1 of 2</span>
+                  <span className="text-[#138601] dark:text-[#4bd043]">2025/2026</span>
+                </div>
+                {/* Clean Progress Track */}
+                <div className="w-full h-1.5 bg-gray-200 dark:bg-[#041801] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#138601] w-3/5 rounded-full"></div>
+                </div>
+                <div className="text-[11px] text-gray-500 dark:text-green-200/70 font-normal">
+                  First Semester Examinations
+                </div>
+              </div>
+            )}
+          </aside>
+        </div>
 
         {/* MOBILE NAVIGATION DRAWER – Full-screen overlay */}
         {mobileOpen && (
-          <div className="md:hidden fixed inset-0 z-50 flex flex-col text-white print:hidden" style={{background: isDark ? '#041801' : '#0a2800'}}>
-            
+          <div className="md:hidden fixed inset-0 z-50 flex flex-col text-white print:hidden" style={{ background: isDark ? '#041801' : '#0a2800' }}>
+
             {/* Drawer Header: same layout as main header — logo left, X right */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
               {/* Logo on LEFT — mirrors main header */}
@@ -717,11 +779,10 @@ const PortalLayout = ({ children }) => {
                     key={item.path}
                     to={item.path}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${
-                      active 
-                        ? 'bg-[#138601] text-white shadow-sm' 
+                    className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${active
+                        ? 'bg-[#138601] text-white shadow-sm'
                         : 'text-white/80 hover:text-white hover:bg-white/10'
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-[#4bd043]'}`} />
                     <span>{item.label}</span>
