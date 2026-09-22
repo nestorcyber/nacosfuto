@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, ArrowLeft, Clock, Sparkles } from "lucide-react";
+import { Check, ArrowLeft, Clock } from "lucide-react";
 import { BrutalButton } from "../ui/BrutalButton";
 import { BrutalCard } from "../ui/BrutalCard";
 
@@ -53,15 +53,9 @@ export function CoursePlayer({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-mono text-xs text-[#138601] font-semibold">
+              <span className="font-mono text-xs text-[#0056D2] font-semibold">
                 Lesson #{topic.order_index || 1}
               </span>
-              {topic.is_ai_generated && (
-                <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-mono bg-foreground text-primary-foreground rounded">
-                  <Sparkles size={10} className="mr-1" />
-                  AI Curated
-                </span>
-              )}
             </div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
               {topic.title}
@@ -75,7 +69,7 @@ export function CoursePlayer({
             </span>
 
             {isCompleted ? (
-              <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold bg-[#138601] text-white rounded">
+              <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold bg-[#0056D2] text-white rounded">
                 <Check size={14} />
                 <span>Completed</span>
               </span>

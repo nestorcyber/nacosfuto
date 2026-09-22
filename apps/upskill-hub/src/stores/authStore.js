@@ -1,18 +1,47 @@
 /**
  * authStore.js
  * Authentication & Role State for Upskill Hub with NACOS Student integration.
+ * Supports switching between Learner and Creator modes with Super Admin approval verification.
  */
 import { create } from "zustand";
 import { authService } from "../services/authService";
+import { db } from "../services/mockDatabase";
 
 export const useAuthStore = create((set, get) => ({
   user: authService.getCurrentUser(),
   status: "IDLE",
   isAuthenticated: Boolean(authService.getCurrentUser()),
   errorMessage: null,
+  activeMode: (typeof window !== "undefined" && localStorage.getItem("nacos_upskill_active_mode")) || "learner",
 
   setUser: (userData) => {
     set({ user: userData, isAuthenticated: !!userData, status: "SUCCESS" });
+  },
+
+  switchMode: (mode) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("nacos_upskill_active_mode", mode);
+    }
+    set({ activeMode: mode });
+  },
+
+  isCreatorApproved: () => {
+    const user = get().user;
+    if (!user) return false;
+    if (user.role === "creator" || user.user_metadata?.role === "creator" || user.isCreator || user.role === "super_admin" || user.role === "admin") {
+      return true;
+    }
+    try {
+      const raw = localStorage.getItem("nacos_approved_creators_db");
+      if (raw) {
+        const list = JSON.parse(raw);
+        return list.some(
+          (c) => (user.email && c.email?.toLowerCase() === user.email.toLowerCase()) || 
+                 (user.id && String(c.user_id) === String(user.id))
+        );
+      }
+    } catch (e) {}
+    return false;
   },
 
   login: async (identifier, password) => {
@@ -64,11 +93,11 @@ export const useAuthStore = create((set, get) => ({
     if (typeof window !== "undefined") {
       localStorage.setItem("nacos_upskill_user", JSON.stringify(updated));
     }
-    set({ user: updated });
+    set({ user: updated, activeMode: nextRole });
   },
 
   logout: () => {
     authService.logout();
-    set({ user: null, isAuthenticated: false, status: "IDLE", errorMessage: null });
+    set({ user: null, isAuthenticated: false, activeMode: "learner", status: "IDLE", errorMessage: null });
   },
 }));

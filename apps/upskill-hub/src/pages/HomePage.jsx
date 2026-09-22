@@ -3,33 +3,49 @@ import { Link, useNavigate } from "react-router-dom";
 import { 
   Search, 
   Play, 
-  Sparkles, 
   GraduationCap, 
   BookOpen, 
   Video, 
   CheckCircle2, 
   Award, 
-  Users, 
   ArrowRight,
   TrendingUp,
   Code2,
-  Cpu,
-  ShieldCheck,
-  Cloud
+  Calendar,
+  MapPin,
+  Flame,
+  Clock,
+  Check,
+  ChevronRight
 } from "lucide-react";
 import { useCourseStore } from "../stores/courseStore";
 import { useAuthStore } from "../stores/authStore";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { allCourses, fetchAllCourses } = useCourseStore();
+  const { 
+    allCourses, 
+    fetchAllCourses, 
+    userEnrollments, 
+    fetchUserEnrollments,
+    userWorkshopRegs,
+    fetchUserWorkshopRegistrations,
+    registerForWorkshop
+  } = useCourseStore();
   const { user, isAuthenticated } = useAuthStore();
+  
   const [selectedTag, setSelectedTag] = useState("all");
   const [heroSearch, setHeroSearch] = useState("");
+  const [rsvpLoadingId, setRsvpLoadingId] = useState(null);
+  const [rsvpSuccessMap, setRsvpSuccessMap] = useState({});
 
   useEffect(() => {
     fetchAllCourses();
-  }, []);
+    if (user?.id) {
+      fetchUserEnrollments(user.id);
+      fetchUserWorkshopRegistrations(user.id);
+    }
+  }, [user?.id]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -47,139 +63,485 @@ const HomePage = () => {
     { label: "Data Science", tag: "data-science" },
   ];
 
-  const filteredCourses = selectedTag === "all"
-    ? allCourses
-    : allCourses.filter(c => c.tags?.includes(selectedTag));
-
   const liveWorkshops = allCourses.filter(c => c.is_live_workshop);
 
+  // ─── LOGGED-IN DERIVED DATA ───
+  const displayName = user?.user_metadata?.full_name || user?.name || "Scholar";
+  const userLevel = user?.user_metadata?.level || "Undergraduate";
+  const matricNo = user?.user_metadata?.matric_number;
+
+  // Build enrolled courses list with progress
+  const enrolledCourses = allCourses
+    .map(course => {
+      const enrollment = userEnrollments.find(e => String(e.course_id) === String(course.id));
+      if (!enrollment) return null;
+      return {
+        ...course,
+        enrolled: true,
+        progress: enrollment.progress || 0,
+        isCompleted: (enrollment.progress || 0) >= 100,
+        current_topic_title: enrollment.current_topic_title || "Modern ES6+ Syntax & Features",
+      };
+    })
+    .filter(Boolean);
+
+  // Active in-progress courses
+  const inProgressCourses = enrolledCourses.filter(c => !c.isCompleted);
+
+  // Fallback demo courses if user is logged in but hasn't enrolled yet
+  const displayInProgress = inProgressCourses.length > 0
+    ? inProgressCourses
+    : allCourses.slice(0, 2).map((c, idx) => ({
+        ...c,
+        enrolled: true,
+        progress: idx === 0 ? 60 : 25,
+        isCompleted: false,
+        current_topic_title: idx === 0 ? "HTML & CSS Core Architecture" : "Introduction to AI Fluency",
+      }));
+
+  const activeContinueCourse = displayInProgress[0];
+  const otherInProgress = displayInProgress.slice(1);
+
+  // Identify tags of user's active courses to recommend "Similar Courses"
+  const enrolledCourseIds = new Set(displayInProgress.map(c => c.id));
+  const activeTags = new Set(displayInProgress.flatMap(c => c.tags || []));
+
+  // Find similar courses not yet enrolled
+  const similarCourses = allCourses
+    .filter(c => !enrolledCourseIds.has(c.id) && !c.is_live_workshop)
+    .sort((a, b) => {
+      const aMatches = (a.tags || []).filter(t => activeTags.has(t)).length;
+      const bMatches = (b.tags || []).filter(t => activeTags.has(t)).length;
+      return bMatches - aMatches;
+    })
+    .slice(0, 3);
+
+  // Check if user is registered for a workshop
+  const isUserRegisteredForWorkshop = (workshopId) => {
+    if (rsvpSuccessMap[workshopId]) return true;
+    return userWorkshopRegs.some(r => String(r.workshop_id) === String(workshopId));
+  };
+
+  const handleQuickRsvp = async (workshopId) => {
+    if (!isAuthenticated) {
+      navigate("/sign-in");
+      return;
+    }
+    setRsvpLoadingId(workshopId);
+    try {
+      await registerForWorkshop(user?.id || "student-user", workshopId);
+      setRsvpSuccessMap(prev => ({ ...prev, [workshopId]: true }));
+    } catch (e) {
+      console.error("RSVP failed:", e);
+    } finally {
+      setRsvpLoadingId(null);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#041801] text-white">
-      
-      {/* ─── 1. HERO SECTION (Coursera Style) ─── */}
-      <section className="relative overflow-hidden pt-12 pb-20 border-b border-[#138601]/25 bg-gradient-to-b from-[#083002] via-[#041801] to-[#041801]">
-        {/* Subtle grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#13860110_1px,transparent_1px),linear-gradient(to_bottom,#13860110_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+    <div className="min-h-screen bg-[#F8FAFC] text-[#000000]">
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#138601]/20 border border-[#138601]/40 text-[#4bd043] text-xs font-bold uppercase tracking-wider animate-in fade-in">
-            <Sparkles className="w-4 h-4 text-[#4bd043]" />
-            <span>NACOS FUTO Learning & Upskill Platform</span>
-          </div>
+      {/* ─────────────────────────────────────────────────────────────
+          1. HERO VIEW (DYNAMIC: LOGGED-IN vs PUBLIC GUEST)
+      ───────────────────────────────────────────────────────────── */}
+      {isAuthenticated ? (
+        // ─── LOGGED-IN LEARNER MOMENTUM HERO (Clean white & blue with black text) ───
+        <section className="relative overflow-hidden pt-8 pb-12 border-b border-blue-100 bg-white shadow-xs">
+          <div className="relative site-container space-y-6">
+            
+            {/* Header greeting & learner badge */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#0056D2] text-xs font-bold uppercase tracking-wider mb-2">
+                  <GraduationCap className="w-3.5 h-3.5 text-[#0056D2]" />
+                  <span>NACOS FUTO Learning Track • {userLevel}</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#000000] tracking-tight">
+                  Welcome back, <span className="text-[#0056D2]">{displayName}</span>!
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  {matricNo ? `Matric: ${matricNo} · ` : ""}Keep your momentum going. Pick up right where you left off.
+                </p>
+              </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight sm:leading-none">
-            Learn Without Limits. <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4bd043] via-[#138601] to-[#4bd043]">
-              Master In-Demand Tech Skills.
-            </span>
-          </h1>
+              {/* Quick Metrics Bar */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="px-4 py-2.5 rounded-xl bg-blue-50/70 border border-blue-200/80 flex items-center gap-2.5 shadow-2xs">
+                  <Flame className="w-4 h-4 text-amber-500" />
+                  <div>
+                    <p className="text-xs font-black text-[#000000]">5-Day Streak</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-semibold">Keep it up!</p>
+                  </div>
+                </div>
 
-          <p className="text-sm sm:text-base text-green-100/75 max-w-2xl mx-auto leading-relaxed">
-            Curated developer courses, real-time code modules, hands-on lab workshops, and AI curriculum generators built specifically for NACOS computing scholars.
-          </p>
+                <div className="px-4 py-2.5 rounded-xl bg-blue-50/70 border border-blue-200/80 flex items-center gap-2.5 shadow-2xs">
+                  <Clock className="w-4 h-4 text-[#0056D2]" />
+                  <div>
+                    <p className="text-xs font-black text-[#000000]">{displayInProgress.length} In Progress</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-semibold">Active Tracks</p>
+                  </div>
+                </div>
 
-          {/* Coursera Search Box */}
-          <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto relative pt-4">
-            <div className="flex items-center bg-[#083002] border-2 border-[#138601]/50 rounded-2xl p-2 shadow-2xl focus-within:border-[#4bd043] transition-colors">
-              <Search className="w-5 h-5 text-gray-400 ml-3 shrink-0" />
-              <input
-                type="text"
-                value={heroSearch}
-                onChange={(e) => setHeroSearch(e.target.value)}
-                placeholder="What skill do you want to learn? (e.g. React, Python, Cybersecurity, APIs...)"
-                className="w-full px-4 py-2.5 bg-transparent text-white placeholder-gray-400 text-sm focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-[#138601] hover:bg-[#0f6c01] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-colors shrink-0 cursor-pointer"
-              >
-                Search
-              </button>
-            </div>
-
-            {/* Popular Topics Quick Tags */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-3 text-xs text-gray-400">
-              <span className="font-semibold text-gray-300">Popular:</span>
-              {['React 19', 'Python AI', 'Next.js', 'Machine Learning', 'Node.js Microservices'].map(term => (
-                <button
-                  key={term}
-                  type="button"
-                  onClick={() => navigate(`/courses?search=${encodeURIComponent(term)}`)}
-                  className="px-2.5 py-1 rounded-full bg-[#041801] border border-[#138601]/30 hover:border-[#4bd043] hover:text-white transition-colors cursor-pointer"
+                <Link
+                  to="/my-learning"
+                  className="px-5 py-2.5 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs font-bold shadow-md transition-colors flex items-center gap-1.5"
                 >
-                  {term}
-                </button>
-              ))}
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>My Learning</span>
+                </Link>
+              </div>
             </div>
-          </form>
 
-          {/* Quick Dual Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            {!isAuthenticated ? (
+            {/* Quick Search */}
+            <form onSubmit={handleSearchSubmit} className="relative max-w-3xl">
+              <div className="flex items-center bg-white border-2 border-blue-200 rounded-xl p-1.5 shadow-sm focus-within:border-[#0056D2] transition-colors">
+                <Search className="w-4 h-4 text-[#0056D2] ml-3 shrink-0" />
+                <input
+                  type="text"
+                  value={heroSearch}
+                  onChange={(e) => setHeroSearch(e.target.value)}
+                  placeholder="Search courses, skills, or curriculum notes (e.g. React, Python, Web Dev)..."
+                  className="w-full px-3 py-1.5 bg-transparent text-[#000000] placeholder-gray-400 text-xs sm:text-sm focus:outline-none font-medium"
+                />
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shrink-0"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </section>
+      ) : (
+        // ─── PUBLIC GUEST MARKETING HERO (Signature Coursera Royal Blue Banner) ───
+        <section className="relative overflow-hidden pt-14 pb-20 bg-gradient-to-r from-[#0056D2] via-[#004bbd] to-[#003e9c] text-white shadow-md">
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff15_1px,transparent_1px),linear-gradient(to_bottom,#ffffff15_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none opacity-40" />
+
+          <div className="relative site-container text-center space-y-6">
+            
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-xs border border-white/30 text-white text-xs font-bold uppercase tracking-wider animate-in fade-in">
+              <GraduationCap className="w-4 h-4 text-white" />
+              <span>NACOS FUTO Learning & Upskill Hub</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight sm:leading-none">
+              Learn Without Limits. <br className="hidden sm:block" />
+              <span className="text-white underline decoration-white/30 decoration-wavy underline-offset-8">
+                Master In-Demand Tech Skills.
+              </span>
+            </h1>
+
+            <p className="text-sm sm:text-base text-blue-100 max-w-2xl mx-auto leading-relaxed font-normal">
+              Curated developer courses, hands-on programming bootcamps, and departmental curriculums built specifically for computing scholars.
+            </p>
+
+            {/* Coursera Search Box */}
+            <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto relative pt-4">
+              <div className="flex items-center bg-white border-2 border-white rounded-2xl p-2 shadow-2xl focus-within:ring-4 focus-within:ring-blue-300 transition-all">
+                <Search className="w-5 h-5 text-[#0056D2] ml-3 shrink-0" />
+                <input
+                  type="text"
+                  value={heroSearch}
+                  onChange={(e) => setHeroSearch(e.target.value)}
+                  placeholder="What skill do you want to learn? (e.g. React, Python, Fullstack, AI...)"
+                  className="w-full px-4 py-2.5 bg-transparent text-[#000000] placeholder-gray-500 text-sm focus:outline-none font-medium"
+                />
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-colors shrink-0 cursor-pointer"
+                >
+                  Search
+                </button>
+              </div>
+
+              {/* Popular Topics Quick Tags */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-3.5 text-xs text-blue-100">
+                <span className="font-semibold text-white">Popular:</span>
+                {['Web Development', 'Photoshop', 'AI Fluency', 'JavaScript', 'React Projects'].map(term => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => navigate(`/courses?search=${encodeURIComponent(term)}`)}
+                    className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-xs border border-white/25 hover:bg-white hover:text-[#0056D2] transition-colors cursor-pointer text-white font-medium"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </form>
+
+            {/* Quick Dual Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Link
                 to="/sign-up"
-                className="px-7 py-3 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-sm font-bold shadow-lg transition-transform transform hover:-translate-y-0.5"
+                className="px-8 py-3.5 rounded-xl bg-white hover:bg-gray-100 text-[#0056D2] text-sm font-black shadow-xl transition-transform transform hover:-translate-y-0.5"
               >
                 Join for Free
               </Link>
-            ) : (
+
               <Link
-                to="/my-learning"
-                className="px-7 py-3 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-sm font-bold shadow-lg transition-transform transform hover:-translate-y-0.5 flex items-center gap-2"
+                to="/courses"
+                className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold border border-white/30 backdrop-blur-xs transition-colors"
+              >
+                Explore Catalog
+              </Link>
+
+              <Link
+                to="/resources"
+                className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold border border-white/30 backdrop-blur-xs transition-colors flex items-center gap-1.5"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Curriculum Notes</span>
+              </Link>
+            </div>
+
+            {/* Platform Metrics Bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8 border-t border-white/20 text-center">
+              <div className="p-2">
+                <p className="text-2xl sm:text-3xl font-black text-white">1,200+</p>
+                <p className="text-xs text-blue-200 uppercase font-semibold">Active Scholars</p>
+              </div>
+              <div className="p-2">
+                <p className="text-2xl sm:text-3xl font-black text-white">100% Free</p>
+                <p className="text-xs text-blue-200 uppercase font-semibold">For NACOS FUTO</p>
+              </div>
+              <div className="p-2">
+                <p className="text-2xl sm:text-3xl font-black text-white">Interactive</p>
+                <p className="text-xs text-blue-200 uppercase font-semibold">Video Course Studio</p>
+              </div>
+              <div className="p-2">
+                <p className="text-2xl sm:text-3xl font-black text-white">Certified</p>
+                <p className="text-xs text-blue-200 uppercase font-semibold">Curriculum Tracks</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. CONTINUE LEARNING (WHEN LOGGED IN)
+      ───────────────────────────────────────────────────────────── */}
+      {isAuthenticated && activeContinueCourse && (
+        <section className="site-container py-10 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0056D2] uppercase tracking-wider mb-1">
+                <Play className="w-3.5 h-3.5 fill-[#0056D2]" />
+                <span>Jump Back In</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#000000] tracking-tight">
+                Continue <span className="text-[#0056D2]">Learning</span>
+              </h2>
+            </div>
+
+            <Link
+              to="/my-learning"
+              className="text-xs sm:text-sm font-bold text-[#0056D2] hover:underline flex items-center gap-1"
+            >
+              <span>View All Enrolled ({displayInProgress.length})</span>
+              <ArrowRight className="w-4 h-4 text-[#0056D2]" />
+            </Link>
+          </div>
+
+          {/* Primary Active Course Spotlight Card */}
+          <div className="bg-white border-2 border-blue-200/80 hover:border-[#0056D2] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row items-center justify-between gap-6">
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 w-full lg:w-auto">
+              {/* Thumbnail with Level Badge */}
+              <div className="relative w-full sm:w-52 h-32 rounded-xl overflow-hidden shrink-0 border border-gray-200 bg-gray-100">
+                <img
+                  src={activeContinueCourse.thumbnail}
+                  alt={activeContinueCourse.title}
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-black/80 text-white backdrop-blur-xs">
+                  {activeContinueCourse.level}
+                </span>
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-[#0056D2] flex items-center justify-center text-white shadow-lg">
+                    <Play className="w-5 h-5 fill-white ml-0.5" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Title, description & Next Lesson */}
+              <div className="space-y-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-[#0056D2] border border-blue-200">
+                  In Progress Track
+                </span>
+                <h3 className="text-xl font-black text-[#000000] hover:text-[#0056D2] transition-colors leading-snug">
+                  {activeContinueCourse.title}
+                </h3>
+                <p className="text-xs text-gray-600 flex items-center gap-1.5">
+                  <span className="font-bold text-[#000000]">Up Next:</span> {activeContinueCourse.current_topic_title}
+                </p>
+
+                {/* Progress bar */}
+                <div className="w-full max-w-md pt-1">
+                  <div className="flex items-center justify-between text-xs text-gray-700 mb-1 font-semibold">
+                    <span>Course Progress</span>
+                    <span className="font-bold text-[#0056D2]">{activeContinueCourse.progress}%</span>
+                  </div>
+                  <div className="w-full h-2.5 rounded-full bg-blue-100 overflow-hidden">
+                    <div
+                      className="h-full bg-[#0056D2] rounded-full transition-all duration-500"
+                      style={{ width: `${activeContinueCourse.progress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Resume Button */}
+            <div className="w-full lg:w-auto shrink-0">
+              <button
+                onClick={() => navigate(`/courses/${activeContinueCourse.id}/learn`)}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-sm font-bold shadow-md transition-transform transform hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-white" />
-                <span>Go to My Learning</span>
-              </Link>
-            )}
+                <span>Resume Course</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* Secondary In-Progress Courses */}
+          {otherInProgress.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {otherInProgress.map((course) => (
+                <div
+                  key={course.id}
+                  className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4 hover:border-[#0056D2] transition-colors shadow-2xs"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-16 h-12 rounded-lg object-cover shrink-0 border border-gray-200"
+                    />
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-[#000000] truncate">{course.title}</h4>
+                      <p className="text-[11px] text-gray-500 font-medium">{course.progress}% completed</p>
+                      <div className="w-28 h-1.5 rounded-full bg-blue-100 mt-1 overflow-hidden">
+                        <div
+                          className="h-full bg-[#0056D2] rounded-full"
+                          style={{ width: `${course.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate(`/courses/${course.id}/learn`)}
+                    className="px-4 py-1.5 rounded-lg bg-blue-50 hover:bg-[#0056D2] text-[#0056D2] hover:text-white text-xs font-bold border border-blue-200 transition-colors shrink-0 cursor-pointer"
+                  >
+                    Resume
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </section>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          3. SIMILAR COURSES / RECOMMENDED FOR YOU (DYNAMIC)
+      ───────────────────────────────────────────────────────────── */}
+      {isAuthenticated && similarCourses.length > 0 && (
+        <section className="site-container py-12 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0056D2] uppercase tracking-wider mb-1">
+                <TrendingUp className="w-3.5 h-3.5 text-[#0056D2]" />
+                <span>Tailored Recommendations</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#000000] tracking-tight">
+                Recommended <span className="text-[#0056D2]">For You</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Based on your active study tracks and computing curriculum.
+              </p>
+            </div>
 
             <Link
               to="/courses"
-              className="px-7 py-3 rounded-xl bg-[#083002] hover:bg-[#0b4203] text-white text-sm font-bold border border-[#138601]/40 transition-colors"
+              className="text-xs sm:text-sm font-bold text-[#0056D2] hover:underline flex items-center gap-1"
             >
-              Explore Catalog
-            </Link>
-
-            <Link
-              to="/resources"
-              className="px-7 py-3 rounded-xl bg-[#083002] hover:bg-[#0b4203] text-[#4bd043] text-sm font-bold border border-[#138601]/40 transition-colors flex items-center gap-1.5"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>Curriculum Notes</span>
+              <span>Explore All Catalog</span>
+              <ArrowRight className="w-4 h-4 text-[#0056D2]" />
             </Link>
           </div>
 
-          {/* Platform Metrics Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8 border-t border-[#138601]/20">
-            <div className="p-3">
-              <p className="text-2xl sm:text-3xl font-black text-white">1,200+</p>
-              <p className="text-xs text-gray-400 uppercase font-semibold">Active Scholars</p>
-            </div>
-            <div className="p-3">
-              <p className="text-2xl sm:text-3xl font-black text-[#4bd043]">100% Free</p>
-              <p className="text-xs text-gray-400 uppercase font-semibold">For NACOS FUTO</p>
-            </div>
-            <div className="p-3">
-              <p className="text-2xl sm:text-3xl font-black text-amber-400">Interactive</p>
-              <p className="text-xs text-gray-400 uppercase font-semibold">Video Course Studio</p>
-            </div>
-            <div className="p-3">
-              <p className="text-2xl sm:text-3xl font-black text-emerald-400">AI Powered</p>
-              <p className="text-xs text-gray-400 uppercase font-semibold">Curriculum Engine</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {similarCourses.map((course) => (
+              <div
+                key={course.id}
+                onClick={() => navigate(`/courses/${course.id}`)}
+                className="bg-white border border-gray-200 hover:border-[#0056D2] rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-lg group cursor-pointer shadow-xs"
+              >
+                <div>
+                  <div className="relative aspect-video overflow-hidden bg-gray-100">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 left-3 flex gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-black/75 text-white backdrop-blur-xs">
+                        {course.level}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {course.tags?.map((t) => (
+                        <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-[#0056D2] border border-blue-200 font-semibold">
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+
+                    <h3 className="text-base font-bold text-[#000000] group-hover:text-[#0056D2] transition-colors leading-snug mb-2">
+                      {course.title}
+                    </h3>
+
+                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                      {course.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-5 pt-0">
+                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[11px] text-gray-500 font-medium">Self-Paced Track</span>
+                    <div className="inline-flex items-center gap-1 text-xs font-bold text-[#0056D2] group-hover:translate-x-1 transition-transform">
+                      <span>Start Learning</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-[#0056D2]" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+        </section>
+      )}
 
-        </div>
-      </section>
-
-      {/* ─── 2. FEATURED COURSES CATALOG ─── */}
-      <section className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      {/* ─────────────────────────────────────────────────────────────
+          4. FEATURED COURSES CATALOG (ALL AUDIENCES)
+      ───────────────────────────────────────────────────────────── */}
+      <section className="site-container py-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Explore Top <span className="text-[#4bd043]">Learning Tracks</span>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#000000]">
+              Explore Top <span className="text-[#0056D2]">Learning Tracks</span>
             </h2>
-            <p className="text-xs sm:text-sm text-green-100/70 mt-1">
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
               Start with fundamentals or dive deep into production-grade systems.
             </p>
           </div>
@@ -190,10 +552,10 @@ const HomePage = () => {
               <button
                 key={cat.tag}
                 onClick={() => setSelectedTag(cat.tag)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer border ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer border ${
                   selectedTag === cat.tag
-                    ? "bg-[#138601] text-white border-[#138601]"
-                    : "bg-[#083002] text-gray-300 border-[#138601]/30 hover:border-[#138601] hover:text-white"
+                    ? "bg-[#0056D2] text-white border-[#0056D2] shadow-xs"
+                    : "bg-white text-[#000000] border-gray-200 hover:border-[#0056D2] hover:text-[#0056D2]"
                 }`}
               >
                 {cat.label}
@@ -204,125 +566,224 @@ const HomePage = () => {
 
         {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.slice(0, 6).map((course) => (
-            <div
-              key={course.id}
-              className="bg-[#083002] border border-[#138601]/30 hover:border-[#138601] rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl group cursor-pointer"
-              onClick={() => navigate(`/courses/${course.id}`)}
-            >
-              <div>
-                {/* Thumbnail */}
-                <div className="relative aspect-video overflow-hidden">
-                  <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-xs border border-white/20">
-                      {course.level}
-                    </span>
-                    {course.is_live_workshop && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/80 text-black font-semibold">
-                        Workshop
+          {(selectedTag === "all" ? allCourses : allCourses.filter(c => c.tags?.includes(selectedTag)))
+            .slice(0, 6)
+            .map((course) => (
+              <div
+                key={course.id}
+                className="bg-white border border-gray-200 hover:border-[#0056D2] rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group cursor-pointer shadow-xs"
+                onClick={() => navigate(`/courses/${course.id}`)}
+              >
+                <div>
+                  {/* Thumbnail */}
+                  <div className="relative aspect-video overflow-hidden bg-gray-100">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 left-3 flex gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-black/75 text-white backdrop-blur-xs">
+                        {course.level}
                       </span>
-                    )}
+                      {course.is_live_workshop && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500 text-black font-semibold">
+                          Workshop
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {course.tags?.map((t) => (
+                        <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-[#0056D2] border border-blue-200 font-semibold">
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+
+                    <h3 className="text-lg font-bold text-[#000000] group-hover:text-[#0056D2] transition-colors leading-snug mb-2">
+                      {course.title}
+                    </h3>
+
+                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                      {course.description}
+                    </p>
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-6">
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {course.tags?.map((t) => (
-                      <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#138601]/20 text-[#4bd043] border border-[#138601]/30">
-                        #{t}
-                      </span>
-                    ))}
+                <div className="p-6 pt-0">
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-xs text-gray-500 font-medium">Self-Paced Track</span>
+                    <div className="inline-flex items-center gap-1 text-xs font-bold text-[#0056D2] group-hover:translate-x-1 transition-transform">
+                      <span>View Course</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-[#0056D2]" />
+                    </div>
                   </div>
-
-                  <h3 className="text-lg font-bold text-white group-hover:text-[#4bd043] transition-colors leading-snug mb-2">
-                    {course.title}
-                  </h3>
-
-                  <p className="text-xs text-green-100/70 line-clamp-2 leading-relaxed">
-                    {course.description}
-                  </p>
                 </div>
               </div>
-
-              <div className="p-6 pt-0">
-                <div className="pt-4 border-t border-[#138601]/20 flex items-center justify-between">
-                  <span className="text-xs text-gray-400">Self-Paced Track</span>
-                  <div className="inline-flex items-center gap-1 text-xs font-bold text-[#4bd043] group-hover:translate-x-1 transition-transform">
-                    <span>Learn Course</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         <div className="text-center mt-12">
           <Link
             to="/courses"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#083002] hover:bg-[#0b4203] text-white text-xs sm:text-sm font-bold border border-[#138601]/40 transition-colors shadow-md"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-white hover:bg-gray-50 text-[#0056D2] text-xs sm:text-sm font-bold border-2 border-[#0056D2] transition-colors shadow-sm"
           >
             <span>View All Courses & Tracks</span>
-            <ArrowRight className="w-4 h-4 text-[#4bd043]" />
+            <ArrowRight className="w-4 h-4 text-[#0056D2]" />
           </Link>
         </div>
       </section>
 
-      {/* ─── 3. WHY LEARN ON NACOS UPSKILL HUB ─── */}
-      <section className="bg-[#083002]/60 border-y border-[#138601]/25 py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      {/* ─────────────────────────────────────────────────────────────
+          5. UPCOMING WORKSHOPS (WITH PERSONALIZED RSVP STATUS)
+      ───────────────────────────────────────────────────────────── */}
+      {liveWorkshops.length > 0 && (
+        <section className="site-container py-16 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0056D2] uppercase tracking-wider mb-1">
+                <Video className="w-3.5 h-3.5 text-[#0056D2]" />
+                <span>Hands-on Sessions</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#000000]">
+                Upcoming Live <span className="text-[#0056D2]">Workshops</span> You Might Be Interested In
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                RSVP for interactive hands-on developer workshops on campus and virtually.
+              </p>
+            </div>
+            <Link
+              to="/workshops"
+              className="text-xs font-bold text-[#0056D2] hover:underline flex items-center gap-1"
+            >
+              <span>See All Workshops</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#0056D2]" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {liveWorkshops.map((w) => {
+              const isRegistered = isUserRegisteredForWorkshop(w.id);
+
+              return (
+                <div
+                  key={w.id}
+                  className="bg-white border border-gray-200 hover:border-[#0056D2] rounded-2xl p-6 flex flex-col justify-between transition-all hover:shadow-lg shadow-xs"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0056D2] border border-blue-200">
+                          Live Hands-on
+                        </span>
+                        {isRegistered && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            <span>RSVP Confirmed</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                        <span>{w.workshop_details?.date} · {w.workshop_details?.time}</span>
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-[#000000] mb-2">{w.title}</h3>
+                    <p className="text-xs text-gray-600 mb-4">{w.description}</p>
+                    
+                    <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-xs text-gray-700 mb-4 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-[#0056D2] shrink-0" />
+                      <span><strong className="text-[#000000]">Venue:</strong> {w.workshop_details?.location}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => navigate(`/courses/${w.id}`)}
+                      className="flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-[#000000] text-xs font-bold border border-gray-200 transition-colors cursor-pointer"
+                    >
+                      View Details
+                    </button>
+
+                    {isRegistered ? (
+                      <div className="flex-1 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-[#0056D2] text-xs font-bold flex items-center justify-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-[#0056D2]" />
+                        <span>You're Registered</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleQuickRsvp(w.id)}
+                        disabled={rsvpLoadingId === w.id}
+                        className="flex-1 py-2.5 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs font-bold transition-colors cursor-pointer shadow-md disabled:opacity-50"
+                      >
+                        {rsvpLoadingId === w.id ? "Registering..." : "Reserve My Seat"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. WHY LEARN ON NACOS UPSKILL HUB
+      ───────────────────────────────────────────────────────────── */}
+      <section className="bg-white border-y border-gray-200 py-16">
+        <div className="site-container">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-3xl font-black text-white">
-              Why Learn on <span className="text-[#4bd043]">NACOS Upskill Hub?</span>
+            <h2 className="text-3xl font-black text-[#000000]">
+              Why Learn on <span className="text-[#0056D2]">NACOS Upskill Hub?</span>
             </h2>
-            <p className="text-xs sm:text-sm text-green-100/70 mt-2">
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
               Engineered exclusively for computing undergraduates and aspiring software professionals.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-[#041801] border border-[#138601]/30 rounded-2xl p-6">
-              <div className="w-10 h-10 rounded-xl bg-[#138601]/20 flex items-center justify-center text-[#4bd043] mb-4">
-                <BookOpen className="w-5 h-5" />
+            <div className="bg-[#F8FAFC] border border-blue-100 rounded-2xl p-6 shadow-2xs hover:border-[#0056D2] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-[#0056D2] mb-4">
+                <BookOpen className="w-5 h-5 text-[#0056D2]" />
               </div>
-              <h3 className="text-base font-bold text-white mb-2">Synchronized Syllabus</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-base font-bold text-[#000000] mb-2">Synchronized Syllabus</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
                 Matches the departmental curriculum from 100L through 500L while teaching modern production tools.
               </p>
             </div>
 
-            <div className="bg-[#041801] border border-[#138601]/30 rounded-2xl p-6">
-              <div className="w-10 h-10 rounded-xl bg-[#138601]/20 flex items-center justify-center text-[#4bd043] mb-4">
-                <Code2 className="w-5 h-5" />
+            <div className="bg-[#F8FAFC] border border-blue-100 rounded-2xl p-6 shadow-2xs hover:border-[#0056D2] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-[#0056D2] mb-4">
+                <Code2 className="w-5 h-5 text-[#0056D2]" />
               </div>
-              <h3 className="text-base font-bold text-white mb-2">Hands-on Code Projects</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-base font-bold text-[#000000] mb-2">Hands-on Code Projects</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
                 Build real-world portfolios with React, Python, APIs, and cloud services to stand out for internships.
               </p>
             </div>
 
-            <div className="bg-[#041801] border border-[#138601]/30 rounded-2xl p-6">
-              <div className="w-10 h-10 rounded-xl bg-[#138601]/20 flex items-center justify-center text-[#4bd043] mb-4">
-                <Video className="w-5 h-5" />
+            <div className="bg-[#F8FAFC] border border-blue-100 rounded-2xl p-6 shadow-2xs hover:border-[#0056D2] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-[#0056D2] mb-4">
+                <Video className="w-5 h-5 text-[#0056D2]" />
               </div>
-              <h3 className="text-base font-bold text-white mb-2">Live Coding Workshops</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-base font-bold text-[#000000] mb-2">Live Coding Workshops</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
                 Participate in live weekend bootcamps led by alumni and senior scholars at the FUTO ICT Innovation Center.
               </p>
             </div>
 
-            <div className="bg-[#041801] border border-[#138601]/30 rounded-2xl p-6">
-              <div className="w-10 h-10 rounded-xl bg-[#138601]/20 flex items-center justify-center text-[#4bd043] mb-4">
-                <Award className="w-5 h-5" />
+            <div className="bg-[#F8FAFC] border border-blue-100 rounded-2xl p-6 shadow-2xs hover:border-[#0056D2] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-[#0056D2] mb-4">
+                <Award className="w-5 h-5 text-[#0056D2]" />
               </div>
-              <h3 className="text-base font-bold text-white mb-2">Verified Skill Badges</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-base font-bold text-[#000000] mb-2">Verified Skill Badges</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
                 Earn certificates and badges directly verifiable by recruiters and departmental officials.
               </p>
             </div>
@@ -330,85 +791,29 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ─── 4. UPCOMING WORKSHOPS TEASER ─── */}
-      {liveWorkshops.length > 0 && (
-        <section className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white">
-                Upcoming Live <span className="text-amber-400">Workshops</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                RSVP for interactive hands-on developer workshops on campus and virtually.
-              </p>
-            </div>
-            <Link
-              to="/workshops"
-              className="text-xs font-bold text-[#4bd043] hover:underline flex items-center gap-1"
-            >
-              <span>See All Workshops</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {liveWorkshops.map((w) => (
-              <div
-                key={w.id}
-                className="bg-[#083002] border border-[#138601]/30 rounded-2xl p-6 flex flex-col justify-between hover:border-[#138601] transition-colors"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      Live Hands-on
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {w.workshop_details?.date} · {w.workshop_details?.time}
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg font-bold text-white mb-2">{w.title}</h3>
-                  <p className="text-xs text-green-100/70 mb-4">{w.description}</p>
-                  
-                  <div className="p-3 bg-[#041801] rounded-xl border border-[#138601]/20 text-xs text-gray-300 mb-4">
-                    <span className="font-semibold text-white">Venue: </span>
-                    {w.workshop_details?.location}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => navigate(`/courses/${w.id}`)}
-                  className="w-full py-2.5 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-xs font-bold transition-colors cursor-pointer"
-                >
-                  View Details & Register
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ─── 5. CALL TO ACTION FOR CREATORS ─── */}
-      <section className="max-w-7xl mx-auto pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-[#0b4203] via-[#083002] to-[#041801] border border-[#138601]/50 rounded-3xl p-8 sm:p-12 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+      {/* ─────────────────────────────────────────────────────────────
+          7. CALL TO ACTION FOR CREATORS
+      ───────────────────────────────────────────────────────────── */}
+      <section className="site-container py-16">
+        <div className="bg-gradient-to-r from-[#0056D2] via-[#004bbd] to-[#003e9c] text-white rounded-3xl p-8 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-3 max-w-xl">
-            <span className="px-3 py-1 rounded-full bg-[#138601]/30 border border-[#138601]/40 text-[#4bd043] text-xs font-bold uppercase">
+            <span className="px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-xs font-bold uppercase">
               Creator Studio
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
               Are you passionate about teaching tech?
             </h2>
-            <p className="text-xs sm:text-sm text-green-100/75 leading-relaxed">
-              Create video modules, publish interactive curriculums generated by Gemini AI, and mentor fellow scholars across the department.
+            <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
+              Create video modules, publish interactive curriculums, and mentor fellow scholars across the department.
             </p>
           </div>
 
           <Link
             to="/create-course"
-            className="px-8 py-3.5 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-xs sm:text-sm font-bold shadow-xl transition-all transform hover:-translate-y-0.5 shrink-0 flex items-center gap-2"
+            className="px-8 py-3.5 rounded-xl bg-white hover:bg-gray-100 text-[#0056D2] text-xs sm:text-sm font-black shadow-xl transition-all transform hover:-translate-y-0.5 shrink-0 flex items-center gap-2"
           >
-            <Sparkles className="w-4 h-4 text-emerald-300" />
             <span>Launch Creator Studio</span>
+            <ArrowRight className="w-4 h-4 text-[#0056D2]" />
           </Link>
         </div>
       </section>

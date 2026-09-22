@@ -2,20 +2,21 @@ import React from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { useLocation } from "react-router-dom";
 import ScrollToTopLink from "../ScrollToTopLink";
+import { getAppUrls } from "@nacos/config/urls";
 
 /**
  * Full-screen overlay displaying categorized course resources
  */
 const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
   const location = useLocation();
+  const { upskillHub } = getAppUrls();
 
   const resources = {
     UPSKILL: [
-      { name: "Web Development", link: "/upskill/web-development" },
-      { name: "AI & Automation", link: "/upskill/ai-automation" },
-      { name: "Vibe Coding", link: "/upskill/vibe-coding" },
-      { name: "Social Media", link: "/upskill/social-media" },
-      { name: "View all courses", link: "/upskill/all" },
+      { name: "AI Fluency", link: `${upskillHub}/courses/course-ai-fluency`, isExternal: true },
+      { name: "Web Development", link: `${upskillHub}/courses/course-web-dev`, isExternal: true },
+      { name: "Resources", link: "/resources" },
+      { name: "View all courses", link: `${upskillHub}/courses`, isExternal: true },
     ],
     ABOUT: [
       { name: "About Us", link: "/about" },
@@ -51,7 +52,6 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
     ],
     RESOURCES: [
       { name: "Learning Resources", link: "/resources" },
-      { name: "Student Handbook", link: "/student-handbook" },
       { name: "FAQs", link: "/faqs" },
     ],
     "HEALTH & SAFETY": [
@@ -96,11 +96,11 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
               <ul className="space-y-2">
                 {items.map((item) => (
                   <li key={item.link}>
-                    {item.link.startsWith("http") ? (
+                    {item.link.startsWith("http") || item.isExternal || item.link.startsWith("/upskill-hub") ? (
                       <a
                         href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        target={item.target || (item.link.startsWith("http") ? "_blank" : "_self")}
+                        rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
                         className="block py-2 px-3 rounded-lg transition-colors text-sm font-medium text-[#083002]/90 dark:text-green-100 hover:bg-[#138601] hover:text-white"
                         onClick={closeOverlay}
                       >

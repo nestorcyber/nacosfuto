@@ -55,6 +55,151 @@ const AdminHub = () => {
   const [isAssigning, setIsAssigning] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', text: '' });
 
+  // Course Creators & Instructors State (Super Admin Control)
+  const [creatorApps, setCreatorApps] = useState([]);
+  const [approvedCreators, setApprovedCreators] = useState([]);
+  const [isAddCreatorModalOpen, setIsAddCreatorModalOpen] = useState(false);
+  const [creatorAssignName, setCreatorAssignName] = useState('');
+  const [creatorAssignEmail, setCreatorAssignEmail] = useState('');
+  const [creatorAssignSpecialization, setCreatorAssignSpecialization] = useState('Fullstack Engineering');
+  const [creatorFeedback, setCreatorFeedback] = useState({ type: '', text: '' });
+
+  // Load existing creators and applications
+  const loadCreators = () => {
+    try {
+      const rawApps = localStorage.getItem('nacos_creator_applications_db');
+      if (rawApps) {
+        setCreatorApps(JSON.parse(rawApps));
+      } else {
+        const defaultApps = [
+          {
+            id: 'app-1',
+            fullName: 'Emmanuel Chidubem',
+            email: 'emmanuel.chidubem@student.futo.edu.ng',
+            specialization: 'Cybersecurity & Network Security',
+            topic_idea: 'Practical Linux Terminal & Wireshark Packet Analysis',
+            experience: '3 years active CTF player, CompTIA Security+',
+            status: 'pending',
+            created_at: new Date(Date.now() - 86400000 * 2).toISOString()
+          },
+          {
+            id: 'app-2',
+            fullName: 'Blessing Amaka',
+            email: 'blessing.amaka@student.futo.edu.ng',
+            specialization: 'UI/UX & Product Design',
+            topic_idea: 'Figma to Code: Building Accessible Design Systems',
+            experience: 'Lead UI designer for departmental hackathon winners',
+            status: 'pending',
+            created_at: new Date(Date.now() - 86400000 * 1).toISOString()
+          }
+        ];
+        localStorage.setItem('nacos_creator_applications_db', JSON.stringify(defaultApps));
+        setCreatorApps(defaultApps);
+      }
+
+      const rawCreators = localStorage.getItem('nacos_approved_creators_db');
+      if (rawCreators) {
+        setApprovedCreators(JSON.parse(rawCreators));
+      } else {
+        const defaultCreators = [
+          {
+            id: 'creator-admin',
+            name: 'Engr. David Okon',
+            email: 'david.okon@futo.edu.ng',
+            specialization: 'Fullstack Engineering & Cloud',
+            status: 'approved',
+            approved_at: '2026-01-01T00:00:00Z'
+          },
+          {
+            id: 'creator-1',
+            name: 'Ifeanyi John',
+            email: 'ifeanyi.john@nacos.futo.edu.ng',
+            specialization: 'React & Node.js',
+            status: 'approved',
+            approved_at: '2026-01-15T00:00:00Z'
+          }
+        ];
+        localStorage.setItem('nacos_approved_creators_db', JSON.stringify(defaultCreators));
+        setApprovedCreators(defaultCreators);
+      }
+    } catch (e) {
+      console.warn('Error loading creators in AdminHub:', e);
+    }
+  };
+
+  const handleApproveCreatorApp = (app) => {
+    try {
+      const updatedApps = creatorApps.map(a => a.id === app.id ? { ...a, status: 'approved' } : a);
+      setCreatorApps(updatedApps);
+      localStorage.setItem('nacos_creator_applications_db', JSON.stringify(updatedApps));
+
+      const existing = approvedCreators.find(c => c.email?.toLowerCase() === app.email?.toLowerCase());
+      if (!existing) {
+        const newApproved = [
+          {
+            id: `creator-${Date.now()}`,
+            user_id: app.user_id,
+            name: app.fullName,
+            email: app.email,
+            specialization: app.specialization,
+            status: 'approved',
+            approved_at: new Date().toISOString()
+          },
+          ...approvedCreators
+        ];
+        setApprovedCreators(newApproved);
+        localStorage.setItem('nacos_approved_creators_db', JSON.stringify(newApproved));
+      }
+      setCreatorFeedback({ type: 'success', text: `Approved ${app.fullName} as course creator!` });
+      setTimeout(() => setCreatorFeedback({ type: '', text: '' }), 3500);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRejectCreatorApp = (appId) => {
+    try {
+      const updatedApps = creatorApps.map(a => a.id === appId ? { ...a, status: 'rejected' } : a);
+      setCreatorApps(updatedApps);
+      localStorage.setItem('nacos_creator_applications_db', JSON.stringify(updatedApps));
+      setCreatorFeedback({ type: 'info', text: 'Application rejected.' });
+      setTimeout(() => setCreatorFeedback({ type: '', text: '' }), 3000);
+    } catch (e) {}
+  };
+
+  const handleDirectAssignCreator = (e) => {
+    e.preventDefault();
+    if (!creatorAssignEmail.trim() || !creatorAssignName.trim()) return;
+
+    const newCreator = {
+      id: `creator-${Date.now()}`,
+      name: creatorAssignName.trim(),
+      email: creatorAssignEmail.trim(),
+      specialization: creatorAssignSpecialization.trim() || 'Technical Instructor',
+      status: 'approved',
+      assigned_by_superadmin: true,
+      approved_at: new Date().toISOString()
+    };
+
+    const updated = [newCreator, ...approvedCreators];
+    setApprovedCreators(updated);
+    localStorage.setItem('nacos_approved_creators_db', JSON.stringify(updated));
+
+    setCreatorFeedback({ type: 'success', text: `Directly granted creator privileges to ${newCreator.name}!` });
+    setCreatorAssignName('');
+    setCreatorAssignEmail('');
+    setIsAddCreatorModalOpen(false);
+    setTimeout(() => setCreatorFeedback({ type: '', text: '' }), 3500);
+  };
+
+  const handleRevokeCreator = (creatorId) => {
+    const updated = approvedCreators.filter(c => c.id !== creatorId);
+    setApprovedCreators(updated);
+    localStorage.setItem('nacos_approved_creators_db', JSON.stringify(updated));
+    setCreatorFeedback({ type: 'info', text: 'Creator privilege revoked.' });
+    setTimeout(() => setCreatorFeedback({ type: '', text: '' }), 3000);
+  };
+
   // Load existing administrators from Supabase & Local Database
   const loadAdmins = async () => {
     setIsLoadingAdmins(true);

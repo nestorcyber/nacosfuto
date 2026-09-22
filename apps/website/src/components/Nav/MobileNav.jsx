@@ -5,11 +5,13 @@ import { useLocation } from "react-router-dom";
 import ScrollToTopLink from "../ScrollToTopLink";
 import logoLight from "../../assets/full-logo-light.png";
 import logoDark from "../../assets/full-logo-dark.png";
+import { getAppUrls } from "@nacos/config/urls";
 
 const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec }) => {
   const location = useLocation();
   const theme = darkMode ? "dark" : "light";
   const [openCategory, setOpenCategory] = useState(null);
+  const { upskillHub } = getAppUrls();
 
   if (!isOpen) return null;
 
@@ -23,11 +25,10 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
 
   const resources = {
     UPSKILL: [
-      { name: "Web Development", link: "/upskill/web-development" },
-      { name: "AI & Automation", link: "/upskill/ai-automation" },
-      { name: "Vibe Coding", link: "/upskill/vibe-coding" },
-      { name: "Social Media", link: "/upskill/social-media" },
-      { name: "View all courses", link: "/upskill/all" },
+      { name: "AI Fluency", link: `${upskillHub}/courses/course-ai-fluency`, isExternal: true },
+      { name: "Web Development", link: `${upskillHub}/courses/course-web-dev`, isExternal: true },
+      { name: "Resources", link: "/resources" },
+      { name: "View all courses", link: `${upskillHub}/courses`, isExternal: true },
     ],
     ABOUT: [
       { name: "About Us", link: "/about" },
@@ -61,10 +62,6 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
       { name: "Collaboration", link: "/collaboration" },
       { name: "Research Facilities", link: "/research-facilities" },
       { name: "Research Grants", link: "/research-grants" },
-    ],
-    RESOURCES: [
-      { name: "Student Handbook", link: "/student-handbook" },
-      { name: "FAQs", link: "/faqs" },
     ],
     "HEALTH & SAFETY": [
       { name: "Guidance & Counselling", link: "/guidance-counselling" },
@@ -159,11 +156,11 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
                 >
                   {items.map((item) => (
                     <li key={item.link}>
-                      {item.link.startsWith("http") ? (
+                      {item.link.startsWith("http") || item.isExternal || item.link.startsWith("/upskill-hub") ? (
                         <a
                           href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          target={item.target || (item.link.startsWith("http") ? "_blank" : "_self")}
+                          rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
                           className={`block py-2.5 px-5 rounded transition-colors text-sm sm:text-base font-medium ${
                             darkMode
                               ? "text-green-100 hover:bg-[#138601]/25 hover:text-[#4bd043]"

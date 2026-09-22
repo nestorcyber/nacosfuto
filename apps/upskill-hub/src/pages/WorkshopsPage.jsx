@@ -1,120 +1,184 @@
-import React, { useEffect } from "react";
-import { Video, Calendar, MapPin, Clock, ArrowRight, Check } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
-import { BrutalCard } from "../components/ui/BrutalCard";
-import { BrutalButton } from "../components/ui/BrutalButton";
-import { LevelBadge } from "../components/ui/LevelBadge";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Video, Calendar, MapPin, Clock, ArrowRight, CheckCircle, Users } from "lucide-react";
 import { useCourseStore } from "../stores/courseStore";
+import { useAuthStore } from "../stores/authStore";
 
 export function WorkshopsPage() {
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const allCourses = useCourseStore((state) => state.allCourses);
   const fetchAllCourses = useCourseStore((state) => state.fetchAllCourses);
+  const registerForWorkshop = useCourseStore((state) => state.registerForWorkshop);
+
+  const [registeredIds, setRegisteredIds] = useState(new Set());
+  const [successToast, setSuccessToast] = useState("");
 
   useEffect(() => {
     fetchAllCourses();
   }, [fetchAllCourses]);
 
-  const workshops = allCourses.filter((c) => c.is_live_workshop);
+  const workshops = (allCourses || []).filter((c) => c.is_live_workshop);
+
+  const handleRegister = async (ws) => {
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+    await registerForWorkshop(user.id, ws.id, {
+      fullName: user.name || user.email,
+      email: user.email,
+    });
+    setRegisteredIds((prev) => new Set([...prev, ws.id]));
+    setSuccessToast(`Successfully registered for "${ws.title}"!`);
+    setTimeout(() => setSuccessToast(""), 4000);
+  };
 
   return (
-    <Layout>
-      <div className="space-y-6 font-sans">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="p-1 rounded bg-[#138601]/10 text-[#138601]">
-              <Video size={16} />
-            </span>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Live Interactive Workshops
-            </h1>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Join instructor-led engineering bootcamps, real-time code reviews, and hands-on lab sessions at FUTO.
-          </p>
+    <div className="flex-1 w-full bg-[#F8FAFC] text-[#000000] transition-colors duration-300">
+      
+      {/* Toast */}
+      {successToast && (
+        <div className="fixed top-20 right-6 z-50 p-3.5 rounded bg-white border border-[#0056D2] text-[#000000] shadow-xl flex items-center gap-2.5 animate-in fade-in slide-in-from-top-3">
+          <CheckCircle className="w-4 h-4 text-[#0056D2]" />
+          <span className="text-xs font-bold">{successToast}</span>
         </div>
+      )}
 
+      {/* ─── Taskbar ─── */}
+      <div className="bg-white border-b border-gray-200 py-3.5 px-4 sticky top-16 z-20 shadow-xs">
+        <div className="site-container flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded bg-[#0056D2] flex items-center justify-center text-white shadow-xs font-black text-sm">
+              <Video className="w-4 h-4" />
+            </div>
+            <div>
+              <h1 className="text-sm font-black text-[#000000] uppercase tracking-wider">
+                Live Interactive Workshops
+              </h1>
+              <p className="text-[11px] text-[#0056D2] font-semibold">
+                Departmental Bootcamps & Real-Time Code Reviews
+              </p>
+            </div>
+          </div>
+
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-[#0056D2] border border-blue-200">
+            {workshops.length} Scheduled Sessions
+          </span>
+        </div>
+      </div>
+
+      {/* ─── Main Workshops List ─── */}
+      <main className="site-container py-8 sm:py-10">
         {workshops.length === 0 ? (
-          <BrutalCard className="text-center py-16 space-y-2">
-            <p className="font-bold text-sm">No live workshops scheduled right now.</p>
-            <p className="text-xs text-muted-foreground">Check back soon or create a workshop as a creator!</p>
-          </BrutalCard>
+          <div className="text-center py-16 px-4 bg-white rounded border border-dashed border-gray-300">
+            <Video className="mx-auto text-4xl text-gray-400 mb-3" />
+            <h3 className="text-base font-bold text-[#000000]">No live workshops scheduled right now</h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+              Check back soon for upcoming departmental bootcamps or live engineering masterclasses!
+            </p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {workshops.map((ws) => {
-              const isEnded =
-                ws.workshop_details?.date &&
-                new Date(ws.workshop_details.date) < new Date();
+              const details = ws.workshop_details || {};
+              const isRegistered = registeredIds.has(ws.id);
 
               return (
-                <BrutalCard key={ws.id} className="flex flex-col p-5 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <LevelBadge level={ws.level} />
-                    <span
-                      className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded ${
-                        isEnded
-                          ? "bg-muted text-muted-foreground"
-                          : "bg-[#138601] text-white"
-                      }`}
-                    >
-                      {isEnded ? "Ended" : "Live Session"}
-                    </span>
-                  </div>
-
+                <div
+                  key={ws.id}
+                  className="bg-white rounded-2xl overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-[#0056D2] flex flex-col justify-between"
+                >
                   <div>
-                    <h3 className="font-bold text-lg text-foreground mb-1 leading-snug">
-                      {ws.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {ws.description}
-                    </p>
+                    {/* Visual Banner */}
+                    <div className="relative aspect-video overflow-hidden bg-gray-100">
+                      <img
+                        src={ws.thumbnail || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop"}
+                        alt={ws.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500 text-black uppercase font-mono">
+                          Live Bootcamp
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-black/75 text-white uppercase font-mono">
+                          {ws.level || "Intermediate"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="p-5 sm:p-6 space-y-4">
+                      <div>
+                        <h2 className="text-lg font-bold text-[#000000] leading-snug">
+                          {ws.title}
+                        </h2>
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                          {ws.description}
+                        </p>
+                      </div>
+
+                      {/* Schedule Grid */}
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-blue-50/60 p-3 rounded-xl border border-blue-100 text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-3.5 h-3.5 text-[#0056D2]" />
+                          <span>{details.date || "October 2026"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-[#0056D2]" />
+                          <span>{details.time || "14:00 GMT+1"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 col-span-2">
+                          <MapPin className="w-3.5 h-3.5 text-[#0056D2] shrink-0" />
+                          <span className="truncate">{details.location || "FUTO ICT Innovation Center"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 col-span-2">
+                          <Users className="w-3.5 h-3.5 text-[#0056D2] shrink-0" />
+                          <span>Instructor: <strong>{details.instructor || ws.creator_name || "NACOS Faculty"}</strong></span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {ws.workshop_details && (
-                    <div className="p-3 bg-secondary/60 rounded-md border border-border/70 space-y-1.5 font-mono text-xs text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={13} className="text-[#138601]" />
-                        <span>
-                          {ws.workshop_details.date} at {ws.workshop_details.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock size={13} className="text-[#138601]" />
-                        <span>Duration: {ws.workshop_details.duration}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin size={13} className="text-[#138601]" />
-                        <span className="truncate">{ws.workshop_details.location}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="pt-2 mt-auto border-t border-border flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {ws.tags?.map((t) => (
-                        <span key={t} className="text-[10px] font-mono text-muted-foreground">
-                          #{t}
-                        </span>
-                      ))}
-                    </div>
-
-                    <Link to={`/courses/${ws.id}`}>
+                  {/* Action Buttons */}
+                  <div className="p-5 pt-0">
+                    <div className="pt-3 border-t border-gray-100 flex items-center gap-3">
                       <button
                         type="button"
-                        className="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        onClick={() => handleRegister(ws)}
+                        disabled={isRegistered}
+                        className={`flex-1 py-2 px-4 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          isRegistered
+                            ? "bg-blue-50 text-[#0056D2] border border-blue-200"
+                            : "bg-[#0056D2] hover:bg-[#0043aa] text-white shadow-xs"
+                        }`}
                       >
-                        <span>View Details</span>
-                        <ArrowRight size={13} />
+                        {isRegistered ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 text-[#0056D2]" />
+                            <span>Registered</span>
+                          </>
+                        ) : (
+                          <span>Register for Session</span>
+                        )}
                       </button>
-                    </Link>
+
+                      <Link
+                        to={`/courses/${ws.id}`}
+                        className="py-2 px-3 rounded text-xs font-bold bg-gray-50 border border-gray-200 hover:bg-gray-100 text-[#000000] transition-colors"
+                      >
+                        Details
+                      </Link>
+                    </div>
                   </div>
-                </BrutalCard>
+                </div>
               );
             })}
           </div>
         )}
-      </div>
-    </Layout>
+      </main>
+
+    </div>
   );
 }
 

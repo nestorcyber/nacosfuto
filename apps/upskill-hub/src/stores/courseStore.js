@@ -10,6 +10,7 @@ export const useCourseStore = create((set, get) => ({
   currentCourse: null,
   currentTopics: [],
   userEnrollments: [],
+  userWorkshopRegs: [],
   currentEnrollment: null,
   workshopRegistration: null,
   workshopRoster: [],
@@ -55,6 +56,16 @@ export const useCourseStore = create((set, get) => ({
       set({ userEnrollments: enrollments });
     } catch (err) {
       console.error("Fetch enrollments failed:", err);
+    }
+  },
+
+  // [3b] Fetch workshop registrations for a user
+  fetchUserWorkshopRegistrations: async (userId) => {
+    try {
+      const regs = await db.getWorkshopRegistrationsByUser(userId);
+      set({ userWorkshopRegs: regs });
+    } catch (err) {
+      console.error("Fetch workshop registrations failed:", err);
     }
   },
 

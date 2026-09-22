@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { GraduationCap, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Sparkles } from 'lucide-react';
+import { GraduationCap, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { getAppUrls } from '@nacos/config/urls';
 
@@ -47,33 +47,33 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#041801] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#000000] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
         
         {/* Brand Icon */}
         <Link to="/" className="inline-flex items-center gap-2 group">
-          <div className="w-12 h-12 rounded-2xl bg-[#138601] flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform">
+          <div className="w-12 h-12 rounded-2xl bg-[#0056D2] flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform">
             <GraduationCap className="w-7 h-7" />
           </div>
         </Link>
 
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-          Sign In to <span className="text-[#4bd043]">Upskill Hub</span>
+          Sign In to <span className="text-[#1d72fe]">Upskill Hub</span>
         </h2>
         
-        <p className="text-xs sm:text-sm text-green-100/70">
+        <p className="text-xs sm:text-sm text-blue-100/70">
           NACOS students can sign in directly using their student portal credentials.
         </p>
 
         {/* NACOS Student Badge Notice */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#138601]/20 border border-[#138601]/40 text-[#4bd043] text-[11px] font-semibold">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0056D2]/20 border border-[#0056D2]/40 text-[#1d72fe] text-[11px] font-semibold">
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>Unified NACOS FUTO Authentication Active</span>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-[#083002] py-8 px-6 sm:px-10 border border-[#138601]/30 rounded-2xl shadow-2xl space-y-6">
+        <div className="bg-[#07101e] py-8 px-6 sm:px-10 border border-[#0056D2]/30 rounded-2xl shadow-2xl space-y-6">
           
           {error && (
             <div className={`p-4 rounded-xl text-xs flex items-start gap-2.5 border ${
@@ -106,7 +106,7 @@ const LoginPage = () => {
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="e.g. 2021123456 or student@nacosfuto.org"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#000000] border border-[#0056D2]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#0056D2]"
                 />
               </div>
               <span className="text-[10px] text-gray-400 mt-1 block">
@@ -123,7 +123,7 @@ const LoginPage = () => {
                   href={`${getAppUrls().portal}/forgot-password`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[11px] text-[#4bd043] hover:underline"
+                  className="text-[11px] text-[#1d72fe] hover:underline"
                 >
                   Forgot Password?
                 </a>
@@ -136,7 +136,7 @@ const LoginPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#000000] border border-[#0056D2]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#0056D2]"
                 />
               </div>
             </div>
@@ -144,7 +144,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-xs sm:text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+              className="w-full py-3 px-4 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs sm:text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -157,10 +157,10 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <div className="pt-4 border-t border-[#138601]/20 text-center space-y-3 text-xs text-gray-400">
+          <div className="pt-4 border-t border-[#0056D2]/20 text-center space-y-3 text-xs text-gray-400">
             <p>
               New learner or external student?{' '}
-              <Link to="/sign-up" className="font-bold text-[#4bd043] hover:underline">
+              <Link to="/sign-up" className="font-bold text-[#1d72fe] hover:underline">
                 Create Free Account
               </Link>
             </p>

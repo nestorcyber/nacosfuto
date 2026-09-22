@@ -37,7 +37,7 @@ export function MyCoursesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded bg-[#138601]/10 text-[#138601]">
+              <span className="p-1 rounded bg-[#0056D2]/10 text-[#0056D2]">
                 <GraduationCap size={16} />
               </span>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -91,7 +91,7 @@ export function MyCoursesPage() {
               <Link to="/create-course">
                 <button
                   type="button"
-                  className="px-4 py-2 rounded-md bg-[#138601] text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer mt-2"
+                  className="px-4 py-2 rounded-md bg-[#0056D2] text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer mt-2"
                 >
                   <Plus size={14} />
                   <span>Create Course</span>

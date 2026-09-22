@@ -11,7 +11,6 @@ import {
   X,
   Plus,
   ExternalLink,
-  Sparkles,
   ArrowRight,
   Shield
 } from "lucide-react";
@@ -63,7 +62,7 @@ export function Sidebar({ isOpen, onToggle }) {
         {/* Brand Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <Link to="/" onClick={() => onToggle(false)} className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-lg bg-[#138601] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+            <span className="w-8 h-8 rounded-lg bg-[#0056D2] text-white flex items-center justify-center font-bold text-sm shadow-xs">
               UH
             </span>
             <div>
@@ -97,7 +96,7 @@ export function Sidebar({ isOpen, onToggle }) {
                 className={cn(
                   "px-2 py-0.5 text-[10px] font-mono rounded cursor-pointer transition-all border",
                   isCreator
-                    ? "bg-[#138601] text-white border-transparent hover:bg-[#0f6c01]"
+                    ? "bg-[#0056D2] text-white border-transparent hover:bg-[#0043aa]"
                     : "bg-secondary text-foreground border-border hover:border-foreground/30"
                 )}
               >
@@ -142,7 +141,6 @@ export function Sidebar({ isOpen, onToggle }) {
               <div className="h-px bg-border mx-3 my-3" />
               <p className="px-3 py-1 font-mono text-[10px] text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                 <span>Creator Studio</span>
-                <Sparkles size={11} className="text-[#138601]" />
               </p>
 
               {creatorItems.map((item) => {
@@ -156,7 +154,7 @@ export function Sidebar({ isOpen, onToggle }) {
                     className={cn(
                       "sidebar-link",
                       active
-                        ? "bg-[#138601] text-white font-semibold shadow-xs"
+                        ? "bg-[#0056D2] text-white font-semibold shadow-xs"
                         : "text-foreground/80 hover:text-foreground"
                     )}
                   >
@@ -181,7 +179,7 @@ export function Sidebar({ isOpen, onToggle }) {
             className="flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-xs font-medium text-foreground/80 hover:bg-secondary transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <GraduationCap size={15} className="text-[#138601]" />
+              <GraduationCap size={15} className="text-[#0056D2]" />
               <span>Student Portal</span>
             </div>
             <ExternalLink size={12} className="opacity-60" />
@@ -194,7 +192,7 @@ export function Sidebar({ isOpen, onToggle }) {
             className="flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-xs font-medium text-foreground/80 hover:bg-secondary transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <Shield size={15} className="text-[#138601]" />
+              <Shield size={15} className="text-[#0056D2]" />
               <span>Main Website</span>
             </div>
             <ExternalLink size={12} className="opacity-60" />

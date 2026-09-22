@@ -9,7 +9,6 @@ import {
   AlertCircle, 
   ShieldCheck, 
   CheckCircle2, 
-  Sparkles,
   Check
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
@@ -122,27 +121,27 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#041801] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#000000] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
         
         {/* Brand Icon */}
         <Link to="/" className="inline-flex items-center gap-2 group">
-          <div className="w-12 h-12 rounded-2xl bg-[#138601] flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform">
+          <div className="w-12 h-12 rounded-2xl bg-[#0056D2] flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform">
             <GraduationCap className="w-7 h-7" />
           </div>
         </Link>
 
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-          Create Your <span className="text-[#4bd043]">Upskill Account</span>
+          Create Your <span className="text-[#1d72fe]">Upskill Account</span>
         </h2>
         
-        <p className="text-xs sm:text-sm text-green-100/70">
+        <p className="text-xs sm:text-sm text-blue-100/70">
           Join hundreds of scholars building world-class software skills.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-        <div className="bg-[#083002] py-8 px-6 sm:px-10 border border-[#138601]/30 rounded-2xl shadow-2xl space-y-6">
+        <div className="bg-[#07101e] py-8 px-6 sm:px-10 border border-[#0056D2]/30 rounded-2xl shadow-2xl space-y-6">
           
           {/* Error / Account Exists Notice */}
           {error && (
@@ -154,7 +153,7 @@ const SignUpPage = () => {
                   <div className="pt-2">
                     <Link
                       to="/login"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#138601] text-white text-xs font-bold hover:bg-[#0f6c01] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0056D2] text-white text-xs font-bold hover:bg-[#0043aa] transition-colors"
                     >
                       <span>Sign In with Your NACOS Account</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -168,7 +167,7 @@ const SignUpPage = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             
             {/* ─── EXACT USER REQUIREMENT: NACOS STUDENT CHECKMARK ─── */}
-            <div className="p-4 rounded-xl bg-[#041801] border-2 border-[#138601]/40 hover:border-[#138601] transition-colors">
+            <div className="p-4 rounded-xl bg-[#000000] border-2 border-[#0056D2]/40 hover:border-[#0056D2] transition-colors">
               <label className="flex items-start gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -178,12 +177,12 @@ const SignUpPage = () => {
                     setRegVerificationMessage(null);
                     setAlreadyHasNacosAccount(false);
                   }}
-                  className="mt-1 w-4 h-4 rounded text-[#138601] focus:ring-[#138601] bg-[#083002] border-[#138601]/50 cursor-pointer"
+                  className="mt-1 w-4 h-4 rounded text-[#0056D2] focus:ring-[#0056D2] bg-[#07101e] border-[#0056D2]/50 cursor-pointer"
                 />
                 <div>
                   <span className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
                     <span>I am a NACOS Student</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-[#138601]/30 text-[#4bd043] border border-[#138601]/40 font-mono">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-[#0056D2]/30 text-[#1d72fe] border border-[#0056D2]/40 font-mono">
                       FUTO Verified
                     </span>
                   </span>
@@ -195,8 +194,8 @@ const SignUpPage = () => {
 
               {/* Conditional Registration / Matric Number Prompt */}
               {isNacosStudent && (
-                <div className="mt-3 pt-3 border-t border-[#138601]/20 space-y-2 animate-in fade-in duration-200">
-                  <label className="block text-xs font-bold text-[#4bd043] uppercase tracking-wider">
+                <div className="mt-3 pt-3 border-t border-[#0056D2]/20 space-y-2 animate-in fade-in duration-200">
+                  <label className="block text-xs font-bold text-[#1d72fe] uppercase tracking-wider">
                     Registration / Matric Number
                   </label>
                   <div className="relative">
@@ -207,7 +206,7 @@ const SignUpPage = () => {
                       onBlur={(e) => handleVerifyReg(e.target.value)}
                       placeholder="e.g. 2021123456 or 2022/..."
                       required={isNacosStudent}
-                      className="w-full px-3.5 py-2.5 bg-[#083002] border border-[#138601]/50 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                      className="w-full px-3.5 py-2.5 bg-[#07101e] border border-[#0056D2]/50 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#0056D2]"
                     />
                     {isVerifyingReg && (
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">
@@ -220,13 +219,13 @@ const SignUpPage = () => {
                   {regVerificationMessage && (
                     <div className={`p-2.5 rounded-lg text-xs flex items-center gap-2 ${
                       regVerificationMessage.type === 'success'
-                        ? 'bg-green-950/40 text-green-300 border border-green-800/40'
+                        ? 'bg-blue-950/40 text-blue-300 border border-blue-800/40'
                         : regVerificationMessage.type === 'warning'
                         ? 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
                         : 'bg-red-950/40 text-red-300 border border-red-800/40'
                     }`}>
                       {regVerificationMessage.type === 'success' ? (
-                        <CheckCircle2 className="w-4 h-4 text-[#4bd043] shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-[#1d72fe] shrink-0" />
                       ) : (
                         <AlertCircle className="w-4 h-4 shrink-0" />
                       )}
@@ -241,7 +240,7 @@ const SignUpPage = () => {
                       </p>
                       <Link
                         to="/login"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#138601] hover:bg-[#0f6c01] text-white text-xs font-bold transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs font-bold transition-colors"
                       >
                         <span>Sign In Now</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -265,7 +264,7 @@ const SignUpPage = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Chukwuemeka Eze"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#000000] border border-[#0056D2]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#0056D2]"
                 />
               </div>
             </div>
@@ -283,7 +282,7 @@ const SignUpPage = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. scholar@students.nacosfuto.org"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#000000] border border-[#0056D2]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#0056D2]"
                 />
               </div>
             </div>
@@ -302,7 +301,7 @@ const SignUpPage = () => {
                   placeholder="At least 6 characters"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#000000] border border-[#0056D2]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#0056D2]"
                 />
               </div>
             </div>
@@ -315,7 +314,7 @@ const SignUpPage = () => {
               <select
                 value={track}
                 onChange={(e) => setTrack(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                className="w-full px-3.5 py-2.5 bg-[#000000] border border-[#0056D2]/40 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#0056D2]"
               >
                 <option value="Web Development">Fullstack Web Development (React / Node.js)</option>
                 <option value="Artificial Intelligence">Artificial Intelligence & Python Data Science</option>
@@ -329,7 +328,7 @@ const SignUpPage = () => {
             <button
               type="submit"
               disabled={isLoading || alreadyHasNacosAccount}
-              className="w-full py-3 px-4 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-xs sm:text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
+              className="w-full py-3 px-4 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs sm:text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -342,9 +341,9 @@ const SignUpPage = () => {
             </button>
           </form>
 
-          <div className="pt-4 border-t border-[#138601]/20 text-center text-xs text-gray-400">
+          <div className="pt-4 border-t border-[#0056D2]/20 text-center text-xs text-gray-400">
             Already have an account or NACOS student credentials?{' '}
-            <Link to="/login" className="font-bold text-[#4bd043] hover:underline">
+            <Link to="/login" className="font-bold text-[#1d72fe] hover:underline">
               Sign In Here
             </Link>
           </div>

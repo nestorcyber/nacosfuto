@@ -1,8 +1,9 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import GSAPWrapper from "./utils/GSAPWrapper";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getAppUrls } from "@nacos/config/urls";
 
 // Page imports
 import Home from "./pages/Home";
@@ -38,6 +39,20 @@ import AdminHub from "./pages/AdminHub";
 const Events = lazy(() => import("./pages/Events"));
 const YellowPages = lazy(() => import("./pages/YellowPages"));
 
+const UpskillRedirect = ({ to }) => {
+  useEffect(() => {
+    window.location.href = to;
+  }, [to]);
+  return (
+    <div className="min-h-screen flex items-center justify-center p-8 bg-white dark:bg-[#041801]">
+      <div className="text-center">
+        <div className="w-10 h-10 border-4 border-[#138601] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-sm font-medium text-[#083002] dark:text-green-100">Redirecting to Upskill Hub...</p>
+      </div>
+    </div>
+  );
+};
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">
@@ -46,6 +61,7 @@ const PageLoader = () => (
 );
 
 function App() {
+  const { upskillHub } = getAppUrls();
   return (
     <>
       <ToastContainer
@@ -116,12 +132,13 @@ function App() {
             <Route path="/health-services" element={<PlaceholderPage title="Health Services" />} />
             <Route path="/careers-recruitment" element={<PlaceholderPage title="Careers & Recruitment" />} />
 
-            {/* Upskill Courses */}
-            <Route path="/upskill/web-development" element={<PlaceholderPage title="Web Development" message="Explore our upcoming Web Development masterclasses and bootcamps." />} />
-            <Route path="/upskill/ai-automation" element={<PlaceholderPage title="AI & Automation" message="Master AI engineering tools and workflow automations." />} />
-            <Route path="/upskill/vibe-coding" element={<PlaceholderPage title="Vibe Coding" message="Learn modern AI-assisted prompt engineering and full-stack software prototyping." />} />
-            <Route path="/upskill/social-media" element={<PlaceholderPage title="Social Media" message="Grow tech brands and personal influence across social platforms." />} />
-            <Route path="/upskill/all" element={<PlaceholderPage title="All Courses" message="Browse the complete catalog of skill tracks." />} />
+            {/* Upskill Courses (Directs into Upskill Hub) */}
+            <Route path="/upskill" element={<UpskillRedirect to={`${upskillHub}/courses`} />} />
+            <Route path="/upskill/web-development" element={<UpskillRedirect to={`${upskillHub}/courses/course-web-dev`} />} />
+            <Route path="/upskill/ai-fluency" element={<UpskillRedirect to={`${upskillHub}/courses/course-ai-fluency`} />} />
+            <Route path="/upskill/ai-automation" element={<UpskillRedirect to={`${upskillHub}/courses/course-ai-fluency`} />} />
+            <Route path="/upskill/all" element={<UpskillRedirect to={`${upskillHub}/courses`} />} />
+            <Route path="/upskill/:slug" element={<UpskillRedirect to={`${upskillHub}/courses`} />} />
 
             {/* Public Student ID Card Verification */}
             <Route path="/verify/id/:id" element={<IdVerification />} />

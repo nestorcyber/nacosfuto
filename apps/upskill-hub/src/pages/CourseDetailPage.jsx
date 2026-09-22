@@ -15,7 +15,6 @@ import {
   Download,
   GraduationCap,
   Clock,
-  Sparkles,
   BookOpen,
   LayoutGrid
 } from 'lucide-react';
@@ -148,9 +147,9 @@ const CourseDetailPage = () => {
 
   if (status === 'PENDING' && !currentCourse) {
     return (
-      <div className="min-h-screen bg-[#041801] flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[#000000] flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-[#138601] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-4 border-[#0056D2] border-t-transparent rounded-full animate-spin"></div>
           <p className="text-sm font-semibold text-gray-300">Loading course player...</p>
         </div>
       </div>
@@ -170,11 +169,11 @@ const CourseDetailPage = () => {
           
           {/* Brand Logos */}
           <Link to="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-9 h-9 rounded-xl bg-[#138601] flex items-center justify-center text-white shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-[#0056D2] flex items-center justify-center text-white shadow-xs">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div className="hidden md:block">
-              <span className="text-xs font-black tracking-tight text-[#083002] block leading-tight">
+              <span className="text-xs font-black tracking-tight text-[#07101e] block leading-tight">
                 NACOS UPSKILL
               </span>
               <span className="text-[10px] font-semibold text-gray-400 font-mono">
@@ -258,7 +257,7 @@ const CourseDetailPage = () => {
           <div className="bg-white border-t border-gray-200 p-4 sm:p-6 text-gray-900">
             <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span className="text-[11px] font-bold text-[#138601] uppercase tracking-wider block mb-1">
+                <span className="text-[11px] font-bold text-[#0056D2] uppercase tracking-wider block mb-1">
                   Topic {activeTopicIndex + 1} of {currentTopics.length || 1}
                 </span>
                 <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-tight">
@@ -275,7 +274,7 @@ const CourseDetailPage = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleMarkComplete}
-                  className="px-6 py-2.5 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm transition-all transform hover:-translate-y-0.5 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Mark as Complete</span>
@@ -299,14 +298,14 @@ const CourseDetailPage = () => {
               {/* Live Topic Note Taker */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
                 <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-[#138601]" />
+                  <FileText className="w-3.5 h-3.5 text-[#0056D2]" />
                   <span>Quick Lesson Notes</span>
                 </h4>
                 <textarea
                   value={personalNotes}
                   onChange={(e) => setPersonalNotes(e.target.value)}
                   placeholder="Type personal takeaways or code notes..."
-                  className="w-full h-24 p-2.5 text-xs bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#138601] resize-none"
+                  className="w-full h-24 p-2.5 text-xs bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0056D2] resize-none"
                 />
                 <button
                   onClick={() => alert('Note saved to your session!')}
@@ -515,7 +514,7 @@ const CourseDetailPage = () => {
                     </p>
                     <button
                       disabled={progressPercent < 100}
-                      className="w-full py-2.5 rounded-xl bg-[#138601] text-white text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                      className="w-full py-2.5 rounded-xl bg-[#0056D2] text-white text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
                     >
                       {progressPercent >= 100 ? 'Claim Verified Certificate' : 'Complete All Modules to Unlock'}
                     </button>
@@ -531,7 +530,7 @@ const CourseDetailPage = () => {
 
       {/* Completion Toast Notification */}
       {showCompletionToast && (
-        <div className="fixed bottom-6 left-6 z-50 bg-[#138601] text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 border border-white/20 animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 left-6 z-50 bg-[#0056D2] text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 border border-white/20 animate-in fade-in slide-in-from-bottom-2">
           <CheckCircle2 className="w-4 h-4" />
           <span className="text-xs font-bold">Topic marked as complete! Progress updated.</span>
         </div>

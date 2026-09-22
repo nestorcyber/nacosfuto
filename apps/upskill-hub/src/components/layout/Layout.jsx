@@ -6,7 +6,7 @@ import Footer from "./Footer";
 export const Layout = () => {
   const location = useLocation();
   
-  // The Course Taking view (/courses/:id) uses the specialized top bar from the screenshot
+  // The Course Taking view (/courses/:id) uses the specialized top bar
   const isCourseTakingView = Boolean(
     location.pathname.match(/^\/courses\/[^/]+$/) && !location.pathname.endsWith('/courses')
   );
@@ -20,7 +20,7 @@ export const Layout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#041801] text-white flex flex-col font-sans selection:bg-[#138601] selection:text-white">
+    <div className="min-h-screen bg-white dark:bg-[#000000] text-gray-900 dark:text-white flex flex-col font-sans selection:bg-[#0056D2] selection:text-white transition-colors duration-300">
       {/* Standard Top Navigation Bar */}
       <Navbar />
 

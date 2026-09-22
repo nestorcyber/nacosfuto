@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Video, Users, Check, Clock, Calendar, MapPin, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
 import { BrutalCard } from "../components/ui/BrutalCard";
 import { BrutalButton } from "../components/ui/BrutalButton";
 import { useAuthStore } from "../stores/authStore";
@@ -37,12 +36,11 @@ export function MyWorkshopsPage() {
   };
 
   return (
-    <Layout>
-      <div className="space-y-6 font-sans">
+    <div className="site-container py-8 space-y-6 font-sans">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded bg-[#138601]/10 text-[#138601]">
+              <span className="p-1 rounded bg-[#0056D2]/10 text-[#0056D2]">
                 <Video size={16} />
               </span>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -71,7 +69,7 @@ export function MyWorkshopsPage() {
             <Link to="/create-course">
               <button
                 type="button"
-                className="px-4 py-2 rounded-md bg-[#138601] text-white text-xs font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-md bg-[#0056D2] text-white text-xs font-semibold cursor-pointer"
               >
                 Schedule Workshop
               </button>
@@ -94,7 +92,7 @@ export function MyWorkshopsPage() {
                       onClick={() => handleSelectWorkshop(ws)}
                       className={`p-3.5 transition-all ${
                         isSelected
-                          ? "border-[#138601] bg-[#138601]/5"
+                          ? "border-[#0056D2] bg-[#0056D2]/5"
                           : "border-border hover:border-foreground/30"
                       }`}
                     >
@@ -128,7 +126,7 @@ export function MyWorkshopsPage() {
                     </div>
 
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-secondary border border-border">
-                      <Users size={12} className="text-[#138601]" />
+                      <Users size={12} className="text-[#0056D2]" />
                       <span>{workshopRoster.length} Registrations</span>
                     </span>
                   </div>
@@ -160,7 +158,7 @@ export function MyWorkshopsPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded bg-emerald-500/10 text-[#138601] font-semibold flex items-center gap-1 font-mono">
+                            <span className="px-2.5 py-1 rounded bg-blue-600/10 text-[#0056D2] font-semibold flex items-center gap-1 font-mono">
                               <Check size={12} /> Confirmed
                             </span>
                           </div>
@@ -174,7 +172,6 @@ export function MyWorkshopsPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }
 

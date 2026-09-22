@@ -5,6 +5,7 @@ import { BsSun, BsMoon } from "react-icons/bs";
 import ScrollToTopLink from "../ScrollToTopLink";
 import { useTheme } from "../../context/ThemeContext";
 import SearchBar from "../SearchBar";
+import { getAppUrls } from "@nacos/config/urls";
 
 // Custom Dropdown Component
 const NavDropdown = ({ label, items, theme }) => {
@@ -30,13 +31,14 @@ const NavDropdown = ({ label, items, theme }) => {
         }`}
       >
         {items.map((item, idx) => {
-          if (item.link.startsWith("http")) {
+          const isExternal = item.isExternal || item.link.startsWith("http") || item.link.startsWith("/upskill-hub");
+          if (isExternal) {
             return (
               <a
                 key={idx}
                 href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
+                target={item.target || (item.link.startsWith("http") ? "_blank" : "_self")}
+                rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
                 className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
                   theme === "light"
                     ? "hover:bg-[#f2fbf1] hover:text-[#138601] text-[#083002]"
@@ -76,10 +78,6 @@ const MoreDropdown = ({ theme }) => {
       { name: "Research Facilities", link: "/research-facilities" },
       { name: "Research Grants", link: "/research-grants" },
     ],
-    RESOURCES: [
-      { name: "Student Handbook", link: "/student-handbook" },
-      { name: "FAQs", link: "/faqs" },
-    ],
     "HEALTH & SAFETY": [
       { name: "Guidance & Counselling", link: "/guidance-counselling" },
       { name: "Safety Alerts", link: "/safety-alerts" },
@@ -105,7 +103,7 @@ const MoreDropdown = ({ theme }) => {
       </button>
       {/* Mega Menu Dropdown */}
       <div
-        className={`absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-6 w-[640px] z-50 rounded-2xl shadow-2xl border grid grid-cols-2 lg:grid-cols-4 gap-6 ${
+        className={`absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-6 w-[560px] z-50 rounded-2xl shadow-2xl border grid grid-cols-1 md:grid-cols-3 gap-6 ${
           theme === "light"
             ? "bg-white border-[#138601]/20 text-[#083002]"
             : "bg-[#083002] border-[#138601]/30 text-white shadow-black/60"
@@ -141,13 +139,13 @@ const MoreDropdown = ({ theme }) => {
 
 const DesktopNav = () => {
   const { theme, toggleTheme } = useTheme();
+  const { upskillHub } = getAppUrls();
 
   const upskillItems = [
-    { name: "Web Development", link: "/upskill/web-development" },
-    { name: "AI & Automation", link: "/upskill/ai-automation" },
-    { name: "Vibe Coding", link: "/upskill/vibe-coding" },
-    { name: "Social Media", link: "/upskill/social-media" },
-    { name: "View all courses", link: "/upskill/all" },
+    { name: "AI Fluency", link: `${upskillHub}/courses/course-ai-fluency`, isExternal: true },
+    { name: "Web Development", link: `${upskillHub}/courses/course-web-dev`, isExternal: true },
+    { name: "Resources", link: "/resources" },
+    { name: "View all courses", link: `${upskillHub}/courses`, isExternal: true },
   ];
 
   const aboutItems = [

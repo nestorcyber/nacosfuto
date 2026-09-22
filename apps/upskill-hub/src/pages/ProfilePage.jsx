@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { User, Shield, GraduationCap, Award, Check, Sparkles, LogOut, Edit3 } from "lucide-react";
-import { Layout } from "../components/layout/Layout";
+import { User, Shield, GraduationCap, Award, Check, LogOut, Edit3 } from "lucide-react";
 import { BrutalCard } from "../components/ui/BrutalCard";
 import { BrutalButton } from "../components/ui/BrutalButton";
 import { useAuthStore } from "../stores/authStore";
@@ -40,11 +39,10 @@ export function ProfilePage() {
   };
 
   return (
-    <Layout>
-      <div className="space-y-6 font-sans max-w-4xl mx-auto">
+    <div className="site-container py-8 space-y-6 font-sans max-w-4xl mx-auto">
         <div className="space-y-1 border-b border-border pb-4">
           <div className="flex items-center gap-2">
-            <span className="p-1 rounded bg-[#138601]/10 text-[#138601]">
+            <span className="p-1 rounded bg-[#0056D2]/10 text-[#0056D2]">
               <User size={16} />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -57,7 +55,7 @@ export function ProfilePage() {
         </div>
 
         {savedSuccess && (
-          <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[#138601] dark:text-[#4bd043] text-xs font-semibold flex items-center gap-2">
+          <div className="p-3.5 rounded-lg bg-blue-600/10 border border-blue-500/30 text-[#0056D2] dark:text-[#1d72fe] text-xs font-semibold flex items-center gap-2">
             <Check size={14} />
             <span>Profile name updated successfully.</span>
           </div>
@@ -67,7 +65,7 @@ export function ProfilePage() {
         <BrutalCard className="p-6 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#138601] text-white font-bold text-lg flex items-center justify-center shadow-md">
+              <div className="w-14 h-14 rounded-full bg-[#0056D2] text-white font-bold text-lg flex items-center justify-center shadow-md">
                 {(fullName || "NS")
                   .split(" ")
                   .map((w) => w[0])
@@ -83,7 +81,7 @@ export function ProfilePage() {
                   <span
                     className={`inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
                       isCreator
-                        ? "bg-[#138601] text-white"
+                        ? "bg-[#0056D2] text-white"
                         : "bg-secondary text-foreground border border-border"
                     }`}
                   >
@@ -109,7 +107,7 @@ export function ProfilePage() {
                 onClick={toggleRole}
                 title="Switch role"
               >
-                <Sparkles size={13} className="mr-1.5" />
+                <Shield size={13} className="mr-1.5" />
                 <span>Switch to {isCreator ? "Learner" : "Creator"}</span>
               </BrutalButton>
             </div>
@@ -166,7 +164,6 @@ export function ProfilePage() {
           </button>
         </BrutalCard>
       </div>
-    </Layout>
   );
 }
 

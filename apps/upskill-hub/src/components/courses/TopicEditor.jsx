@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, PlayCircle, X, Search, Sparkles, Loader2, Edit3 } from "lucide-react";
+import { Plus, PlayCircle, X, Search, Loader2, Edit3 } from "lucide-react";
 import { BrutalCard } from "../ui/BrutalCard";
 import { BrutalButton } from "../ui/BrutalButton";
 
@@ -39,7 +39,7 @@ export function TopicEditor({
             </>
           ) : (
             <>
-              <Plus size={15} className="text-[#138601]" />
+              <Plus size={15} className="text-[#0056D2]" />
               <span>Add Custom Lesson Module</span>
             </>
           )}
@@ -146,14 +146,14 @@ export function TopicEditor({
             type="button"
             onClick={onGenerateSummary}
             disabled={isGeneratingSummary || !currentTopic.title}
-            className="text-xs flex items-center gap-1 text-[#138601] hover:underline font-semibold cursor-pointer disabled:opacity-50"
+            className="text-xs flex items-center gap-1 text-[#0056D2] hover:underline font-semibold cursor-pointer disabled:opacity-50"
           >
             {isGeneratingSummary ? (
               <Loader2 className="animate-spin" size={12} />
             ) : (
-              <Sparkles size={12} />
+              <Edit3 size={12} />
             )}
-            <span>AI Draft Notes</span>
+            <span>Auto Draft Notes</span>
           </button>
         </div>
         <textarea
@@ -180,7 +180,7 @@ export function TopicEditor({
           <div className="w-full max-w-2xl bg-card border border-border rounded-xl p-4 shadow-2xl space-y-3">
             <div className="flex justify-between items-center">
               <h4 className="text-sm font-bold flex items-center gap-2">
-                <PlayCircle size={16} className="text-[#138601]" />
+                <PlayCircle size={16} className="text-[#0056D2]" />
                 <span>Video Preview Test</span>
               </h4>
               <button
