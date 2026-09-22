@@ -2,9 +2,9 @@
 
 @theme {
   /* Webflow-inspired Typography System: Crisp Geometric Display Headings & Modern Grotesque Body */
-  --font-sans: "Inter", "Avenir Next", "Avenir", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Circular", "Circular Std", "Inter", system-ui, -apple-system, sans-serif;
-  --font-display: "Circular", "Circular Std", "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Primary Brand Greens (#138601, #FFFFFF, #083002) */
   --color-green-50: #f2fbf1;

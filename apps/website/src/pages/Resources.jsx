@@ -446,23 +446,22 @@ const Resources = () => {
 
 
       {/* ─── Integrated Taskbar (Emblem, Academic Level, Semester Term, Search Bar, and Log In) ─── */}
-      <div className="bg-[#083002] border-b border-[#138601]/30 py-2 sm:py-2.5 px-4 sticky top-0 z-20 shadow-md">
-        <div className="site-container flex flex-wrap md:flex-nowrap items-center justify-between gap-2.5 sm:gap-4">
+      <div className="bg-[#083002] border-b border-[#138601]/30 py-2 sm:py-2.5 px-3 sm:px-4 sticky top-0 z-20 shadow-md">
+        <div className="site-container flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-4">
           
-          {/* Left: Brand Icon + Level + Semester Filters */}
-          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
-            {/* Open Book Logo Emblem */}
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#138601] flex items-center justify-center text-white shadow-xs font-black text-sm">
+          {/* Top Row on Mobile: Brand Icon + Level + Semester + Log In */}
+          <div className="flex items-center justify-between gap-2 w-full md:w-auto">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#138601] flex items-center justify-center text-white shadow-xs font-black text-xs sm:text-sm">
                 <FiBookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
-              <span className="hidden xl:inline text-white font-black tracking-wider text-xs uppercase">
+              <span className="hidden sm:inline font-black tracking-wider text-xs uppercase text-white">
                 NACOS Library
               </span>
             </div>
 
-            {/* Level Selector */}
-            <div className="relative shrink-0">
+            {/* Filter Dropdowns */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <select
                 id="top-resource-level-filter"
                 aria-label="Filter by academic level"
@@ -471,19 +470,16 @@ const Resources = () => {
                   setSelectedLevel(e.target.value);
                   scrollToCatalog();
                 }}
-                className="px-2.5 py-1.5 rounded bg-[#041801] text-xs font-medium text-white border border-[#138601]/40 focus:outline-none focus:ring-1 focus:ring-[#4bd043] transition-colors cursor-pointer"
+                className="px-2 py-1.5 rounded bg-[#041801] text-xs font-medium text-white border border-[#138601]/40 focus:outline-none focus:ring-1 focus:ring-[#4bd043] transition-colors cursor-pointer"
               >
-                <option value="All Levels" className="bg-[#083002] text-white">All Levels (100L–500L)</option>
-                <option value="100 Level" className="bg-[#083002] text-white">100 Level</option>
-                <option value="200 Level" className="bg-[#083002] text-white">200 Level</option>
-                <option value="300 Level" className="bg-[#083002] text-white">300 Level</option>
-                <option value="400 Level" className="bg-[#083002] text-white">400 Level</option>
-                <option value="500 Level" className="bg-[#083002] text-white">500 Level</option>
+                <option value="All Levels" className="bg-[#083002] text-white">All Levels</option>
+                <option value="100 Level" className="bg-[#083002] text-white">100L</option>
+                <option value="200 Level" className="bg-[#083002] text-white">200L</option>
+                <option value="300 Level" className="bg-[#083002] text-white">300L</option>
+                <option value="400 Level" className="bg-[#083002] text-white">400L</option>
+                <option value="500 Level" className="bg-[#083002] text-white">500L</option>
               </select>
-            </div>
 
-            {/* Semester Selector */}
-            <div className="relative shrink-0">
               <select
                 id="top-resource-semester-filter"
                 aria-label="Filter by semester"
@@ -492,23 +488,43 @@ const Resources = () => {
                   setSelectedSemester(e.target.value);
                   scrollToCatalog();
                 }}
-                className="px-2.5 py-1.5 rounded bg-[#041801] text-xs font-medium text-white border border-[#138601]/40 focus:outline-none focus:ring-1 focus:ring-[#4bd043] transition-colors cursor-pointer"
+                className="px-2 py-1.5 rounded bg-[#041801] text-xs font-medium text-white border border-[#138601]/40 focus:outline-none focus:ring-1 focus:ring-[#4bd043] transition-colors cursor-pointer"
               >
-                <option value="All Semesters" className="bg-[#083002] text-white">All Semesters</option>
-                <option value="First Semester" className="bg-[#083002] text-white">1st Semester</option>
-                <option value="Second Semester" className="bg-[#083002] text-white">2nd Semester</option>
+                <option value="All Semesters" className="bg-[#083002] text-white">All Terms</option>
+                <option value="First Semester" className="bg-[#083002] text-white">1st Sem</option>
+                <option value="Second Semester" className="bg-[#083002] text-white">2nd Sem</option>
               </select>
+            </div>
+
+            {/* Log in / User on Mobile row */}
+            <div className="shrink-0">
+              {user ? (
+                <a
+                  href={getAppUrls().portal}
+                  className="text-xs text-white hover:text-[#4bd043] font-semibold transition-colors truncate max-w-[90px] sm:max-w-none inline-block"
+                >
+                  <span className="font-bold underline text-[#4bd043]">{user.firstName || user.name || 'Student'}</span>
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleRedirectToSignIn}
+                  className="text-xs text-white hover:text-[#4bd043] font-semibold transition-colors cursor-pointer px-2 py-1 rounded hover:bg-white/5 whitespace-nowrap"
+                >
+                  Log in
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Center: Search Box with Attached Green Search Button */}
-          <form onSubmit={handleHeroSearchSubmit} className="flex-1 min-w-[200px] max-w-xl order-3 md:order-2 w-full md:w-auto">
+          {/* Search Box — Full width on mobile, centered on desktop */}
+          <form onSubmit={handleHeroSearchSubmit} className="w-full md:flex-1 md:max-w-md lg:max-w-lg">
             <div className="relative flex items-center w-full shadow-xs">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by title, author, course code or keyword"
+                placeholder="Search by title, author, course code..."
                 className="w-full bg-white text-gray-900 placeholder-gray-400 text-xs sm:text-sm pl-3 pr-10 py-1.5 sm:py-2 rounded-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#4bd043] transition-all"
               />
               {searchQuery && (
@@ -531,26 +547,6 @@ const Resources = () => {
             </div>
           </form>
 
-          {/* Right: Log in / User status */}
-          <div className="shrink-0 flex items-center justify-end order-2 md:order-3">
-            {user ? (
-              <a
-                href={getAppUrls().portal}
-                className="text-xs text-white/90 hover:text-[#4bd043] font-medium flex items-center gap-1.5 transition-colors"
-              >
-                <span className="hidden lg:inline text-white/70">Signed in as</span>
-                <span className="font-bold underline text-[#4bd043]">{user.firstName || user.name || 'Student'}</span>
-              </a>
-            ) : (
-              <button
-                type="button"
-                onClick={handleRedirectToSignIn}
-                className="text-xs text-white hover:text-[#4bd043] font-semibold transition-colors cursor-pointer px-2 py-1 rounded hover:bg-white/5"
-              >
-                Log in
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -640,14 +636,14 @@ const Resources = () => {
           </div>
         </div>
 
-      {/* ─── Category Filter Pills & Reset Action ─── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
-          <div className="flex flex-wrap gap-2">
+        {/* ─── Category Filter Pills & Reset Action ─── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1.5 sm:pb-0 scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0">
             {['All Resources', 'Handouts', 'Books', 'Past Questions', 'Videos', 'Tutorials'].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-3.5 py-1.5 rounded font-semibold text-xs transition-colors cursor-pointer border ${
+                className={`px-3 sm:px-3.5 py-1.5 rounded font-semibold text-xs whitespace-nowrap transition-colors cursor-pointer border shrink-0 ${
                   activeCategory === cat
                     ? 'bg-[#138601] text-white border-[#138601] shadow-xs'
                     : 'bg-[#f2fbf1] dark:bg-[#083002] text-[#083002] dark:text-green-100 border-[#138601]/20 dark:border-[#138601]/30 hover:bg-[#e2f7df] dark:hover:bg-[#138601]/20'
@@ -658,7 +654,7 @@ const Resources = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between sm:justify-end gap-3 text-xs">
             {hasActiveFilters && (
               <button
                 onClick={handleResetFilters}
@@ -676,9 +672,9 @@ const Resources = () => {
 
         {/* ─── Resources Grid Display ─── */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-[#f8fdf7] dark:bg-[#083002] rounded border border-[#138601]/20 p-5 space-y-4 animate-pulse">
+              <div key={i} className="bg-[#f8fdf7] dark:bg-[#083002] rounded border border-[#138601]/20 p-4 sm:p-5 space-y-4 animate-pulse">
                 <div className="h-32 bg-gray-200 dark:bg-[#041801] rounded"></div>
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
                 <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
@@ -687,7 +683,7 @@ const Resources = () => {
             ))}
           </div>
         ) : resources.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {resources.map((resource) => {
               const isVideo = resource.resource_type === 'video' || resource.file_extension === 'mp4';
 
@@ -697,7 +693,7 @@ const Resources = () => {
                   className="bg-[#f8fdf7] dark:bg-[#083002] rounded overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 border border-[#138601]/20 dark:border-[#138601]/30 flex flex-col justify-between group"
                 >
                   {/* Card Visual Header */}
-                  <div className="h-36 bg-[#041801] flex items-center justify-center text-white border-b border-[#138601]/20 relative overflow-hidden">
+                  <div className="h-32 sm:h-36 bg-[#041801] flex items-center justify-center text-white border-b border-[#138601]/20 relative overflow-hidden">
                     {isVideo && (resource.thumbnail_storage_key || resource.thumbnail_key) ? (
                       <div className="relative w-full h-full">
                         <img 
@@ -715,17 +711,7 @@ const Resources = () => {
                       getResourceIcon(resource.category?.name || resource.resource_type, resource.file_extension)
                     )}
 
-                    {/* Level & Semester Badges */}
-                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold bg-black/75 backdrop-blur-xs text-green-300 px-2 py-0.5 rounded border border-green-400/30">
-                        {resource.level ? `${resource.level}L` : 'General'}
-                      </span>
-                      <span className="text-[10px] font-medium bg-black/75 backdrop-blur-xs text-gray-200 px-2 py-0.5 rounded border border-white/20">
-                        {resource.semester === 'First Semester' ? '1st Sem' : resource.semester === 'Second Semester' ? '2nd Sem' : resource.semester || 'All Sem'}
-                      </span>
-                    </div>
-
-                    {/* File type badge */}
+                    {/* Format Badge */}
                     <div className="absolute top-2.5 right-2.5">
                       <span className="text-[10px] font-bold bg-black/75 backdrop-blur-xs text-white px-2 py-0.5 rounded border border-white/20 uppercase">
                         {resource.file_extension || (isVideo ? 'MP4' : 'PDF')}
@@ -734,10 +720,11 @@ const Resources = () => {
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-5 flex-grow flex flex-col justify-between space-y-4">
+                  <div className="p-4 sm:p-5 flex-grow flex flex-col justify-between space-y-3 sm:space-y-4">
                     <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-bold text-[#138601] dark:text-[#4bd043] bg-white dark:bg-[#041801] px-2 py-0.5 rounded border border-[#138601]/25">
+                      {/* Top Meta Line: Course Code & Category */}
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-xs font-bold text-[#138601] dark:text-[#4bd043] bg-emerald-50 dark:bg-[#041801] px-2 py-0.5 rounded border border-[#138601]/25">
                           {resource.course_code || 'GEN'}
                         </span>
                         <span className="text-[11px] text-gray-500 dark:text-green-200/70 font-medium">
@@ -745,12 +732,29 @@ const Resources = () => {
                         </span>
                       </div>
 
-                      <h3 className="text-sm sm:text-base font-bold text-[#083002] dark:text-white leading-snug group-hover:text-[#138601] dark:group-hover:text-[#4bd043] transition-colors">
-                        {resource.title}
-                      </h3>
+                      {/* Course Title + Level & Semester Badges on the Same Line Header (Mobile Responsive) */}
+                      <div className="flex flex-wrap sm:flex-nowrap items-baseline justify-between gap-x-2 gap-y-1">
+                        <h3 className="text-sm sm:text-base font-bold text-[#083002] dark:text-white leading-snug group-hover:text-[#138601] dark:group-hover:text-[#4bd043] transition-colors flex-1 min-w-[140px] break-words">
+                          {resource.title}
+                        </h3>
+
+                        {/* Level and Semester Badges on the same line */}
+                        <div className="flex items-center gap-1.5 shrink-0 mt-0.5 sm:mt-0">
+                          {resource.level && (
+                            <span className="text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 whitespace-nowrap">
+                              {resource.level.replace(' Level', '')}L
+                            </span>
+                          )}
+                          {resource.semester && (
+                            <span className="text-[10px] sm:text-[11px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border border-[#138601]/25 whitespace-nowrap">
+                              {resource.semester.includes('First') ? '1st Sem' : resource.semester.includes('Second') ? '2nd Sem' : resource.semester}
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
                       {(resource.author || resource.lecturer) && (
-                        <p className="text-xs text-[#083002]/70 dark:text-green-100/70 mt-1 font-medium">
+                        <p className="text-xs text-[#083002]/70 dark:text-green-100/70 mt-1.5 font-medium">
                           Instructor: {resource.author || resource.lecturer}
                         </p>
                       )}
@@ -877,126 +881,117 @@ const Resources = () => {
         </div>
       )}
 
-      {/* ─── RESOURCE PREVIEW MODAL ─── */}
+      {/* ─── FULLSCREEN RESOURCE PREVIEW MODAL ─── */}
       {activePreviewResource && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-[#138601]/25 flex items-center justify-between gap-3 shrink-0">
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col w-screen h-screen overflow-hidden animate-in fade-in duration-150">
+          
+          {/* Fullscreen Header Bar */}
+          <div className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-[#083002] border-b border-[#138601]/40 flex items-center justify-between gap-3 shrink-0 text-white shadow-xl z-20">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              {activePreviewResource.course_code && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#138601] text-white shadow-xs shrink-0">
+                  {activePreviewResource.course_code}
+                </span>
+              )}
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  {activePreviewResource.course_code && (
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#138601]/10 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
-                      {activePreviewResource.course_code}
-                    </span>
-                  )}
-                  <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">
-                    {activePreviewResource.title}
-                  </h3>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-green-200/70 font-mono mt-0.5 truncate">
+                <h3 className="text-xs sm:text-base font-bold text-white truncate max-w-[200px] sm:max-w-md md:max-w-xl">
+                  {activePreviewResource.title}
+                </h3>
+                <p className="text-[11px] text-green-200/70 font-mono truncate hidden sm:block">
                   {activePreviewResource.file_name} • {formatFileSize(activePreviewResource.file_size)}
                 </p>
               </div>
+            </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => executeDownload(activePreviewResource)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs transition-colors cursor-pointer"
-                >
-                  <FiDownload className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Download</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActivePreviewResource(null);
-                    setPreviewUrl(null);
-                  }}
-                  className="p-1.5 rounded text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#041801] transition-colors cursor-pointer"
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => executeDownload(activePreviewResource)}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs transition-colors cursor-pointer"
+              >
+                <FiDownload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Download</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setActivePreviewResource(null);
+                  setPreviewUrl(null);
+                }}
+                className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Close preview"
+                title="Close"
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Fullscreen Viewer Area — Fills 100% of remaining screen height */}
+          <div className="flex-1 w-full h-full overflow-hidden bg-neutral-950 flex flex-col relative">
+            {isLoadingPreview ? (
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3">
+                <div className="w-10 h-10 border-3 border-[#138601] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-xs text-gray-300 font-medium">Generating secure resource preview...</p>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* PDF Viewer — Fills 100% Fullscreen */}
+                {(activePreviewResource.file_extension === 'pdf' || activePreviewResource.mime_type === 'application/pdf') && (
+                  <iframe
+                    src={previewUrl ? `${previewUrl}#toolbar=1` : ''}
+                    title={activePreviewResource.title}
+                    className="w-full h-full flex-1 border-0"
+                  />
+                )}
 
-            {/* Modal Content Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-              {isLoadingPreview ? (
-                <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                  <div className="w-8 h-8 border-3 border-[#138601] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-xs text-gray-500 dark:text-green-200/70 font-medium">Generating secure resource preview...</p>
-                </div>
-              ) : (
-                <>
-                  {/* PDF Viewer */}
-                  {(activePreviewResource.file_extension === 'pdf' || activePreviewResource.mime_type === 'application/pdf') && (
-                    <div className="w-full h-[65vh] rounded border border-gray-200 dark:border-[#138601]/30 bg-gray-100 dark:bg-[#041801] overflow-hidden">
-                      <iframe
-                        src={previewUrl ? `${previewUrl}#toolbar=0` : ''}
-                        title={activePreviewResource.title}
-                        className="w-full h-full border-0"
-                      />
-                    </div>
-                  )}
-
-                  {/* HTML5 Video Player */}
-                  {(activePreviewResource.resource_type === 'video' || activePreviewResource.file_extension === 'mp4') && (
-                    <div className="w-full rounded border border-gray-200 dark:border-[#138601]/30 bg-black overflow-hidden aspect-video flex items-center justify-center">
-                      <video
-                        src={previewUrl}
-                        controls
-                        controlsList="nodownload"
-                        preload="metadata"
-                        className="w-full h-full max-h-[60vh] object-contain"
-                      >
-                        Your browser does not support HTML5 video streaming.
-                      </video>
-                    </div>
-                  )}
-
-                  {/* Image Viewer */}
-                  {(activePreviewResource.resource_type === 'image' || ['jpg', 'jpeg', 'png', 'webp'].includes(activePreviewResource.file_extension)) && (
-                    <div className="w-full rounded border border-gray-200 dark:border-[#138601]/30 bg-[#041801] p-4 flex items-center justify-center min-h-[300px]">
-                      <img
-                        src={previewUrl}
-                        alt={activePreviewResource.title}
-                        className="max-h-[60vh] max-w-full object-contain rounded"
-                      />
-                    </div>
-                  )}
-
-                  {/* Fallback info when preview not supported directly */}
-                  {!['pdf', 'mp4', 'jpg', 'jpeg', 'png', 'webp'].includes(activePreviewResource.file_extension) && (
-                    <div className="p-8 rounded border border-gray-200 dark:border-[#138601]/30 bg-gray-50 dark:bg-[#041801] text-center space-y-3">
-                      <FiFileText className="w-12 h-12 text-[#138601] dark:text-[#4bd043] mx-auto" />
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Document Preview</h4>
-                      <p className="text-xs text-gray-500 dark:text-green-200/70 max-w-md mx-auto">
-                        This file ({activePreviewResource.file_name}) cannot be rendered directly in the web browser previewer. Click download below to view it locally.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => executeDownload(activePreviewResource)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer"
-                      >
-                        <FiDownload className="w-3.5 h-3.5" />
-                        <span>Download {activePreviewResource.file_extension?.toUpperCase() || 'File'}</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Resource Details & Description */}
-                  <div className="p-4 rounded bg-gray-50 dark:bg-[#041801] border border-gray-200/80 dark:border-[#138601]/20 space-y-1.5 text-xs">
-                    <span className="font-bold text-gray-900 dark:text-white uppercase tracking-wider text-[10px]">Resource Details</span>
-                    <p className="text-gray-600 dark:text-green-200/80 leading-relaxed">
-                      {activePreviewResource.description || 'Official academic departmental resource uploaded for computer science undergraduates.'}
-                    </p>
+                {/* HTML5 Video Player — Fullscreen */}
+                {(activePreviewResource.resource_type === 'video' || activePreviewResource.file_extension === 'mp4') && (
+                  <div className="w-full h-full flex items-center justify-center p-2 sm:p-4 bg-black">
+                    <video
+                      src={previewUrl}
+                      controls
+                      controlsList="nodownload"
+                      preload="metadata"
+                      className="w-full h-full max-h-full object-contain"
+                    >
+                      Your browser does not support HTML5 video streaming.
+                    </video>
                   </div>
-                </>
-              )}
-            </div>
+                )}
+
+                {/* Image Viewer — Fullscreen */}
+                {(activePreviewResource.resource_type === 'image' || ['jpg', 'jpeg', 'png', 'webp'].includes(activePreviewResource.file_extension)) && (
+                  <div className="w-full h-full flex items-center justify-center p-2 sm:p-4 bg-black">
+                    <img
+                      src={previewUrl}
+                      alt={activePreviewResource.title}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                )}
+
+                {/* Fallback info when preview not supported directly */}
+                {!['pdf', 'mp4', 'jpg', 'jpeg', 'png', 'webp'].includes(activePreviewResource.file_extension) && (
+                  <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-3">
+                    <FiFileText className="w-16 h-16 text-[#4bd043]" />
+                    <h4 className="text-base font-bold text-white">Document Preview Not Supported Directly</h4>
+                    <p className="text-xs text-gray-300 max-w-md">
+                      This file ({activePreviewResource.file_name}) cannot be rendered directly inside the web browser previewer. Click download below to view it on your device.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => executeDownload(activePreviewResource)}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-md transition-colors cursor-pointer"
+                    >
+                      <FiDownload className="w-4 h-4" />
+                      <span>Download {activePreviewResource.file_extension?.toUpperCase() || 'File'}</span>
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}

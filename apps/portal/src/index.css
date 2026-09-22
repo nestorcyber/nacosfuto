@@ -2,38 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Aeonik Black';
-  src: url('/fonts/Aeonik-Black.woff2') format('woff2'),
-       url('/fonts/Aeonik-Black.woff') format('woff');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Aeonik';
-  src: url('/fonts/Aeonik-Black.woff2') format('woff2'),
-       url('/fonts/Aeonik-Black.woff') format('woff');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Aeonik';
-  src: url('/fonts/Aeonik-Bold.woff2') format('woff2'),
-       url('/fonts/Aeonik-Bold.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Standard responsive layout reset */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+:root {
+  --font-sans: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 html,
@@ -42,6 +21,13 @@ body {
   padding: 0;
   width: 100%;
   min-height: 100%;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading, .font-display {
+  font-family: var(--font-heading);
 }
 
 /* ─── Standard Web Development Responsive Layout Container ─── */
