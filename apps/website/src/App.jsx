@@ -29,10 +29,8 @@ import FAQsPage from "./pages/FAQsPage";
 import ReportIssue from "./pages/ReportIssue";
 import News from "./pages/News";
 import Resources from "./pages/Resources";
-import Announcements from "./pages/Announcements";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
-import UnreadAnnouncementBanner from "./components/UnreadAnnouncementBanner";
 import IdVerification from "./pages/IdVerification";
 import AdminHub from "./pages/AdminHub";
 
@@ -64,7 +62,6 @@ function App() {
       />
       <GSAPWrapper>
         <BrowserRouter>
-          <UnreadAnnouncementBanner />
           <Routes>
             {/* Core Website Pages */}
             <Route path="/" element={<Home />} />
@@ -107,8 +104,7 @@ function App() {
             <Route path="/research-facilities" element={<PlaceholderPage title="Research Facilities" />} />
             <Route path="/research-grants" element={<PlaceholderPage title="Research Grants" />} />
 
-            {/* Announcements & Resources */}
-            <Route path="/announcements" element={<Announcements />} />
+            {/* Student Resources & Guides */}
             <Route path="/student-handbook" element={<PlaceholderPage title="Student Handbook" />} />
             <Route path="/faqs" element={<FAQsPage />} />
 

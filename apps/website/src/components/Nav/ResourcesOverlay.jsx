@@ -51,7 +51,6 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
     ],
     RESOURCES: [
       { name: "Learning Resources", link: "/resources" },
-      { name: "Announcements", link: "/announcements" },
       { name: "Student Handbook", link: "/student-handbook" },
       { name: "FAQs", link: "/faqs" },
     ],

@@ -77,7 +77,6 @@ const MoreDropdown = ({ theme }) => {
       { name: "Research Grants", link: "/research-grants" },
     ],
     RESOURCES: [
-      { name: "Announcements", link: "/announcements" },
       { name: "Student Handbook", link: "/student-handbook" },
       { name: "FAQs", link: "/faqs" },
     ],

@@ -70,12 +70,31 @@ function getLocalNotices() {
   if (typeof window === 'undefined') return [...SEED_NOTICES];
   try {
     const raw = localStorage.getItem(STORAGE_KEY_NOTICES);
+    let list;
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY_NOTICES, JSON.stringify(SEED_NOTICES));
-      return [...SEED_NOTICES];
+      list = [...SEED_NOTICES];
+    } else {
+      const parsed = JSON.parse(raw);
+      list = Array.isArray(parsed) && parsed.length > 0 ? parsed : [...SEED_NOTICES];
     }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...SEED_NOTICES];
+
+    // Auto-sanitize: If any notice is assigned as is_popup, ensure no older notice retains is_popup or is_urgent
+    const activePopup = list.find(n => n.is_popup === true);
+    if (activePopup) {
+      let changed = false;
+      list = list.map(n => {
+        if (n.id !== activePopup.id && (n.is_popup || n.is_urgent)) {
+          changed = true;
+          return { ...n, is_popup: false, is_urgent: false, priority: 'normal' };
+        }
+        return n;
+      });
+      if (changed) {
+        localStorage.setItem(STORAGE_KEY_NOTICES, JSON.stringify(list));
+      }
+    }
+
+    return list;
   } catch (_) {
     return [...SEED_NOTICES];
   }
@@ -262,10 +281,14 @@ export async function adminCreateNotice(noticeData) {
     priority: noticeData.is_urgent ? 'high' : 'normal'
   };
 
-  // If this notice is marked as a popup, optionally toggle off previous popups so students only see one
+  // If this notice is marked as a popup or urgent, reset other notices so only this one is urgent
   const current = getLocalNotices();
-  if (newNotice.is_popup) {
-    current.forEach(n => { n.is_popup = false; });
+  if (newNotice.is_popup || newNotice.is_urgent) {
+    current.forEach(n => {
+      n.is_popup = false;
+      n.is_urgent = false;
+      n.priority = 'normal';
+    });
   }
 
   current.unshift(newNotice);
@@ -274,6 +297,12 @@ export async function adminCreateNotice(noticeData) {
   // Sync to Supabase if possible
   try {
     if (supabase) {
+      if (newNotice.is_popup || newNotice.is_urgent) {
+        await supabase
+          .from('announcements')
+          .update({ is_popup: false, is_urgent: false, priority: 'normal' })
+          .neq('id', newNotice.id);
+      }
       await supabase.from('announcements').insert([{
         id: newNotice.id,
         title: newNotice.title,
@@ -299,9 +328,13 @@ export async function adminUpdateNotice(id, updates = {}) {
   const index = current.findIndex(n => n.id === id);
   if (index === -1) return { success: false, error: 'Notice not found' };
 
-  if (updates.is_popup) {
+  if (updates.is_popup || updates.is_urgent) {
     current.forEach(n => {
-      if (n.id !== id) n.is_popup = false;
+      if (n.id !== id) {
+        n.is_popup = false;
+        n.is_urgent = false;
+        n.priority = 'normal';
+      }
     });
   }
 
@@ -316,6 +349,12 @@ export async function adminUpdateNotice(id, updates = {}) {
   // Sync to Supabase if possible
   try {
     if (supabase) {
+      if (updates.is_popup || updates.is_urgent) {
+        await supabase
+          .from('announcements')
+          .update({ is_popup: false, is_urgent: false, priority: 'normal' })
+          .neq('id', id);
+      }
       await supabase.from('announcements').update(updates).eq('id', id);
     }
   } catch (_) {}

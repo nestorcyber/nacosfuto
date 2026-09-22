@@ -238,21 +238,18 @@ const Resources = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Auth Guard Handler: Trigger Preview or Prompt Sign-In
+  // Preview Handler: Direct Fullscreen Preview (Free for all students and visitors without login)
   const handlePreviewClick = (resource) => {
-    if (!user || !user.id && !user.regNo && !user.matric && !user.registration_number) {
-      setTargetResource(resource);
-      setIsSignInModalOpen(true);
-      return;
-    }
-
-    // User is logged in: proceed with preview
     openPreviewModal(resource);
   };
 
   // Auth Guard Handler: Trigger Download or Prompt Sign-In
   const handleDownloadClick = (resource) => {
-    if (!user || !user.id && !user.regNo && !user.matric && !user.registration_number) {
+    const isUserLoggedIn = Boolean(
+      user && (user.id || user.regNo || user.matric || user.registration_number || user.email)
+    );
+
+    if (!isUserLoggedIn) {
       setTargetResource(resource);
       setIsSignInModalOpen(true);
       return;
@@ -818,9 +815,9 @@ const Resources = () => {
         )}
       </main>
 
-      {/* ─── AUTHENTICATION REQUIRED MODAL ─── */}
+      {/* ─── AUTHENTICATION REQUIRED MODAL (FOR DOWNLOADS) ─── */}
       {isSignInModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -828,7 +825,7 @@ const Resources = () => {
                   <FiLock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Student Sign-In Required</h3>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Portal Sign-In Required</h3>
                   <p className="text-[11px] text-gray-500 dark:text-green-200/70">NACOS FUTO Academic Portal</p>
                 </div>
               </div>
@@ -846,12 +843,12 @@ const Resources = () => {
 
             <div className="p-3.5 rounded bg-[#f8fafc] dark:bg-[#041801] border border-gray-200 dark:border-[#138601]/30 space-y-2">
               <p className="text-xs text-gray-700 dark:text-green-100 leading-relaxed">
-                Access to official departmental lecture notes, textbook references, past examination solutions, and video archives is reserved for verified <strong>NACOS FUTO</strong> students.
+                Previewing materials is free for all students. To <strong>download and save</strong> official lecture notes, textbooks, and past examination solutions to your device, please sign in to your student portal account.
               </p>
               {targetResource && (
                 <div className="pt-2 border-t border-gray-200 dark:border-[#138601]/20">
                   <p className="text-[11px] text-gray-500 dark:text-green-200/70 font-semibold truncate">
-                    Selected: {targetResource.course_code} — {targetResource.title}
+                    Ready to download: {targetResource.course_code ? `${targetResource.course_code} — ` : ''}{targetResource.title}
                   </p>
                 </div>
               )}
@@ -906,7 +903,7 @@ const Resources = () => {
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <button
                 type="button"
-                onClick={() => executeDownload(activePreviewResource)}
+                onClick={() => handleDownloadClick(activePreviewResource)}
                 className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded text-xs font-semibold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-xs transition-colors cursor-pointer"
               >
                 <FiDownload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -982,7 +979,7 @@ const Resources = () => {
                     </p>
                     <button
                       type="button"
-                      onClick={() => executeDownload(activePreviewResource)}
+                      onClick={() => handleDownloadClick(activePreviewResource)}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] shadow-md transition-colors cursor-pointer"
                     >
                       <FiDownload className="w-4 h-4" />

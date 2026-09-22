@@ -61,7 +61,6 @@ const Footer = () => {
               <li><a href='https://www.futo.edu.ng' target='_blank' rel="noopener noreferrer" className="hover:text-[#4bd043] transition-colors">FUTO Main Portal</a></li>
               <li><ScrollToTopLink to="/resources" className="hover:text-[#4bd043] transition-colors">Academic Resources</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/about/calendar" className="hover:text-[#4bd043] transition-colors">Academic Calendar</ScrollToTopLink></li>
-              <li><ScrollToTopLink to="/announcements" className="hover:text-[#4bd043] transition-colors">Official Bulletins</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/faqs" className="hover:text-[#4bd043] transition-colors">Help & FAQs</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/report-emergency" className="hover:text-[#4bd043] transition-colors">Report an Issue</ScrollToTopLink></li>
             </ul>

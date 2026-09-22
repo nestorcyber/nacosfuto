@@ -88,6 +88,16 @@ export default function Notices() {
     });
   }, [notices, selectedLevel, searchQuery]);
 
+  // Only the active assigned urgent/login pop-up notice should display the "Urgent Attention" badge
+  const activeUrgentNoticeId = useMemo(() => {
+    // 1. Find notice explicitly flagged as active login pop-up
+    const popup = notices.find(n => n.is_popup === true && n.is_published !== false);
+    if (popup) return popup.id;
+    // 2. Otherwise find the single newest urgent notice
+    const urgent = notices.find(n => n.is_urgent === true && n.is_published !== false);
+    return urgent ? urgent.id : null;
+  }, [notices]);
+
   return (
     <PortalLayout>
       <div className="space-y-6 pb-12">
@@ -166,7 +176,7 @@ export default function Notices() {
         ) : filteredNotices.length > 0 ? (
           <div className="space-y-4">
             {filteredNotices.map((notice) => {
-              const isUrgent = notice.is_urgent || notice.is_popup;
+              const isUrgent = notice.id === activeUrgentNoticeId;
               const audience = (notice.target_audience || 'ALL STUDENTS').toUpperCase();
 
               return (
