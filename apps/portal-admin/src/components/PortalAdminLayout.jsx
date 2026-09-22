@@ -96,6 +96,8 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
   const navItems = [
     { label: 'Portal Overview', path: '/', icon: LayoutDashboard, exact: true },
     { label: 'Student Registry', path: '/students', icon: Users },
+    { label: 'Course Management', path: '/courses', icon: BookOpen },
+    { label: 'Results & Grades', path: '/results', icon: Award },
     { label: 'ID Card Applications', path: '/id-cards', icon: ShieldCheck },
     { label: 'Notices & Bulletins', path: '/notices', icon: Bell },
     { label: 'Resource Hub', path: '/resources', icon: BookOpen },
@@ -133,17 +135,28 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
             <img 
               src={isDark ? logoDark : logoLight} 
               alt="NACOS Logo" 
-              className="h-9 w-auto object-contain"
+              className="h-8 w-auto object-contain"
             />
           </Link>
         </div>
 
-        {/* Scope Pill Badge */}
-        <div className="px-5 py-3 border-b border-inherit">
+        {/* Scope & Level Clearance Pill Badge */}
+        <div className="px-5 py-3 border-b border-inherit space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
             <Shield className="w-3 h-3" />
             <span>Portal Administration</span>
           </div>
+          {admin?.assigned_level && admin.assigned_level !== 'all' ? (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">
+              <Lock className="w-3 h-3 shrink-0" />
+              <span>{admin.assigned_level}L Coordinator</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#138601] dark:text-[#4bd043] bg-emerald-50 dark:bg-[#041801] px-2 py-0.5 rounded border border-[#138601]/25">
+              <ShieldCheck className="w-3 h-3 shrink-0" />
+              <span>Full Level Rights</span>
+            </div>
+          )}
         </div>
 
         {/* Navigation Items */}

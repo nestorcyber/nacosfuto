@@ -10,4 +10,6 @@ export * from './smsService.js';
 export * from './storageService.js';
 export * from './resources.js';
 export * from './notices.js';
+export * from './courses.js';
+export * from './results.js';
 export { default } from './client.js';

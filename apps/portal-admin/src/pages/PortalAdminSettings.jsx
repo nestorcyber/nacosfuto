@@ -7,11 +7,17 @@ import {
   GraduationCap, 
   CreditCard, 
   CheckCircle2,
-  Calendar
+  Calendar,
+  Users,
+  Shield,
+  Lock,
+  ShieldAlert,
+  UserCheck
 } from 'lucide-react';
 import { getIdCardSettings, updateIdCardFee } from '@nacos/supabase/idCard';
 import { CURRENT_ACADEMIC_YEAR_START, getAcademicSession } from '@nacos/config/academic';
 import { useTheme } from '../context/ThemeContext';
+import { getLocalPortalAdmins, updateAdminAssignedLevel, getPortalAdminSession } from '@nacos/auth';
 
 export const PortalAdminSettings = () => {
   const { theme } = useTheme();
@@ -22,13 +28,35 @@ export const PortalAdminSettings = () => {
   const [allowRegistration, setAllowRegistration] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Admin Scope Management
+  const [currentAdmin, setCurrentAdmin] = useState(null);
+  const [portalAdmins, setPortalAdmins] = useState([]);
+  const [adminUpdateMsg, setAdminUpdateMsg] = useState('');
+
   useEffect(() => {
     try {
       const s = getIdCardSettings();
       if (s?.id_card_fee) setIdCardFee(s.id_card_fee);
       if (s?.academic_session) setAcademicSession(s.academic_session);
+
+      const session = getPortalAdminSession();
+      setCurrentAdmin(session);
+
+      const admins = getLocalPortalAdmins();
+      setPortalAdmins(admins);
     } catch (e) {}
   }, []);
+
+  const handleLevelChange = async (adminId, newLevel) => {
+    try {
+      const res = await updateAdminAssignedLevel(adminId, newLevel);
+      setPortalAdmins(res.admins);
+      setAdminUpdateMsg(`Academic level assigned: ${newLevel === 'all' ? 'Full Level Rights' : `${newLevel} Level Only`}`);
+      setTimeout(() => setAdminUpdateMsg(''), 3500);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -186,6 +214,72 @@ export const PortalAdminSettings = () => {
             </button>
           </div>
         </form>
+
+        {/* ─── Administrator Academic Level Scoping Card ─── */}
+        <div className={`p-6 rounded-2xl border space-y-4 ${
+          isDark ? 'bg-[#04160d] border-emerald-950/60' : 'bg-white border-slate-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-emerald-400">
+              <Users className="w-4 h-4" />
+              <h2 className="text-sm font-bold">Administrator Level Assignments & Scope Rights</h2>
+            </div>
+            {adminUpdateMsg && (
+              <span className="text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-800">
+                {adminUpdateMsg}
+              </span>
+            )}
+          </div>
+
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Assign designated academic levels to individual administrators. Level-scoped administrators (e.g. <em>200 Level Coordinator</em>) are restricted to managing courses, grade uploads, and student records belonging exclusively to their assigned level.
+          </p>
+
+          <div className="divide-y divide-gray-100 dark:divide-white/10 border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden text-xs">
+            {portalAdmins.map((admin) => {
+              const isSuper = admin.scope === 'super_admin' || admin.role === 'super_admin';
+              const assigned = admin.assigned_level || 'all';
+
+              return (
+                <div key={admin.id || admin.email} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-gray-900 dark:text-white">{admin.full_name}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        isSuper 
+                          ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300' 
+                          : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                      }`}>
+                        {admin.role?.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 font-mono">{admin.email}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-gray-400">Assigned Level:</span>
+                    <select
+                      value={assigned}
+                      onChange={(e) => handleLevelChange(admin.id, e.target.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                        assigned === 'all'
+                          ? 'bg-emerald-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border-[#138601]/30'
+                          : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                      }`}
+                    >
+                      <option value="all">Full Access (All Levels)</option>
+                      <option value="100">100 Level Only</option>
+                      <option value="200">200 Level Only</option>
+                      <option value="300">300 Level Only</option>
+                      <option value="400">400 Level Only</option>
+                      <option value="500">500 Level Only</option>
+                    </select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </PortalAdminLayout>
   );

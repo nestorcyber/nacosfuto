@@ -7,6 +7,8 @@ import PortalAdminDashboard from './pages/PortalAdminDashboard';
 import PortalAdminStudents from './pages/PortalAdminStudents';
 import PortalAdminIdCards from './pages/PortalAdminIdCards';
 import PortalAdminResources from './pages/PortalAdminResources';
+import PortalAdminCourses from './pages/PortalAdminCourses';
+import PortalAdminResults from './pages/PortalAdminResults';
 import PortalAdminMedia from './pages/PortalAdminMedia';
 import PortalAdminNotices from './pages/PortalAdminNotices';
 import PortalAdminSettings from './pages/PortalAdminSettings';
@@ -44,6 +46,22 @@ function App() {
             element={
               <PortalAdminProtectedRoute requiredPermission="student_portal.students">
                 <PortalAdminStudents />
+              </PortalAdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/courses" 
+            element={
+              <PortalAdminProtectedRoute requiredPermission="student_portal.view">
+                <PortalAdminCourses />
+              </PortalAdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/results" 
+            element={
+              <PortalAdminProtectedRoute requiredPermission="student_portal.results">
+                <PortalAdminResults />
               </PortalAdminProtectedRoute>
             } 
           />

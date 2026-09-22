@@ -164,6 +164,7 @@ export async function loginPortalAdmin(email, password) {
     full_name: adminRecord.full_name,
     scope: adminRecord.scope,
     role: adminRecord.role,
+    assigned_level: adminRecord.assigned_level || 'all',
     permissions: adminRecord.permissions || ['student_portal.view', 'student_portal.students'],
     is_super_admin: adminRecord.scope === ADMIN_SCOPES.SUPER_ADMIN || adminRecord.role === 'super_admin',
     logged_in_at: new Date().toISOString()
@@ -212,4 +213,43 @@ export function getStudentSession() {
   } catch (e) {
     return null;
   }
+}
+
+/**
+ * Super Admin: Update assigned academic level for a portal administrator
+ * @param {string} adminId
+ * @param {string} level 'all' | '100' | '200' | '300' | '400' | '500'
+ */
+export async function updateAdminAssignedLevel(adminId, level) {
+  const admins = getLocalPortalAdmins();
+  const cleanLevel = String(level || 'all').toLowerCase().replace(' level', '');
+  const updated = admins.map(a => {
+    if (a.id === adminId || a.user_id === adminId) {
+      return { ...a, assigned_level: cleanLevel };
+    }
+    return a;
+  });
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(ADMIN_SCOPES_STORAGE_KEY, JSON.stringify(updated));
+    // If the currently logged in admin had their level updated, update active session
+    const current = getPortalAdminSession();
+    if (current && (current.id === adminId || current.user_id === adminId)) {
+      current.assigned_level = cleanLevel;
+      localStorage.setItem(PORTAL_ADMIN_SESSION_KEY, JSON.stringify(current));
+    }
+    window.dispatchEvent(new Event('nacos_portal_admin_updated'));
+  }
+
+  // Sync to Supabase if connected
+  try {
+    if (supabase) {
+      await supabase
+        .from('admin_scopes')
+        .update({ assigned_level: cleanLevel })
+        .or(`id.eq.${adminId},user_id.eq.${adminId}`);
+    }
+  } catch (e) {}
+
+  return { success: true, admins: updated };
 }

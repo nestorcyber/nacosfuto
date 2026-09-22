@@ -47,10 +47,14 @@ import {
   CURRENT_ACADEMIC_YEAR_START,
   getAcademicSession
 } from '@nacos/config/academic';
+import { getPortalAdminSession, canAccessLevel, getAccessibleLevels } from '@nacos/auth';
 
 const AdminStudents = () => {
   // Navigation tabs: 'roster' (Verified Whitelist) or 'accounts' (Active Registered Users)
   const [activeTab, setActiveTab] = useState('roster');
+
+  // Admin session & level scoping
+  const [adminSession, setAdminSession] = useState(null);
 
   // Datasets
   const [verifiedRoster, setVerifiedRoster] = useState([]);
@@ -106,6 +110,13 @@ const AdminStudents = () => {
 
   useEffect(() => {
     loadData();
+    const session = getPortalAdminSession();
+    setAdminSession(session);
+    if (session?.assigned_level && session.assigned_level !== 'all') {
+      const clean = session.assigned_level.replace(/[^0-9]/g, '');
+      setLevelFilter(clean);
+    }
+
     const stored = localStorage.getItem('nacos_user');
     if (stored) {
       try {
@@ -152,6 +163,11 @@ const AdminStudents = () => {
   // Filtered Roster
   const filteredRoster = useMemo(() => {
     return verifiedRoster.filter(s => {
+      // Level authority guard
+      if (!canAccessLevel(adminSession, s.level)) {
+        return false;
+      }
+
       const matchSearch = 
         s.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.registration_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -166,11 +182,16 @@ const AdminStudents = () => {
 
       return matchSearch && matchDept && matchLevel && matchStatus;
     });
-  }, [verifiedRoster, searchTerm, departmentFilter, levelFilter, regStatusFilter]);
+  }, [verifiedRoster, searchTerm, departmentFilter, levelFilter, regStatusFilter, adminSession]);
 
   // Filtered Active Accounts
   const filteredAccounts = useMemo(() => {
     return activeAccounts.filter(s => {
+      // Level authority guard
+      if (!canAccessLevel(adminSession, s.current_level)) {
+        return false;
+      }
+
       const matchSearch = 
         s.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.registration_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -180,7 +201,7 @@ const AdminStudents = () => {
       const matchLevel = levelFilter === 'ALL' || s.current_level?.includes(levelFilter);
       return matchSearch && matchDept && matchLevel;
     });
-  }, [activeAccounts, searchTerm, departmentFilter, levelFilter]);
+  }, [activeAccounts, searchTerm, departmentFilter, levelFilter, adminSession]);
 
   // =========================================================================
   // ACTIONS: VERIFIED ROSTER
@@ -500,6 +521,21 @@ const AdminStudents = () => {
           </div>
         </div>
 
+        {/* Level Restriction Alert Banner */}
+        {adminSession?.assigned_level && adminSession.assigned_level !== 'all' && !adminSession.is_super_admin && (
+          <div className="p-4 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 flex items-center justify-between gap-3 text-amber-900 dark:text-amber-200 text-xs">
+            <div className="flex items-center gap-2.5">
+              <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>
+                <strong>Academic Scope Restriction Active:</strong> Student roster access is restricted to <strong>{adminSession.assigned_level} Level</strong> records.
+              </span>
+            </div>
+            <span className="px-2.5 py-0.5 rounded font-bold uppercase text-[10px] bg-amber-200 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+              {adminSession.assigned_level}L Coordinator
+            </span>
+          </div>
+        )}
+
         {/* Feedback Alert */}
         {feedback.message && (
           <div className={`p-3.5 rounded text-xs font-semibold flex items-center gap-2 shadow-sm ${
@@ -524,7 +560,7 @@ const AdminStudents = () => {
           >
             <ShieldCheck className="w-4 h-4" />
             <span>Verified Department Roster</span>
-            <span className="px-2 py-0.5 rounded text-[10px] bg-green-100 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] font-bold">
+            <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 dark:bg-[#041801] text-gray-700 dark:text-gray-300 font-bold">
               {verifiedRoster.length}
             </span>
             {activeTab === 'roster' && (
@@ -588,16 +624,27 @@ const AdminStudents = () => {
           {/* Level Filter */}
           <div className="relative">
             <select
+              disabled={Boolean(adminSession?.assigned_level && adminSession.assigned_level !== 'all' && !adminSession.is_super_admin)}
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs rounded border border-gray-300 dark:border-[#138601]/30 bg-white dark:bg-[#083002] text-gray-900 dark:text-white outline-none focus:border-[#138601]"
+              className={`w-full px-3.5 py-2.5 text-xs rounded border border-gray-300 dark:border-[#138601]/30 bg-white dark:bg-[#083002] text-gray-900 dark:text-white outline-none focus:border-[#138601] ${
+                adminSession?.assigned_level && adminSession.assigned_level !== 'all' && !adminSession.is_super_admin ? 'opacity-75 cursor-not-allowed font-bold' : ''
+              }`}
             >
-              <option value="ALL">All Academic Levels</option>
-              <option value="100">100 Level</option>
-              <option value="200">200 Level</option>
-              <option value="300">300 Level</option>
-              <option value="400">400 Level</option>
-              <option value="500">500 Level</option>
+              {adminSession?.assigned_level && adminSession.assigned_level !== 'all' && !adminSession.is_super_admin ? (
+                <option value={adminSession.assigned_level.replace(/[^0-9]/g, '')}>
+                  {adminSession.assigned_level} Level Only (Locked)
+                </option>
+              ) : (
+                <>
+                  <option value="ALL">All Academic Levels</option>
+                  <option value="100">100 Level</option>
+                  <option value="200">200 Level</option>
+                  <option value="300">300 Level</option>
+                  <option value="400">400 Level</option>
+                  <option value="500">500 Level</option>
+                </>
+              )}
             </select>
           </div>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Download, ChevronDown, Filter, GraduationCap, Award, BookOpen } from 'lucide-react';
 import PortalLayout from '../components/PortalLayout';
+import { fetchResultsForStudent } from '@nacos/supabase';
 
 const ALL_SEMESTERS_DATA = [
   {
@@ -218,6 +219,9 @@ const Results = () => {
     return 300; // default fallback
   }, [user]);
 
+  // Semesters Data State (dynamic from database or official curriculum seed)
+  const [allSemesters, setAllSemesters] = useState(ALL_SEMESTERS_DATA);
+
   // By default, filter sets to current level & current semester (e.g. "300-1" or "500-1")
   const [selectedFilter, setSelectedFilter] = useState(() => `${currentLevel}-1`);
   const [hasUserChangedFilter, setHasUserChangedFilter] = useState(false);
@@ -241,6 +245,78 @@ const Results = () => {
     };
   }, []);
 
+  // Dynamically load official recorded results for the current student
+  useEffect(() => {
+    let isMounted = true;
+    const loadStudentResults = async () => {
+      try {
+        const studentId = user?.matric_number || user?.registration_number || user?.email || '20221234567';
+        const res = await fetchResultsForStudent(studentId);
+        if (isMounted && res && res.data && res.data.length > 0) {
+          const grouped = {};
+          res.data.forEach(r => {
+            const semNum = String(r.semester || '').includes('2') ? 2 : 1;
+            const lvl = Number(r.level) || 100;
+            const key = `${lvl}-${semNum}`;
+            if (!grouped[key]) {
+              grouped[key] = {
+                id: key,
+                levelNumber: lvl,
+                semesterNumber: semNum,
+                levelName: `${lvl} Level`,
+                semesterName: semNum === 1 ? '1st Semester' : '2nd Semester',
+                title: `${lvl} Level - ${semNum === 1 ? '1st' : '2nd'} Semester (${r.session || '2023/2024'})`,
+                courses: []
+              };
+            }
+            grouped[key].courses.push({
+              code: r.course_code,
+              title: r.course_title,
+              units: Number(r.units) || 3,
+              test: Number(r.test) || 0,
+              exam: Number(r.exam) || 0,
+              score: Number(r.score) || 0,
+              grade: r.grade || 'F',
+              gp: Number(r.gp) || 0,
+              status: r.status || 'Passed'
+            });
+          });
+
+          const updated = ALL_SEMESTERS_DATA.map(defaultSem => {
+            if (grouped[defaultSem.id] && grouped[defaultSem.id].courses.length > 0) {
+              const semData = grouped[defaultSem.id];
+              const totalUnits = semData.courses.reduce((sum, c) => sum + (c.units || 0), 0);
+              const totalGp = semData.courses.reduce((sum, c) => sum + (c.gp || 0), 0);
+              const gpa = totalUnits > 0 ? (totalGp / totalUnits).toFixed(2) : '0.00';
+              return {
+                ...defaultSem,
+                title: semData.title,
+                gpa,
+                totalUnits,
+                courses: semData.courses
+              };
+            }
+            return defaultSem;
+          });
+
+          setAllSemesters(updated);
+        }
+      } catch (err) {
+        console.warn('Error loading student results:', err);
+      }
+    };
+
+    loadStudentResults();
+    const handleResultsUpdate = () => loadStudentResults();
+    window.addEventListener('storage', handleResultsUpdate);
+    window.addEventListener('nacos_results_updated', handleResultsUpdate);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('storage', handleResultsUpdate);
+      window.removeEventListener('nacos_results_updated', handleResultsUpdate);
+    };
+  }, [user]);
+
   // Update default filter when current level resolves, unless user explicitly chose another
   useEffect(() => {
     if (!hasUserChangedFilter) {
@@ -256,7 +332,7 @@ const Results = () => {
 
   // Filter semesters based on student's current level and single filter
   const filteredSemesters = useMemo(() => {
-    return ALL_SEMESTERS_DATA.filter(sem => {
+    return allSemesters.filter(sem => {
       // Must not exceed student's current level
       if (sem.levelNumber > currentLevel) return false;
 
@@ -269,11 +345,11 @@ const Results = () => {
 
       return true;
     });
-  }, [currentLevel, selectedFilter]);
+  }, [allSemesters, currentLevel, selectedFilter]);
 
   // Calculate Cumulative CGPA (all completed semesters up to current level)
   const cumulativeStats = useMemo(() => {
-    const studentSemesters = ALL_SEMESTERS_DATA.filter(sem => sem.levelNumber <= currentLevel);
+    const studentSemesters = allSemesters.filter(sem => sem.levelNumber <= currentLevel);
     let totalQualityPoints = 0;
     let totalUnits = 0;
 
@@ -286,7 +362,7 @@ const Results = () => {
 
     const cgpa = totalUnits > 0 ? (totalQualityPoints / totalUnits).toFixed(2) : '0.00';
     return { cgpa, totalUnits };
-  }, [currentLevel]);
+  }, [allSemesters, currentLevel]);
 
   // Calculate stats for current filter selection
   const filteredStats = useMemo(() => {

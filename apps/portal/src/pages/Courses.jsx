@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search,
   BookOpen,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import PortalLayout from '../components/PortalLayout';
 import { getAppUrls } from '@nacos/config/urls';
+import { fetchCourses } from '@nacos/supabase';
 
 // Comprehensive NACOS FUTO Departmental Registered Curriculum Data
 const REGISTERED_COURSES_DATA = [
@@ -466,6 +467,33 @@ const Courses = () => {
     return 300;
   }, [user]);
 
+  // Courses Dynamic State (from database or default curriculum)
+  const [coursesList, setCoursesList] = useState(REGISTERED_COURSES_DATA);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadCourses = async () => {
+      try {
+        const res = await fetchCourses();
+        if (isMounted && res && res.data && res.data.length > 0) {
+          setCoursesList(res.data);
+        }
+      } catch (err) {
+        console.warn('Error loading dynamic courses:', err);
+      }
+    };
+    loadCourses();
+
+    const handleStorageChange = () => loadCourses();
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('nacos_courses_updated', handleStorageChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('nacos_courses_updated', handleStorageChange);
+    };
+  }, []);
+
   // Filters State
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedSemester, setSelectedSemester] = useState('all');
@@ -476,7 +504,7 @@ const Courses = () => {
 
   // Filtered registered courses
   const filteredCourses = useMemo(() => {
-    return REGISTERED_COURSES_DATA.filter((course) => {
+    return coursesList.filter((course) => {
       // Level filter
       if (selectedLevel !== 'all' && course.level.toString() !== selectedLevel) {
         return false;

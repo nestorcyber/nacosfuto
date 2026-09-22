@@ -29,6 +29,7 @@ export const PERMISSIONS = {
   PORTAL_ID_CARDS: 'student_portal.id_cards',
   PORTAL_VERIFICATION: 'student_portal.verification',
   PORTAL_RESULTS: 'student_portal.results',
+  PORTAL_COURSES: 'student_portal.courses',
   PORTAL_DUES: 'student_portal.dues',
   PORTAL_SETTINGS: 'student_portal.settings',
 
@@ -52,4 +53,40 @@ export function validateScope(adminSession, expectedScope) {
   if (!adminSession) return false;
   if (adminSession.scope === ADMIN_SCOPES.SUPER_ADMIN) return true;
   return adminSession.scope === expectedScope;
+}
+
+/**
+ * Check whether an admin has rights to view or manage a specific academic level.
+ * Returns true if admin has full level access ('all' / super_admin) or if target level matches assigned_level.
+ */
+export function canAccessLevel(adminSession, targetLevel) {
+  if (!adminSession) return false;
+  if (adminSession.scope === ADMIN_SCOPES.SUPER_ADMIN || adminSession.role === 'super_admin') {
+    return true;
+  }
+  const assigned = String(adminSession.assigned_level || 'all').toLowerCase().trim();
+  if (assigned === 'all' || assigned === '*' || assigned === 'full') {
+    return true;
+  }
+  if (!targetLevel) return true;
+  const cleanTarget = String(targetLevel).replace(/[^0-9]/g, '');
+  const cleanAssigned = assigned.replace(/[^0-9]/g, '');
+  return cleanTarget === cleanAssigned;
+}
+
+/**
+ * Returns the list of academic levels this admin is authorized to manage.
+ */
+export function getAccessibleLevels(adminSession) {
+  const allLevels = ['100', '200', '300', '400', '500'];
+  if (!adminSession) return allLevels;
+  if (adminSession.scope === ADMIN_SCOPES.SUPER_ADMIN || adminSession.role === 'super_admin') {
+    return allLevels;
+  }
+  const assigned = String(adminSession.assigned_level || 'all').toLowerCase().trim();
+  if (assigned === 'all' || assigned === '*' || assigned === 'full') {
+    return allLevels;
+  }
+  const clean = assigned.replace(/[^0-9]/g, '');
+  return allLevels.includes(clean) ? [clean] : allLevels;
 }
