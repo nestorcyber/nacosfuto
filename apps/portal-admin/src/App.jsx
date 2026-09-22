@@ -14,13 +14,69 @@ import PortalAdminNotices from './pages/PortalAdminNotices';
 import PortalAdminSettings from './pages/PortalAdminSettings';
 import PortalAdminProtectedRoute from './components/PortalAdminProtectedRoute';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Portal Admin ErrorBoundary caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#041801] text-white flex items-center justify-center p-6 font-sans">
+          <div className="max-w-md w-full bg-[#083002] border border-[#138601]/40 rounded-2xl p-6 text-center space-y-4 shadow-xl">
+            <div className="w-12 h-12 rounded-xl bg-red-900/40 border border-red-500/50 text-red-400 flex items-center justify-center mx-auto text-xl font-bold">
+              !
+            </div>
+            <h2 className="text-lg font-bold text-white">Something went wrong</h2>
+            <p className="text-xs text-gray-300 leading-relaxed">
+              {this.state.error?.message || 'A render error occurred in the Portal Administration application.'}
+            </p>
+            <div className="pt-2 flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+                className="px-4 py-2 rounded-lg text-xs font-semibold bg-[#138601] hover:bg-[#0f6c01] text-white transition-colors cursor-pointer"
+              >
+                Reload Page
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = '/login';
+                }}
+                className="px-4 py-2 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   const isNestedUnderPortalAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/portal-admin');
 
   return (
-    <ThemeProvider>
-      <BrowserRouter basename={isNestedUnderPortalAdmin ? '/portal-admin' : '/'}>
-        <Routes>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <BrowserRouter basename={isNestedUnderPortalAdmin ? '/portal-admin' : '/'}>
+          <Routes>
           {/* Public Administrative Authentication */}
           <Route path="/login" element={<PortalAdminLogin />} />
 
@@ -116,6 +172,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

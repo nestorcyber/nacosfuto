@@ -18,7 +18,9 @@ import {
   GraduationCap,
   Globe,
   ExternalLink,
-  Bell
+  Bell,
+  Award,
+  Lock
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { getPortalAdminSession, logoutPortalAdmin } from '@nacos/auth';
