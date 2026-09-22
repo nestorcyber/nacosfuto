@@ -242,7 +242,7 @@ const CourseDetailPage = () => {
             <div className="w-full aspect-video relative bg-black">
               <iframe
                 key={youtubeVideoId}
-                src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1&enablejsapi=1`}
+                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
                 title={activeTopic?.title || "Course Video"}
                 className="w-full h-full border-0 block"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

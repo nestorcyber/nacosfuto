@@ -52,7 +52,7 @@ const CampusTour = () => {
         {/* Responsive Video Container */}
         <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-[#138601]/30 bg-black aspect-video mb-16 group">
           <iframe 
-            src="https://www.youtube.com/embed/s5WCcLKS-5I" 
+            src="https://www.youtube.com/embed/s5WCcLKS-5I?autoplay=1&mute=1&rel=0" 
             title="FUTO Campus Tour Video"
             frameBorder="0" 
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 

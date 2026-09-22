@@ -48,7 +48,7 @@ export function CoursePlayer({
         <div className="w-full aspect-video relative bg-black">
           <iframe
             key={`${videoId}-${startSeconds}`}
-            src={`https://www.youtube.com/embed/${videoId}?start=${startSeconds}&rel=0&modestbranding=1&enablejsapi=1`}
+            src={`https://www.youtube.com/embed/${videoId}?start=${startSeconds}&autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
             title={topic.title}
             className="w-full h-full border-0 block"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
