@@ -1,28 +1,27 @@
 {
-  "name": "@nacos/portal",
+  "name": "@nacos/upskill-hub",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5174",
+    "dev": "vite --port 5177",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.40.0",
+    "@nacos/auth": "*",
     "@nacos/config": "*",
     "@nacos/media": "*",
     "@nacos/supabase": "*",
-    "@nacos/types": "*",
-    "@nacos/ui": "*",
     "@supabase/supabase-js": "^2.49.1",
-    "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.469.0",
+    "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "^5.4.0",
     "react-router-dom": "^6.28.0",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

@@ -10,14 +10,16 @@ const websiteDist = path.join(rootDir, 'apps', 'website', 'dist');
 const websiteAdminDist = path.join(rootDir, 'apps', 'website-admin', 'dist');
 const portalDist = path.join(rootDir, 'apps', 'portal', 'dist');
 const portalAdminDist = path.join(rootDir, 'apps', 'portal-admin', 'dist');
+const upskillHubDist = path.join(rootDir, 'apps', 'upskill-hub', 'dist');
 
 const targetDist = path.join(rootDir, 'dist');
 const targetWebsiteAdminDist = path.join(targetDist, 'admin');
 const targetPortalDist = path.join(targetDist, 'portal');
 const targetPortalAdminDist = path.join(targetDist, 'portal-admin');
+const targetUpskillHubDist = path.join(targetDist, 'upskill-hub');
 const targetAssetsDist = path.join(targetDist, 'assets');
 
-console.log('[bundle-dist] Preparing unified root dist directory for all 4 applications...');
+console.log('[bundle-dist] Preparing unified root dist directory for all 5 applications...');
 
 // Clean existing root dist if present
 if (fs.existsSync(targetDist)) {
@@ -38,7 +40,7 @@ function copyAssetsToRoot(sourceDir, label) {
 
 // 1. Copy website dist into root dist
 if (fs.existsSync(websiteDist)) {
-  console.log('[bundle-dist] 1/4 Copying apps/website/dist -> dist (Main Website)...');
+  console.log('[bundle-dist] 1/5 Copying apps/website/dist -> dist (Main Website)...');
   fs.cpSync(websiteDist, targetDist, { recursive: true });
 } else {
   console.warn('[bundle-dist] Warning: apps/website/dist was not found.');
@@ -46,7 +48,7 @@ if (fs.existsSync(websiteDist)) {
 
 // 2. Copy website admin dist into dist/admin
 if (fs.existsSync(websiteAdminDist)) {
-  console.log('[bundle-dist] 2/4 Copying apps/website-admin/dist -> dist/admin (Website Admin)...');
+  console.log('[bundle-dist] 2/5 Copying apps/website-admin/dist -> dist/admin (Website Admin)...');
   fs.mkdirSync(targetWebsiteAdminDist, { recursive: true });
   fs.cpSync(websiteAdminDist, targetWebsiteAdminDist, { recursive: true });
   copyAssetsToRoot(websiteAdminDist, 'website-admin');
@@ -56,7 +58,7 @@ if (fs.existsSync(websiteAdminDist)) {
 
 // 3. Copy student portal dist into dist/portal
 if (fs.existsSync(portalDist)) {
-  console.log('[bundle-dist] 3/4 Copying apps/portal/dist -> dist/portal (Student Portal)...');
+  console.log('[bundle-dist] 3/5 Copying apps/portal/dist -> dist/portal (Student Portal)...');
   fs.mkdirSync(targetPortalDist, { recursive: true });
   fs.cpSync(portalDist, targetPortalDist, { recursive: true });
   copyAssetsToRoot(portalDist, 'portal');
@@ -71,12 +73,22 @@ if (fs.existsSync(portalDist)) {
 
 // 4. Copy portal admin dist into dist/portal-admin
 if (fs.existsSync(portalAdminDist)) {
-  console.log('[bundle-dist] 4/4 Copying apps/portal-admin/dist -> dist/portal-admin (Portal Admin)...');
+  console.log('[bundle-dist] 4/5 Copying apps/portal-admin/dist -> dist/portal-admin (Portal Admin)...');
   fs.mkdirSync(targetPortalAdminDist, { recursive: true });
   fs.cpSync(portalAdminDist, targetPortalAdminDist, { recursive: true });
   copyAssetsToRoot(portalAdminDist, 'portal-admin');
 } else {
   console.warn('[bundle-dist] Warning: apps/portal-admin/dist was not found.');
+}
+
+// 5. Copy upskill hub dist into dist/upskill-hub
+if (fs.existsSync(upskillHubDist)) {
+  console.log('[bundle-dist] 5/5 Copying apps/upskill-hub/dist -> dist/upskill-hub (Upskill Hub)...');
+  fs.mkdirSync(targetUpskillHubDist, { recursive: true });
+  fs.cpSync(upskillHubDist, targetUpskillHubDist, { recursive: true });
+  copyAssetsToRoot(upskillHubDist, 'upskill-hub');
+} else {
+  console.warn('[bundle-dist] Warning: apps/upskill-hub/dist was not found.');
 }
 
 console.log('[bundle-dist] Successfully assembled unified output directory at ./dist');

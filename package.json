@@ -9,16 +9,18 @@
   ],
   "scripts": {
     "dev": "npm run dev:website",
-    "dev:all": "concurrently \"npm run dev:website\" \"npm run dev:website-admin\" \"npm run dev:portal\" \"npm run dev:portal-admin\"",
+    "dev:all": "concurrently \"npm run dev:website\" \"npm run dev:website-admin\" \"npm run dev:portal\" \"npm run dev:portal-admin\" \"npm run dev:upskill-hub\"",
     "dev:website": "npm --prefix apps/website run dev",
     "dev:website-admin": "npm --prefix apps/website-admin run dev",
     "dev:portal": "npm --prefix apps/portal run dev",
     "dev:portal-admin": "npm --prefix apps/portal-admin run dev",
-    "build": "npm run build:website && npm run build:website-admin && npm run build:portal && npm run build:portal-admin && node scripts/bundle-dist.js",
+    "dev:upskill-hub": "npm --prefix apps/upskill-hub run dev",
+    "build": "npm run build:website && npm run build:website-admin && npm run build:portal && npm run build:portal-admin && npm run build:upskill-hub && node scripts/bundle-dist.js",
     "build:website": "npm --prefix apps/website run build",
     "build:website-admin": "npm --prefix apps/website-admin run build",
     "build:portal": "npm --prefix apps/portal run build",
     "build:portal-admin": "npm --prefix apps/portal-admin run build",
+    "build:upskill-hub": "npm --prefix apps/upskill-hub run build",
     "lint": "npm --prefix apps/website run lint"
   },
   "dependencies": {

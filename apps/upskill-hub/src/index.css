@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Space Mono", monospace;
+
+  --color-green-500: #1fb416;
+  --color-green-600: #138601;
+  --color-green-700: #0f6c01;
+  --color-green-800: #0d5602;
+  --color-green-900: #083002;
+
+  --color-nacos-green: #138601;
+  --color-nacos-dark: #083002;
+  --color-nacos-black: #041801;
+  --color-nacos-accent: #4bd043;
+}
+
+:root {
+  --background: 0 0% 98%;
+  --foreground: 220 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 10% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 10% 10%;
+  --primary: 220 10% 10%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 5% 96%;
+  --secondary-foreground: 220 10% 10%;
+  --muted: 220 5% 94%;
+  --muted-foreground: 220 5% 45%;
+  --accent-green: 142 72% 45%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 10% 85%;
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 220 10% 10%;
+  --sidebar-border: 220 10% 90%;
+}
+
+.dark {
+  --background: 220 15% 7%;
+  --foreground: 0 0% 98%;
+  --card: 220 15% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 15% 10%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 220 10% 10%;
+  --secondary: 220 10% 14%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 220 10% 14%;
+  --muted-foreground: 220 5% 65%;
+  --border: 220 10% 20%;
+  --sidebar-background: 220 15% 9%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-border: 220 10% 18%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+}
+
+/* Custom Brutalist & Learning Elements */
+.bg-background { background-color: hsl(var(--background)); }
+.text-foreground { color: hsl(var(--foreground)); }
+.bg-card { background-color: hsl(var(--card)); }
+.text-muted-foreground { color: hsl(var(--muted-foreground)); }
+.bg-secondary { background-color: hsl(var(--secondary)); }
+.bg-muted { background-color: hsl(var(--muted)); }
+.border-border { border-color: hsl(var(--border)); }
+.bg-foreground { background-color: hsl(var(--foreground)); }
+.text-primary-foreground { color: hsl(var(--primary-foreground)); }
+
+.brutal-card {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  padding: 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  margin: 0.125rem 0.25rem;
+  transition: all 0.15s ease;
+}
+
+.sidebar-link:hover {
+  background-color: hsl(var(--secondary));
+}
+
+.progress-brutal {
+  height: 6px;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--secondary));
+  overflow: hidden;
+  border-radius: 9999px;
+}
+
+.progress-brutal-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  background-color: #138601;
+  border-radius: 9999px;
+}
