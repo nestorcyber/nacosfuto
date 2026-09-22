@@ -235,7 +235,42 @@ export const storageService = {
     const storageKey = options.storageKey || buildResourceStorageKey(resourceId, fileName, type);
     const mimeType = options.mimeType || file.type || 'application/octet-stream';
 
-    // 1. Try Supabase Edge Function first if deployed
+    // 1. Obtain B2 direct upload target from Serverless API endpoint
+    try {
+      const targetRes = await fetch('/api/resource-storage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get-upload-url', storageKey })
+      });
+
+      if (targetRes.ok) {
+        const target = await targetRes.json();
+        if (target?.uploadUrl && target?.authorizationToken) {
+          await this._streamUpload(target.uploadUrl, file, mimeType, options.onProgress, {
+            Authorization: target.authorizationToken,
+            'X-Bz-File-Name': encodeURIComponent(storageKey),
+            'Content-Type': mimeType,
+            'Content-Length': file.size.toString(),
+            'X-Bz-Content-Sha1': 'do_not_verify'
+          });
+
+          return {
+            success: true,
+            storageKey,
+            storageProvider: 'backblaze_b2',
+            storageBucket: target.bucket || B2_BUCKET_NAME,
+            publicUrl: `${B2_PUBLIC_BASE_URL}/${storageKey}`,
+            fileSize: file.size,
+            fileName: sanitizeFilename(fileName),
+            mimeType
+          };
+        }
+      }
+    } catch (apiErr) {
+      console.warn('API B2 upload target notice:', apiErr);
+    }
+
+    // 2. Try Supabase Edge Function if deployed
     try {
       if (supabase && typeof supabase.functions?.invoke === 'function') {
         const { data: presignData, error: presignError } = await supabase.functions.invoke('resource-storage', {
@@ -266,46 +301,48 @@ export const storageService = {
       }
     } catch (e) {}
 
-    // 2. Direct-to-B2 via native b2_get_upload_url & CORS direct upload
-    try {
-      const auth = await getB2Auth();
-      if (auth) {
-        const uploadUrlRes = await fetch(`${auth.apiUrl}/b2api/v3/b2_get_upload_url`, {
-          method: 'POST',
-          headers: {
-            Authorization: auth.authorizationToken,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ bucketId: auth.bucketId })
-        });
-
-        if (uploadUrlRes.ok) {
-          const uploadTarget = await uploadUrlRes.json();
-          await this._streamUpload(uploadTarget.uploadUrl, file, mimeType, options.onProgress, {
-            Authorization: uploadTarget.authorizationToken,
-            'X-Bz-File-Name': encodeURIComponent(storageKey),
-            'Content-Type': mimeType,
-            'Content-Length': file.size.toString(),
-            'X-Bz-Content-Sha1': 'do_not_verify'
+    // 3. Direct B2 upload for Node.js / non-browser server environments
+    if (typeof window === 'undefined') {
+      try {
+        const auth = await getB2Auth();
+        if (auth) {
+          const uploadUrlRes = await fetch(`${auth.apiUrl}/b2api/v3/b2_get_upload_url`, {
+            method: 'POST',
+            headers: {
+              Authorization: auth.authorizationToken,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ bucketId: auth.bucketId })
           });
 
-          return {
-            success: true,
-            storageKey,
-            storageProvider: 'backblaze_b2',
-            storageBucket: auth.bucketName,
-            publicUrl: `${auth.downloadUrl}/file/${auth.bucketName}/${storageKey}`,
-            fileSize: file.size,
-            fileName: sanitizeFilename(fileName),
-            mimeType
-          };
+          if (uploadUrlRes.ok) {
+            const uploadTarget = await uploadUrlRes.json();
+            await this._streamUpload(uploadTarget.uploadUrl, file, mimeType, options.onProgress, {
+              Authorization: uploadTarget.authorizationToken,
+              'X-Bz-File-Name': encodeURIComponent(storageKey),
+              'Content-Type': mimeType,
+              'Content-Length': file.size.toString(),
+              'X-Bz-Content-Sha1': 'do_not_verify'
+            });
+
+            return {
+              success: true,
+              storageKey,
+              storageProvider: 'backblaze_b2',
+              storageBucket: auth.bucketName,
+              publicUrl: `${auth.downloadUrl}/file/${auth.bucketName}/${storageKey}`,
+              fileSize: file.size,
+              fileName: sanitizeFilename(fileName),
+              mimeType
+            };
+          }
         }
+      } catch (b2Err) {
+        console.warn('Direct B2 upload notice:', b2Err);
       }
-    } catch (b2Err) {
-      console.warn('Direct B2 upload notice:', b2Err);
     }
 
-    // 3. Fallback: Upload via Supabase Storage bucket ('resources')
+    // 4. Supabase Storage fallback bucket ('resources')
     try {
       if (supabase) {
         const { data, error } = await supabase.storage
@@ -331,17 +368,7 @@ export const storageService = {
       }
     } catch (fallbackErr) {}
 
-    // Graceful return for demo or preview pipelines
-    return {
-      success: true,
-      storageKey,
-      storageProvider: 'backblaze_b2',
-      storageBucket: B2_BUCKET_NAME,
-      publicUrl: `${B2_PUBLIC_BASE_URL}/${storageKey}`,
-      fileSize: file.size,
-      fileName: sanitizeFilename(fileName),
-      mimeType
-    };
+    throw new Error('File upload to storage failed. Please check network connection and storage credentials.');
   },
 
   /**

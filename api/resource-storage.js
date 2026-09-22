@@ -33,7 +33,8 @@ async function getB2AuthTokens() {
     apiUrl: authData.apiInfo?.storageApi?.apiUrl || 'https://api005.backblazeb2.com',
     downloadUrl: authData.apiInfo?.storageApi?.downloadUrl || 'https://f005.backblazeb2.com',
     bucketName: authData.apiInfo?.storageApi?.bucketName || bucketName,
-    bucketId: bucketId
+    bucketId: bucketId,
+    authorizationToken: authData.authorizationToken
   };
 
   const dlRes = await fetch(`${cachedAuth.apiUrl}/b2api/v3/b2_get_download_authorization`, {
@@ -78,6 +79,30 @@ export default async function handler(req, res) {
     const cleanKey = String(storageKey).replace(/^\/+/, '');
 
     const { auth, dlToken } = await getB2AuthTokens();
+
+    if (action === 'get-upload-url' || action === 'presign-upload') {
+      const upRes = await fetch(`${auth.apiUrl}/b2api/v3/b2_get_upload_url`, {
+        method: 'POST',
+        headers: {
+          Authorization: auth.authorizationToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ bucketId: auth.bucketId })
+      });
+
+      if (!upRes.ok) {
+        throw new Error('Failed to get B2 upload target URL');
+      }
+
+      const upData = await upRes.json();
+      return res.status(200).json({
+        success: true,
+        uploadUrl: upData.uploadUrl,
+        authorizationToken: upData.authorizationToken,
+        bucket: auth.bucketName,
+        storageKey: cleanKey
+      });
+    }
 
     if (action === 'presign-download' || action === 'presign-preview' || action === 'get-url') {
       let downloadUrl = `${auth.downloadUrl}/file/${auth.bucketName}/${cleanKey}?Authorization=${dlToken.token}`;
