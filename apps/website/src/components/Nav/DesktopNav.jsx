@@ -43,8 +43,8 @@ const NavDropdown = ({ label, items, theme, headerLink }) => {
               <a
                 key={idx}
                 href={item.link}
-                target={item.target || (item.link.startsWith("http") ? "_blank" : "_self")}
-                rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
+                target={item.target || (isExternal ? "_blank" : "_self")}
+                rel={isExternal ? "noopener noreferrer" : undefined}
                 className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
                   theme === "light"
                     ? "hover:bg-[#f2fbf1] hover:text-[#138601] text-[#083002]"

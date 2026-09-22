@@ -99,8 +99,8 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
                     {item.link.startsWith("http") || item.isExternal || item.link.startsWith("/upskill-hub") ? (
                       <a
                         href={item.link}
-                        target={item.target || (item.link.startsWith("http") ? "_blank" : "_self")}
-                        rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
+                        target={item.target || "_blank"}
+                        rel="noopener noreferrer"
                         className="block py-2 px-3 rounded-lg transition-colors text-sm font-medium text-[#083002]/90 dark:text-green-100 hover:bg-[#138601] hover:text-white"
                         onClick={closeOverlay}
                       >

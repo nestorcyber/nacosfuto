@@ -34,9 +34,14 @@ export const useCourseStore = create((set, get) => ({
 
   // [2] Load course by ID + its topics
   fetchCourseById: async (courseId) => {
-    set({ status: "PENDING" });
+    const existing = get().allCourses.find((c) => String(c.id) === String(courseId));
+    if (existing) {
+      set({ currentCourse: existing });
+    } else {
+      set({ status: "PENDING" });
+    }
     try {
-      const course = await db.getCourse(courseId);
+      const course = existing || await db.getCourse(courseId);
       if (!course) throw new Error("Course not found");
 
       const topics = await db.getTopicsByCourse(courseId);

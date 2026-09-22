@@ -22,6 +22,15 @@ export function CoursePlayer({
 
   const startSeconds = Math.max(0, Math.floor(Number(topic.start_playing_at) || 0));
 
+  // Extract clean YouTube video ID from URL or raw ID
+  const videoId = React.useMemo(() => {
+    if (!topic?.video_url) return "W6NZfCO5SIk";
+    const str = String(topic.video_url).trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(str)) return str;
+    const match = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    return match ? match[1] : "W6NZfCO5SIk";
+  }, [topic?.video_url]);
+
   return (
     <div className="space-y-6">
       {/* Back to syllabus button */}
@@ -34,16 +43,17 @@ export function CoursePlayer({
         <span>Back to Course Outline</span>
       </button>
 
-      {/* Video Container */}
-      <BrutalCard className="p-0 overflow-hidden border border-border shadow-md">
-        <div className="aspect-video w-full bg-black">
+      {/* Video Container - Fitted full frame 16:9 aspect ratio */}
+      <BrutalCard className="p-0 overflow-hidden border border-border shadow-md bg-black">
+        <div className="w-full aspect-video relative bg-black">
           <iframe
-            key={`${topic.video_url}-${startSeconds}`}
-            src={`https://www.youtube.com/embed/${topic.video_url}?start=${startSeconds}&autoplay=1`}
+            key={`${videoId}-${startSeconds}`}
+            src={`https://www.youtube.com/embed/${videoId}?start=${startSeconds}&rel=0&modestbranding=1&enablejsapi=1`}
             title={topic.title}
-            className="w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            className="w-full h-full border-0 block"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
+            loading="eager"
           />
         </div>
       </BrutalCard>

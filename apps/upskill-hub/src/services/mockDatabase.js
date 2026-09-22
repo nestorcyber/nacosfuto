@@ -635,24 +635,21 @@ const delay = (ms = 80) => new Promise((resolve) => setTimeout(resolve, ms));
 export const db = {
   // Courses
   async getCourses() {
-    await delay(60);
     return loadFromStorage(STORAGE_KEY_COURSES, INITIAL_COURSES);
   },
 
   async getCourse(id) {
-    await delay(50);
     const courses = loadFromStorage(STORAGE_KEY_COURSES, INITIAL_COURSES);
     return courses.find((c) => String(c.id) === String(id)) || null;
   },
 
   async getLiveWorkshops() {
-    await delay(50);
     const courses = loadFromStorage(STORAGE_KEY_COURSES, INITIAL_COURSES);
     return courses.filter((c) => c.is_live_workshop);
   },
 
   async createCourse(courseData) {
-    await delay(150);
+    await delay(50);
     const courses = loadFromStorage(STORAGE_KEY_COURSES, INITIAL_COURSES);
     const newCourse = {
       ...courseData,
@@ -665,7 +662,7 @@ export const db = {
   },
 
   async updateCourse(id, updates) {
-    await delay(100);
+    await delay(50);
     const courses = loadFromStorage(STORAGE_KEY_COURSES, INITIAL_COURSES);
     const idx = courses.findIndex((c) => String(c.id) === String(id));
     if (idx !== -1) {
@@ -677,7 +674,7 @@ export const db = {
   },
 
   async deleteCourse(id) {
-    await delay(100);
+    await delay(50);
     let courses = loadFromStorage(STORAGE_KEY_COURSES, INITIAL_COURSES);
     courses = courses.filter((c) => String(c.id) !== String(id));
     saveToStorage(STORAGE_KEY_COURSES, courses);
@@ -686,7 +683,6 @@ export const db = {
 
   // Topics
   async getTopicsByCourse(courseId) {
-    await delay(50);
     const topics = loadFromStorage(STORAGE_KEY_TOPICS, INITIAL_TOPICS);
     return topics
       .filter((t) => String(t.course_id) === String(courseId))

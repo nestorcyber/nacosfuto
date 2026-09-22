@@ -25,10 +25,17 @@ export function getAppUrls() {
   const envUpskillHub = typeof import.meta !== 'undefined' && import.meta.env?.VITE_UPSKILL_HUB_URL;
 
   const { hostname, protocol, port } = window.location;
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.local');
+  const isLocal = 
+    hostname === 'localhost' || 
+    hostname === '127.0.0.1' || 
+    hostname.endsWith('.local') || 
+    hostname === '0.0.0.0' ||
+    /^192\.168\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname);
 
-  // If in local dev with multi-port Vite servers (ports 5173-5177)
-  if (isLocal && (port === '5173' || port === '5174' || port === '5175' || port === '5176' || port === '5177')) {
+  // If in local dev multi-service environment
+  if (isLocal) {
     return {
       website: envWebsite || `${protocol}//${hostname}:5173`,
       portal: envPortal || `${protocol}//${hostname}:5174`,

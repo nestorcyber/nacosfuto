@@ -132,17 +132,13 @@ const CourseDetailPage = () => {
     }
   };
 
-  // Extract clean YouTube embed ID
+  // Extract clean YouTube embed ID safely from any URL format
   const youtubeVideoId = useMemo(() => {
     if (!activeTopic?.video_url) return 'W6NZfCO5SIk';
-    let url = activeTopic.video_url;
-    if (url.includes('v=')) {
-      url = url.split('v=')[1].split('&')[0];
-    }
-    if (url.includes('youtu.be/')) {
-      url = url.split('youtu.be/')[1].split('?')[0];
-    }
-    return url.substring(0, 11);
+    const str = String(activeTopic.video_url).trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(str)) return str;
+    const match = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    return match ? match[1] : 'W6NZfCO5SIk';
   }, [activeTopic]);
 
   if (status === 'PENDING' && !currentCourse) {
@@ -241,16 +237,19 @@ const CourseDetailPage = () => {
         {/* LEFT / CENTER: VIDEO PLAYER & LESSON NOTES */}
         <div className="flex-1 overflow-y-auto bg-gray-950 flex flex-col justify-between">
           
-          {/* Responsive 16:9 Video Canvas */}
-          <div className="w-full bg-black flex items-center justify-center relative aspect-video max-h-[72vh] shadow-2xl">
-            <iframe
-              key={youtubeVideoId}
-              src={`https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&rel=0&modestbranding=1`}
-              title={activeTopic?.title || "Course Video"}
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
+          {/* Video Player Frame - Fits Edge-to-Edge into Frame */}
+          <div className="w-full bg-black border-b border-gray-800">
+            <div className="w-full aspect-video relative bg-black">
+              <iframe
+                key={youtubeVideoId}
+                src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1&enablejsapi=1`}
+                title={activeTopic?.title || "Course Video"}
+                className="w-full h-full border-0 block"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="eager"
+              />
+            </div>
           </div>
 
           {/* Video Footer Action Strip */}

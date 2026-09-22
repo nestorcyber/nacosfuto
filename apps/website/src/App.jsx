@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import GSAPWrapper from "./utils/GSAPWrapper";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -39,15 +39,42 @@ import AdminHub from "./pages/AdminHub";
 const Events = lazy(() => import("./pages/Events"));
 const YellowPages = lazy(() => import("./pages/YellowPages"));
 
-const UpskillRedirect = ({ to }) => {
+const UpskillCourseRedirect = () => {
+  const location = useLocation();
+  const { upskillHub } = getAppUrls();
+
   useEffect(() => {
-    window.location.href = to;
-  }, [to]);
+    let targetPath = location.pathname;
+    if (targetPath.startsWith('/upskill-hub')) {
+      targetPath = targetPath.replace(/^\/upskill-hub/, '') || '/';
+    } else if (targetPath.startsWith('/upskill')) {
+      if (targetPath === '/upskill' || targetPath === '/upskill/all') {
+        targetPath = '/courses';
+      } else if (targetPath === '/upskill/web-development') {
+        targetPath = '/courses/course-web-dev';
+      } else if (targetPath === '/upskill/ai-fluency' || targetPath === '/upskill/ai-automation') {
+        targetPath = '/courses/course-ai-fluency';
+      } else {
+        targetPath = '/courses';
+      }
+    }
+
+    const baseUrl = upskillHub.replace(/\/+$/, '');
+    const cleanPath = targetPath.startsWith('/') ? targetPath : `/${targetPath}`;
+    const destination = baseUrl.startsWith('http')
+      ? `${baseUrl}${cleanPath}${location.search}`
+      : `${baseUrl}${cleanPath}${location.search}`;
+
+    if (window.location.href !== destination) {
+      window.location.href = destination;
+    }
+  }, [location, upskillHub]);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-white dark:bg-[#041801]">
       <div className="text-center">
         <div className="w-10 h-10 border-4 border-[#138601] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-sm font-medium text-[#083002] dark:text-green-100">Redirecting to Upskill Hub...</p>
+        <p className="text-sm font-medium text-[#083002] dark:text-green-100">Directing to Upskill Hub...</p>
       </div>
     </div>
   );
@@ -132,13 +159,13 @@ function App() {
             <Route path="/health-services" element={<PlaceholderPage title="Health Services" />} />
             <Route path="/careers-recruitment" element={<PlaceholderPage title="Careers & Recruitment" />} />
 
-            {/* Upskill Courses (Directs into Upskill Hub) */}
-            <Route path="/upskill" element={<UpskillRedirect to={`${upskillHub}/courses`} />} />
-            <Route path="/upskill/web-development" element={<UpskillRedirect to={`${upskillHub}/courses/course-web-dev`} />} />
-            <Route path="/upskill/ai-fluency" element={<UpskillRedirect to={`${upskillHub}/courses/course-ai-fluency`} />} />
-            <Route path="/upskill/ai-automation" element={<UpskillRedirect to={`${upskillHub}/courses/course-ai-fluency`} />} />
-            <Route path="/upskill/all" element={<UpskillRedirect to={`${upskillHub}/courses`} />} />
-            <Route path="/upskill/:slug" element={<UpskillRedirect to={`${upskillHub}/courses`} />} />
+            {/* Upskill Courses & Hub (Directs into Upskill Hub) */}
+            <Route path="/upskill-hub/*" element={<UpskillCourseRedirect />} />
+            <Route path="/upskill-hub" element={<UpskillCourseRedirect />} />
+            <Route path="/courses/*" element={<UpskillCourseRedirect />} />
+            <Route path="/courses" element={<UpskillCourseRedirect />} />
+            <Route path="/upskill/*" element={<UpskillCourseRedirect />} />
+            <Route path="/upskill" element={<UpskillCourseRedirect />} />
 
             {/* Public Student ID Card Verification */}
             <Route path="/verify/id/:id" element={<IdVerification />} />

@@ -159,8 +159,8 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
                       {item.link.startsWith("http") || item.isExternal || item.link.startsWith("/upskill-hub") ? (
                         <a
                           href={item.link}
-                          target={item.target || (item.link.startsWith("http") ? "_blank" : "_self")}
-                          rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
+                          target={item.target || "_blank"}
+                          rel="noopener noreferrer"
                           className={`block py-2.5 px-5 rounded transition-colors text-sm sm:text-base font-medium ${
                             darkMode
                               ? "text-green-100 hover:bg-[#138601]/25 hover:text-[#4bd043]"
