@@ -18,8 +18,13 @@ import {
   FiFolder, 
   FiLayers, 
   FiUser, 
-  FiArrowRight 
+  FiArrowRight,
+  FiChevronDown,
+  FiBookOpen,
+  FiUploadCloud
 } from 'react-icons/fi';
+import libraryShelfCloseup from '../assets/library_shelf_closeup.jpg';
+import libraryHero from '../assets/library_hero.jpg';
 import { 
   fetchResources, 
   fetchResourceCategories, 
@@ -65,6 +70,18 @@ const Resources = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Hero Section States
+  const [showTopBanner, setShowTopBanner] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('nacos_hide_resource_banner') !== 'true';
+    }
+    return true;
+  });
+  const [isDiscoverDropdownOpen, setIsDiscoverDropdownOpen] = useState(false);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
+  const discoverRef = useRef(null);
 
   // Listen for user login/logout events across tabs
   useEffect(() => {
@@ -357,6 +374,85 @@ const Resources = () => {
     return <FiFileText className="text-3xl sm:text-4xl text-[#4bd043]" />;
   };
 
+  // Close discover dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (discoverRef.current && !discoverRef.current.contains(e.target)) {
+        setIsDiscoverDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Dismiss top announcement banner
+  const dismissTopBanner = () => {
+    setShowTopBanner(false);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('nacos_hide_resource_banner', 'true');
+    }
+  };
+
+  // Hero carousel slides inspired by the literature / academic archive hero layout
+  const heroSlides = useMemo(() => [
+    {
+      id: 'ebooks',
+      title: 'THE ULTIMATE GUIDE TO FREE EBOOKS',
+      subtitle: 'Not sure what to study next? Explore our catalog of public domain books, verified lecture notes, and departmental textbooks. Some real gems are hidden in our library.',
+      linkText: 'Read more',
+      category: 'Books',
+      bgImage: libraryShelfCloseup,
+    },
+    {
+      id: 'past-questions',
+      title: 'PAST QUESTIONS & EXAM ARCHIVES',
+      subtitle: 'Accelerate your semester revision with curated previous year question papers, marking schemes, and model solutions across 100L – 500L.',
+      linkText: 'Explore past papers',
+      category: 'Past Questions',
+      bgImage: libraryHero,
+    },
+    {
+      id: 'handouts',
+      title: 'OFFICIAL HANDOUTS & STUDY GUIDES',
+      subtitle: 'Browse authentic lecture notes, syllabus companion guides, and slides prepared for FUTO Computer Science undergraduates.',
+      linkText: 'Explore handouts',
+      category: 'Handouts',
+      bgImage: libraryShelfCloseup,
+    }
+  ], []);
+
+  // Auto-advance hero carousel every 7 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlideIndex((prev) => (prev + 1) % heroSlides.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
+
+  const scrollToCatalog = () => {
+    const el = document.getElementById('catalog-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleHeroSearchSubmit = (e) => {
+    e.preventDefault();
+    scrollToCatalog();
+  };
+
+  const handleSelectCategoryFromHero = (cat) => {
+    setActiveCategory(cat);
+    setIsDiscoverDropdownOpen(false);
+    scrollToCatalog();
+  };
+
+  const handleSelectLevelFromHero = (lvl) => {
+    setSelectedLevel(lvl);
+    setIsDiscoverDropdownOpen(false);
+    scrollToCatalog();
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-[#041801] text-gray-900 dark:text-white transition-colors duration-300">
       <Navbar />
@@ -373,28 +469,228 @@ const Resources = () => {
         </div>
       )}
 
-      <main className="flex-grow site-container w-full py-10">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-8 border-b border-[#138601]/20 dark:border-[#138601]/30 gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <span className="p-1.5 rounded bg-[#138601]/10 dark:bg-[#138601]/20 text-[#138601] dark:text-[#4bd043] border border-[#138601]/20">
-                <FiFolder className="w-4 h-4" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight">
-                Academic Resource Hub
-              </h1>
+      {/* ─── Top Notification / Callout Bar (Adapted to NACOS Green & Yellow) ─── */}
+      {showTopBanner && (
+        <div className="bg-[#138601] text-white text-xs sm:text-sm py-2 px-4 shadow-sm relative z-30 transition-all">
+          <div className="site-container flex items-center justify-between gap-3">
+            <div className="flex-1 text-center font-medium flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+              <span>Support our mission to provide free academic literature & past questions!</span>
+              <button
+                type="button"
+                onClick={() => setIsContributeModalOpen(true)}
+                className="bg-[#f59e0b] hover:bg-[#d97706] text-black font-bold text-[11px] sm:text-xs px-3 py-0.5 rounded-full transition-colors cursor-pointer shadow-xs"
+              >
+                Donate / Contribute
+              </button>
             </div>
-            <p className="text-xs sm:text-sm text-[#083002]/70 dark:text-green-100/70 max-w-2xl leading-relaxed">
-              Explore departmental lecture notes, official course handouts, textbook compendiums, past examination solutions, and video masterclasses.
+            <button
+              type="button"
+              onClick={dismissTopBanner}
+              aria-label="Dismiss banner"
+              className="p-1 rounded text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Sub-Bar (Brand Emblem, DISCOVER Dropdown, Prominent Search, and Log In) ─── */}
+      <div className="bg-[#083002] border-b border-[#138601]/30 py-3 sm:py-3.5 px-4 sticky top-0 z-20 shadow-md">
+        <div className="site-container flex items-center justify-between gap-3 sm:gap-6">
+          
+          {/* Left: Brand Icon & DISCOVER Dropdown */}
+          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
+            {/* Open Book Logo Emblem */}
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-[#138601] flex items-center justify-center text-white shadow-xs font-black text-sm">
+                <FiBookOpen className="w-4 h-4" />
+              </div>
+              <span className="hidden lg:inline text-white font-black tracking-wider text-xs uppercase">
+                NACOS Library
+              </span>
+            </div>
+
+            {/* DISCOVER ▾ Button & Popover */}
+            <div className="relative" ref={discoverRef}>
+              <button
+                type="button"
+                onClick={() => setIsDiscoverDropdownOpen(!isDiscoverDropdownOpen)}
+                className="flex items-center gap-1.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white/90 hover:text-[#4bd043] transition-colors cursor-pointer py-1 px-2 rounded hover:bg-white/5"
+              >
+                <span>DISCOVER</span>
+                <FiChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isDiscoverDropdownOpen ? 'rotate-180 text-[#4bd043]' : ''}`} />
+              </button>
+
+              {isDiscoverDropdownOpen && (
+                <div className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded-md shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-green-300/60">
+                    By Resource Type
+                  </div>
+                  {[
+                    { label: 'All Resources', value: 'All Resources', icon: FiFolder },
+                    { label: 'Handouts & Notes', value: 'Handouts', icon: FiFileText },
+                    { label: 'Past Examination Questions', value: 'Past Questions', icon: FiBook },
+                    { label: 'E-Books & Textbooks', value: 'Books', icon: FiBookOpen },
+                    { label: 'Video Masterclasses', value: 'Videos', icon: FiVideo },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => handleSelectCategoryFromHero(item.value)}
+                        className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs text-left transition-colors cursor-pointer ${
+                          activeCategory === item.value
+                            ? 'bg-[#138601] text-white font-bold'
+                            : 'text-gray-700 dark:text-gray-200 hover:bg-[#138601]/10 hover:text-[#138601] dark:hover:text-[#4bd043]'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+
+                  <div className="my-1.5 border-t border-gray-100 dark:border-[#138601]/30" />
+
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-green-300/60">
+                    By Academic Level
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 px-1">
+                    {['100 Level', '200 Level', '300 Level', '400 Level', '500 Level'].map((lvl) => (
+                      <button
+                        key={lvl}
+                        type="button"
+                        onClick={() => handleSelectLevelFromHero(lvl)}
+                        className={`px-2 py-1 rounded text-[11px] font-semibold text-center transition-colors cursor-pointer ${
+                          selectedLevel === lvl
+                            ? 'bg-[#138601] text-white'
+                            : 'bg-gray-100 dark:bg-[#041801] text-gray-700 dark:text-green-200 hover:bg-[#138601]/20'
+                        }`}
+                      >
+                        {lvl.replace(' Level', 'L')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Center: Search Box with Integrated Search Button */}
+          <form onSubmit={handleHeroSearchSubmit} className="flex-1 max-w-xl mx-1 sm:mx-4">
+            <div className="relative flex items-center w-full shadow-xs">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by title, author, course code or keyword"
+                className="w-full bg-white text-gray-900 placeholder-gray-400 text-xs sm:text-sm pl-3.5 pr-11 py-2 sm:py-2.5 rounded-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#4bd043] transition-all"
+              />
+              <button
+                type="submit"
+                aria-label="Search"
+                className="absolute right-0 top-0 bottom-0 px-3.5 bg-[#138601] hover:bg-[#0f6c01] text-white flex items-center justify-center rounded-r-sm transition-colors cursor-pointer"
+              >
+                <FiSearch className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
+
+          {/* Right: Log in / User status */}
+          <div className="shrink-0 flex items-center">
+            {user ? (
+              <a
+                href={getAppUrls().portal}
+                className="text-xs sm:text-sm text-white/90 hover:text-[#4bd043] font-medium flex items-center gap-1.5 transition-colors"
+              >
+                <span className="hidden md:inline">Signed in as</span>
+                <span className="font-bold underline">{user.firstName || user.name || 'Student'}</span>
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRedirectToSignIn}
+                className="text-xs sm:text-sm text-white hover:text-[#4bd043] font-semibold transition-colors cursor-pointer"
+              >
+                Log in
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Hero Banner: Authentic Bookshelf Backdrop & Editorial Headline ─── */}
+      <div className="relative w-full h-[280px] sm:h-[340px] md:h-[400px] overflow-hidden flex items-center justify-center select-none">
+        {/* Background Image with smooth transition */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-all duration-700 transform scale-105"
+          style={{ backgroundImage: `url(${heroSlides[activeSlideIndex].bgImage})` }}
+        />
+
+        {/* Ambient Dark Overlay for contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/65 to-black/75" />
+
+        {/* Hero Content */}
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center flex flex-col items-center">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition-all duration-500 leading-tight">
+            {heroSlides[activeSlideIndex].title}
+          </h1>
+
+          <p className="mt-3 sm:mt-4 text-xs sm:text-sm md:text-base text-gray-200/95 max-w-2xl font-normal leading-relaxed drop-shadow-md">
+            {heroSlides[activeSlideIndex].subtitle}{' '}
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategory(heroSlides[activeSlideIndex].category);
+                scrollToCatalog();
+              }}
+              className="text-[#4bd043] hover:text-[#38bdf8] font-bold underline transition-colors cursor-pointer ml-1 inline-flex items-center gap-0.5"
+            >
+              <span>{heroSlides[activeSlideIndex].linkText}</span>
+            </button>
+          </p>
+        </div>
+
+        {/* Bottom Right Carousel Pagination Dots */}
+        <div className="absolute bottom-4 sm:bottom-6 right-6 sm:right-10 flex items-center gap-2.5 z-10">
+          {heroSlides.map((slide, idx) => (
+            <button
+              key={slide.id}
+              type="button"
+              onClick={() => setActiveSlideIndex(idx)}
+              aria-label={`Switch to slide ${idx + 1}`}
+              className={`rounded-full transition-all duration-300 cursor-pointer ${
+                activeSlideIndex === idx
+                  ? 'w-3 h-3 bg-white scale-125 shadow-lg'
+                  : 'w-2 h-2 sm:w-2.5 sm:h-2.5 bg-white/40 hover:bg-white/75'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ─── Main Resources Section ─── */}
+      <main id="catalog-section" className="flex-grow site-container w-full py-8 sm:py-10">
+        
+        {/* Catalog Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 border-b border-[#138601]/20 dark:border-[#138601]/30 gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#083002] dark:text-white tracking-tight flex items-center gap-2">
+              <span>Catalog & Archive</span>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#138601]/10 dark:bg-[#138601]/30 text-[#138601] dark:text-[#4bd043]">
+                {resources.length} Available
+              </span>
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-green-200/70 mt-0.5">
+              Filter by level, semester, or resource format to access verified departmental materials.
             </p>
           </div>
 
-          {/* User Status Pill / Sign In Indicator */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {user ? (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[#138601]/10 dark:bg-[#138601]/20 border border-[#138601]/30 text-xs text-[#138601] dark:text-[#4bd043] font-semibold">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#138601]/10 dark:bg-[#138601]/20 border border-[#138601]/30 text-xs text-[#138601] dark:text-[#4bd043] font-semibold">
                 <FiCheckCircle className="w-3.5 h-3.5" />
                 <span>Signed in as {user.firstName || user.name || 'Student'}</span>
               </div>
@@ -402,10 +698,10 @@ const Resources = () => {
               <button
                 type="button"
                 onClick={handleRedirectToSignIn}
-                className="flex items-center gap-2 px-4 py-2 rounded bg-[#138601] hover:bg-[#0f6c01] text-white text-xs font-semibold transition-colors shadow-xs cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#138601] hover:bg-[#0f6c01] text-white text-xs font-semibold transition-colors shadow-xs cursor-pointer"
               >
                 <FiUser className="w-3.5 h-3.5" />
-                <span>Sign In to Student Portal</span>
+                <span>Portal Sign In</span>
               </button>
             )}
           </div>
@@ -840,6 +1136,65 @@ const Resources = () => {
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── CONTRIBUTE / DONATE MATERIALS MODAL ─── */}
+      {isContributeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 rounded-lg w-full max-w-lg p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#138601]/25">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#138601]/10 dark:bg-[#138601]/20 flex items-center justify-center text-[#138601] dark:text-[#4bd043]">
+                  <FiUploadCloud className="w-4 h-4" />
+                </div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  Contribute Academic Materials
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsContributeModalOpen(false)}
+                className="p-1 rounded text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-4 text-xs text-gray-600 dark:text-green-100/80 leading-relaxed">
+              <p>
+                Have past questions, lecture notes, textbook PDFs, or course slides that can help fellow Computer Science students excel? You can share them with the NACOS Academic Directorate!
+              </p>
+
+              <div className="p-3.5 rounded bg-emerald-50 dark:bg-[#041801] border border-emerald-500/20 space-y-2">
+                <div className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                  <FiCheckCircle className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
+                  <span>How to submit materials:</span>
+                </div>
+                <ul className="list-disc list-inside space-y-1 pl-1 text-gray-700 dark:text-green-200/90">
+                  <li>Email verified PDFs to <strong className="text-[#138601] dark:text-[#4bd043]">academics@nacosfuto.com.ng</strong></li>
+                  <li>Include the Course Code (e.g. CSC 201) and Academic Level</li>
+                  <li>Or upload directly via the Student Portal if you are an authorized student rep</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-gray-100 dark:border-[#138601]/25 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsContributeModalOpen(false)}
+                className="px-4 py-2 rounded text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+              <a
+                href={getAppUrls().portal}
+                className="px-4 py-2 rounded text-xs font-bold text-white bg-[#138601] hover:bg-[#0f6c01] transition-colors cursor-pointer shadow-xs"
+              >
+                Go to Student Portal
+              </a>
             </div>
           </div>
         </div>
