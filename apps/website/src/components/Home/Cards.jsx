@@ -1,10 +1,12 @@
 import React from 'react';
 import { FaGraduationCap, FaLaptopCode, FaUserShield, FaRocket, FaArrowRight } from 'react-icons/fa';
 import ScrollToTopLink from '../ScrollToTopLink';
+import { getAppUrls } from '@nacos/config/urls';
 
 const Cards = () => {
-  const portalUrl = import.meta.env.VITE_PORTAL_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? "http://localhost:5174/login" : "/portal");
-  const upskillHubUrl = import.meta.env.VITE_UPSKILL_HUB_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? "http://localhost:5177" : "/upskill-hub");
+  const { portal, upskillHub } = getAppUrls();
+  const portalUrl = portal.includes('login') ? portal : `${portal}/login`;
+  const upskillHubUrl = upskillHub;
 
   const quickAccessLinks = [
     {

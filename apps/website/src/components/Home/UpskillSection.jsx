@@ -1,67 +1,62 @@
 import React from "react";
-import ScrollToTopLink from "../ScrollToTopLink";
-
-// UPSKILL course data
-const UPSKILL_COURSES = [
-  {
-    name: "Web Development",
-    slug: "web-development",
-    image:
-      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80",
-    description: "Learn to build modern, responsive web applications and full-stack platforms.",
-  },
-  {
-    name: "AI & Automation",
-    slug: "ai-automation",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
-    description: "Explore generative AI, LLM prompting, and intelligent workflow automation.",
-  },
-  {
-    name: "Vibe Coding",
-    slug: "vibe-coding",
-    image:
-      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80",
-    description: "Master rapid AI-assisted development and full-stack software prototyping.",
-  },
-  {
-    name: "Social Media & Tech Branding",
-    slug: "social-media",
-    image:
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80",
-    description: "Master personal branding, audience engagement, and tech thought leadership.",
-  },
-  {
-    name: "View all courses",
-    slug: "all",
-    image:
-      "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
-    description: "Browse our complete catalog of student upskilling tracks and masterclasses.",
-  },
-];
+import { getAppUrls } from "@nacos/config/urls";
 
 const UpskillSection = () => {
+  const { upskillHub } = getAppUrls();
+
+  const upskillCourses = [
+    {
+      id: "course-ai-fluency",
+      name: "AI Fluency: Framework & Foundations",
+      badge: "AI & ML",
+      link: `${upskillHub}/courses/course-ai-fluency`,
+      image: "https://i.ytimg.com/vi/-UN9sNqQ0t4/hqdefault.jpg",
+      description: "Master the 4D AI Framework, prompt engineering architectures, discernment, diligence, and ethical deployment.",
+    },
+    {
+      id: "course-web-dev",
+      name: "Complete Web Development & Fullstack Mastery",
+      badge: "Fullstack",
+      link: `${upskillHub}/courses/course-web-dev`,
+      image: "https://i.ytimg.com/vi/-8ORfgUa8ow/hqdefault.jpg",
+      description: "Comprehensive developer roadmap covering HTML & CSS, Vanilla JavaScript, React 19, Node.js APIs, and Serverless.",
+    },
+    {
+      id: "course-photoshop",
+      name: "Photoshop for Beginners: Masterclass",
+      badge: "Creative Tech",
+      link: `${upskillHub}/courses/course-photoshop`,
+      image: "https://i.ytimg.com/vi/IyR_uYsRdPs/hqdefault.jpg",
+      description: "Complete foundations of digital design, photo manipulation, interface assets, layers, masking, and visual branding.",
+    },
+  ];
+
   return (
     <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] transition-colors duration-300">
       <div className="site-container">
         <div className="text-center mb-12 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#138601]/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/25 mb-3 font-mono">
+            Interactive Learning Catalog
+          </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
             <span className="text-[#138601] dark:text-[#4bd043]">
-              UPSKILL
+              UPSKILL HUB
             </span>{" "}
-            with Practical Courses
+            Practical Masterclasses
           </h2>
           <p className="text-base text-[#083002]/70 dark:text-green-100/70 leading-relaxed max-w-2xl mx-auto">
-            Level up your skills with hands-on, industry-relevant courses designed to prepare you for global tech careers.
+            Level up your technical competence with structured video curriculums, interactive workshops, and hands-on developer tracks.
           </p>
         </div>
 
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {UPSKILL_COURSES.map((course) => (
-            <ScrollToTopLink
-              key={course.slug}
-              to={`/upskill/${course.slug}`}
-              className="group rounded bg-white dark:bg-[#083002] overflow-hidden border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full"
+          {upskillCourses.map((course) => (
+            <a
+              key={course.id}
+              href={course.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group rounded bg-white dark:bg-[#083002] overflow-hidden border border-[#138601]/20 dark:border-[#138601]/30 shadow-sm hover:shadow-xl hover:border-[#138601] dark:hover:border-[#4bd043] transform hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full cursor-pointer"
             >
               {/* Image Container */}
               <div className="relative h-48 overflow-hidden bg-[#083002]">
@@ -72,7 +67,7 @@ const UpskillSection = () => {
                   loading="lazy"
                 />
                 <div className="absolute top-3 right-3 bg-[#138601] text-white px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                  Skill Track
+                  {course.badge}
                 </div>
               </div>
 
@@ -88,11 +83,24 @@ const UpskillSection = () => {
                 </div>
 
                 <div className="mt-auto w-full py-2.5 px-7 bg-[#138601] group-hover:bg-[#0f6c01] text-white text-center font-semibold text-sm rounded shadow-sm transition-colors min-h-[42px] inline-flex items-center justify-center">
-                  Explore Track &rarr;
+                  Start Course &rarr;
                 </div>
               </div>
-            </ScrollToTopLink>
+            </a>
           ))}
+        </div>
+
+        {/* Action Button to View Complete Catalog */}
+        <div className="mt-12 text-center">
+          <a
+            href={`${upskillHub}/courses`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#138601] hover:bg-[#0f6c01] text-white font-bold text-sm rounded shadow-md hover:shadow-lg transition-all"
+          >
+            <span>Explore All Upskill Hub Courses</span>
+            <span className="text-base">&rarr;</span>
+          </a>
         </div>
       </div>
     </section>

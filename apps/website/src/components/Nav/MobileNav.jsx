@@ -11,7 +11,7 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
   const location = useLocation();
   const theme = darkMode ? "dark" : "light";
   const [openCategory, setOpenCategory] = useState(null);
-  const { upskillHub } = getAppUrls();
+  const { upskillHub, portal } = getAppUrls();
 
   if (!isOpen) return null;
 
@@ -194,38 +194,47 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-auto pt-6 border-t border-[#138601]/20">
-          <div className="grid grid-cols-1 w-full gap-3">
+        <div className="mt-auto pt-6 border-t border-[#138601]/20 space-y-3">
+          <div className="grid grid-cols-2 w-full gap-2.5">
             <a
-              href={import.meta.env.VITE_PORTAL_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? "http://localhost:5174/login" : "/portal")}
+              href={portal.includes('login') ? portal : `${portal}/login`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={closeMenu}
-              className="w-full text-center py-3 px-4 bg-[#138601] hover:bg-[#0f6c01] text-white font-bold rounded shadow-lg shadow-[#138601]/30 transition-colors"
+              className="text-center py-2.5 px-3 bg-[#138601] hover:bg-[#0f6c01] text-white font-bold rounded shadow-md text-xs sm:text-sm transition-colors"
             >
               Visit Portal
             </a>
-            <button
-              onClick={handleThemeToggle}
-              className={`w-full flex items-center justify-center py-3 px-4 transition-colors font-semibold rounded ${
-                darkMode 
-                  ? "bg-[#083002] text-yellow-300 border border-[#138601]/30 hover:bg-[#0d4603]" 
-                  : "bg-[#f2fbf1] text-[#083002] border border-[#138601]/20 hover:bg-[#e2f7df]"
-              }`}
+            <a
+              href={upskillHub}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeMenu}
+              className="text-center py-2.5 px-3 bg-[#0056D2] hover:bg-[#0043aa] text-white font-bold rounded shadow-md text-xs sm:text-sm transition-colors"
             >
-              {darkMode ? (
-                <>
-                  <BsSun className="mr-3 text-yellow-300" />
-                  Light Mode
-                </>
-              ) : (
-                <>
-                  <BsMoon className="mr-3 text-[#083002]" />
-                  Dark Mode
-                </>
-              )}
-            </button>
+              Upskill Hub
+            </a>
           </div>
+          <button
+            onClick={handleThemeToggle}
+            className={`w-full flex items-center justify-center py-3 px-4 transition-colors font-semibold rounded ${
+              darkMode 
+                ? "bg-[#083002] text-yellow-300 border border-[#138601]/30 hover:bg-[#0d4603]" 
+                : "bg-[#f2fbf1] text-[#083002] border border-[#138601]/20 hover:bg-[#e2f7df]"
+            }`}
+          >
+            {darkMode ? (
+              <>
+                <BsSun className="mr-3 text-yellow-300" />
+                Light Mode
+              </>
+            ) : (
+              <>
+                <BsMoon className="mr-3 text-[#083002]" />
+                Dark Mode
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

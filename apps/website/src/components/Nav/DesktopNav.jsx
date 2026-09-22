@@ -8,10 +8,16 @@ import SearchBar from "../SearchBar";
 import { getAppUrls } from "@nacos/config/urls";
 
 // Custom Dropdown Component
-const NavDropdown = ({ label, items, theme }) => {
+const NavDropdown = ({ label, items, theme, headerLink }) => {
+  const HeaderComponent = headerLink ? 'a' : 'button';
+  const headerProps = headerLink
+    ? { href: headerLink, target: '_blank', rel: 'noopener noreferrer' }
+    : {};
+
   return (
     <div className="relative group py-2">
-      <button
+      <HeaderComponent
+        {...headerProps}
         className={`flex items-center space-x-1 font-semibold transition-colors cursor-pointer ${
           theme === "light"
             ? "text-[#083002] hover:text-[#138601]"
@@ -20,7 +26,7 @@ const NavDropdown = ({ label, items, theme }) => {
       >
         <span className="whitespace-nowrap tracking-wide">{label}</span>
         <FiChevronDown className="text-xs transition-transform duration-200 group-hover:rotate-180" />
-      </button>
+      </HeaderComponent>
 
       {/* Dropdown Menu */}
       <div
@@ -194,7 +200,7 @@ const DesktopNav = () => {
           HOME
         </NavLink>
 
-        <NavDropdown label="UPSKILL" items={upskillItems} theme={theme} />
+        <NavDropdown label="UPSKILL" items={upskillItems} theme={theme} headerLink={upskillHub} />
         <NavDropdown label="ABOUT" items={aboutItems} theme={theme} />
         <NavDropdown label="ACADEMICS" items={academicsItems} theme={theme} />
         <NavDropdown label="CAMPUS LIFE" items={campusLifeItems} theme={theme} />
