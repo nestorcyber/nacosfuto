@@ -540,19 +540,15 @@ const Resources = () => {
         url = `/downloads/${resource.file_name || 'document.pdf'}`;
       }
 
-      // 3. Initiate browser file download
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', resource.file_name || `${resource.course_code || 'Resource'}.${resource.file_extension || 'pdf'}`);
-      link.target = '_blank';
-      link.rel = 'noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // 3. Initiate silent background download (never opens a new tab or link)
+      const downloadFileName = resource.file_name || `${resource.course_code || resource.title || 'Resource'}.${resource.file_extension || 'pdf'}`;
+      showToast(`Preparing download for "${resource.title}"...`, 'info');
 
-      showToast(`Downloading "${resource.title}"...`);
+      await storageService.downloadFile(url, downloadFileName);
+      showToast(`Downloaded "${resource.title}" successfully!`);
     } catch (err) {
-      showToast('Download failed. Please try again.', 'error');
+      console.error('Download execution error:', err);
+      showToast(err.message || 'Download failed. Please try again.', 'error');
     } finally {
       setDownloadingId(null);
     }

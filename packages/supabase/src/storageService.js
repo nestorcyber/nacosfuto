@@ -105,65 +105,92 @@ async function getB2Auth() {
 }
 
 /**
- * Retrieve 24-hour download authorization token for private bucket access
+ * Retrieve 24-hour download authorization token for private bucket access.
+ * Pulls from cached memory, sessionStorage, or the serverless API endpoint.
  */
 async function getB2DownloadToken() {
-  if (memoryDlToken && memoryDlToken.expiresAt > Date.now()) {
-    return memoryDlToken.token;
+  if (memoryDlToken && memoryDlToken.expiresAt > Date.now() + 300000) {
+    return memoryDlToken;
   }
 
+  // 1. Check browser sessionStorage
   if (typeof window !== 'undefined' && window.sessionStorage) {
     try {
       const stored = window.sessionStorage.getItem('nacos_b2_dl_token');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.expiresAt > Date.now()) {
+        if (parsed.expiresAt > Date.now() + 300000) {
           memoryDlToken = parsed;
-          return memoryDlToken.token;
+          return memoryDlToken;
         }
       }
     } catch (e) {}
   }
 
-  const auth = await getB2Auth();
-  if (!auth) return null;
-
-  try {
-    const res = await fetch(`${auth.apiUrl}/b2api/v3/b2_get_download_authorization`, {
-      method: 'POST',
-      headers: {
-        Authorization: auth.authorizationToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        bucketId: auth.bucketId,
-        fileNamePrefix: 'nacos/',
-        validDurationInSeconds: 86400
-      })
-    });
-
-    if (!res.ok) {
-      console.warn('Download authorization failed:', res.status);
-      return null;
+  // 2. Try Serverless API endpoint (/api/b2-download-token or /api/resource-storage)
+  if (typeof window !== 'undefined') {
+    try {
+      const endpoints = ['/api/b2-download-token', '/api/resource-storage'];
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, { method: 'GET' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.authorizationToken) {
+              memoryDlToken = {
+                token: data.authorizationToken,
+                downloadUrl: data.downloadUrl || 'https://f005.backblazeb2.com',
+                bucketName: data.bucketName || 'nacos-resources',
+                expiresAt: data.expiresAt || (Date.now() + 23 * 60 * 60 * 1000)
+              };
+              try {
+                window.sessionStorage.setItem('nacos_b2_dl_token', JSON.stringify(memoryDlToken));
+              } catch (_) {}
+              return memoryDlToken;
+            }
+          }
+        } catch (_) {}
+      }
+    } catch (e) {
+      console.warn('API B2 download token lookup notice:', e);
     }
-
-    const data = await res.json();
-    memoryDlToken = {
-      token: data.authorizationToken,
-      expiresAt: Date.now() + 23 * 60 * 60 * 1000
-    };
-
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      try {
-        window.sessionStorage.setItem('nacos_b2_dl_token', JSON.stringify(memoryDlToken));
-      } catch (e) {}
-    }
-
-    return memoryDlToken.token;
-  } catch (err) {
-    console.warn('Backblaze download authorization error:', err);
-    return null;
   }
+
+  // 3. Direct B2 authorization for Node.js / non-browser server environments
+  if (typeof window === 'undefined') {
+    try {
+      const auth = await getB2Auth();
+      if (auth) {
+        const res = await fetch(`${auth.apiUrl}/b2api/v3/b2_get_download_authorization`, {
+          method: 'POST',
+          headers: {
+            Authorization: auth.authorizationToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            bucketId: auth.bucketId,
+            fileNamePrefix: '',
+            validDurationInSeconds: 86400
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          memoryDlToken = {
+            token: data.authorizationToken,
+            downloadUrl: auth.downloadUrl,
+            bucketName: auth.bucketName,
+            expiresAt: Date.now() + 23 * 60 * 60 * 1000
+          };
+          return memoryDlToken;
+        }
+      }
+    } catch (err) {
+      console.warn('Direct B2 download authorization error:', err);
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -426,13 +453,31 @@ export const storageService = {
       return storageKey;
     }
 
-    // 1. Try Edge function if deployed
+    const cleanKey = storageKey.replace(/^\/+/, '');
+
+    // 1. Retrieve authorization token
+    try {
+      const dlAuth = await getB2DownloadToken();
+      if (dlAuth?.token) {
+        const base = dlAuth.downloadUrl || 'https://f005.backblazeb2.com';
+        const bucket = dlAuth.bucketName || 'nacos-resources';
+        let url = `${base}/file/${bucket}/${cleanKey}?Authorization=${dlAuth.token}`;
+        if (options.downloadFileName) {
+          url += `&b2ContentDisposition=${encodeURIComponent(`attachment; filename="${options.downloadFileName}"`)}`;
+        }
+        return url;
+      }
+    } catch (e) {
+      console.warn('getDownloadUrl authorization error:', e);
+    }
+
+    // 2. Try Edge function if deployed
     try {
       if (supabase && typeof supabase.functions?.invoke === 'function') {
         const { data, error } = await supabase.functions.invoke('resource-storage', {
           body: {
             action: 'presign-download',
-            storageKey,
+            storageKey: cleanKey,
             downloadFileName: options.downloadFileName,
             expiresInSeconds: options.expiresIn || 3600
           }
@@ -444,19 +489,8 @@ export const storageService = {
       }
     } catch (e) {}
 
-    // 2. Direct B2 authorized download URL with token
-    try {
-      const auth = await getB2Auth();
-      const dlToken = await getB2DownloadToken();
-      if (auth && dlToken) {
-        return `${auth.downloadUrl}/file/${auth.bucketName}/${storageKey}?Authorization=${dlToken}`;
-      }
-    } catch (e) {
-      console.warn('Direct B2 download auth notice:', e);
-    }
-
-    // 3. Fallback to delivery prefix
-    return `${B2_PUBLIC_BASE_URL}/${storageKey}`;
+    // 3. Fallback to public delivery prefix
+    return `${B2_PUBLIC_BASE_URL}/${cleanKey}`;
   },
 
   /**
@@ -468,28 +502,70 @@ export const storageService = {
       return storageKey;
     }
 
-    // 1. Try Edge Function if deployed
+    const cleanKey = storageKey.replace(/^\/+/, '');
+
+    // 1. Retrieve authorization token
+    try {
+      const dlAuth = await getB2DownloadToken();
+      if (dlAuth?.token) {
+        const base = dlAuth.downloadUrl || 'https://f005.backblazeb2.com';
+        const bucket = dlAuth.bucketName || 'nacos-resources';
+        return `${base}/file/${bucket}/${cleanKey}?Authorization=${dlAuth.token}`;
+      }
+    } catch (e) {
+      console.warn('getPreviewUrl authorization error:', e);
+    }
+
+    // 2. Try Edge Function if deployed
     try {
       if (supabase && typeof supabase.functions?.invoke === 'function') {
         const { data } = await supabase.functions.invoke('resource-storage', {
-          body: { action: 'presign-preview', storageKey }
+          body: { action: 'presign-preview', storageKey: cleanKey }
         });
         if (data?.previewUrl) return data.previewUrl;
       }
     } catch (e) {}
 
-    // 2. Direct B2 authorized preview URL
-    try {
-      const auth = await getB2Auth();
-      const dlToken = await getB2DownloadToken();
-      if (auth && dlToken) {
-        return `${auth.downloadUrl}/file/${auth.bucketName}/${storageKey}?Authorization=${dlToken}`;
-      }
-    } catch (e) {
-      console.warn('Direct B2 preview auth notice:', e);
+    return `${B2_PUBLIC_BASE_URL}/${cleanKey}`;
+  },
+
+  /**
+   * Perform silent background download of file as a Blob.
+   * Prevents browser navigation, popups, or new tabs, and initiates saving directly to disk.
+   */
+  async downloadFile(url, fileName = 'document.pdf') {
+    if (!url) throw new Error('No download URL provided');
+
+    const res = await fetch(url, { method: 'GET', mode: 'cors' });
+    if (!res.ok) {
+      let errDetail = `Download request failed with HTTP ${res.status}`;
+      try {
+        const j = await res.json();
+        if (j?.code === 'unauthorized') {
+          errDetail = 'Storage authorization required. Please try again.';
+        } else if (j?.message) {
+          errDetail = j.message;
+        }
+      } catch (_) {}
+      throw new Error(errDetail);
     }
 
-    return `${B2_PUBLIC_BASE_URL}/${storageKey}`;
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(blobUrl);
+    }, 15000);
+
+    return true;
   },
 
   /**
