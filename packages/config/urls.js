@@ -1,9 +1,10 @@
 /**
  * Dynamic cross-app routing helper that supports:
- * 1. Custom subdomain architectures (e.g. portal.nacosfuto.com.ng, admin.nacosfuto.com.ng)
- * 2. Production unified single-domain paths (/portal, /admin, /portal-admin, /, /admin-hub)
- * 3. Local development multi-port dev servers -> protocol://hostname:PORT
- * 4. Environment variable overrides (VITE_PORTAL_URL, VITE_WEBSITE_URL, etc.)
+ * 1. Production standard unified paths (/portal, /admin, /portal-admin, /, /admin-hub)
+ * 2. Local development multi-port dev servers -> protocol://hostname:PORT
+ * 3. Environment variable overrides (e.g. VITE_PORTAL_URL, VITE_WEBSITE_URL, etc.)
+ * 
+ * Never hardcodes static domains or external links.
  */
 export function getAppUrls() {
   if (typeof window === 'undefined') {
@@ -35,30 +36,7 @@ export function getAppUrls() {
     };
   }
 
-  // Detect custom subdomain setup (e.g. portal.nacosfuto.com.ng or admin.nacosfuto.org.ng)
-  const isSubdomain = hostname.startsWith('portal.') || hostname.startsWith('admin.') || hostname.startsWith('portal-admin.');
-  if (isSubdomain) {
-    // Determine root apex domain (e.g. nacosfuto.com.ng, nacosfuto.org.ng, nacosfuto.ng)
-    const parts = hostname.split('.');
-    let baseDomain = hostname;
-    if (parts.length >= 3) {
-      if (['com', 'org', 'edu', 'gov', 'net'].includes(parts[parts.length - 2])) {
-        baseDomain = parts.slice(-3).join('.');
-      } else {
-        baseDomain = parts.slice(-2).join('.');
-      }
-    }
-
-    return {
-      website: envWebsite || `${protocol}//${baseDomain}`,
-      portal: envPortal || `${protocol}//portal.${baseDomain}`,
-      websiteAdmin: envWebAdmin || `${protocol}//admin.${baseDomain}/website`,
-      portalAdmin: envPortalAdmin || `${protocol}//admin.${baseDomain}`,
-      adminHub: `${protocol}//${baseDomain}/admin-hub`
-    };
-  }
-
-  // Production or unified single-host deployment (e.g. nacosfuto.org.ng/portal)
+  // Standard clean unified relative paths (Zero hardcoded links)
   return {
     website: envWebsite || '/',
     portal: envPortal || '/portal',

@@ -3,26 +3,6 @@
   "cleanUrls": false,
   "rewrites": [
     {
-      "source": "/",
-      "has": [{ "type": "host", "value": "portal\\..*" }],
-      "destination": "/portal/index.html"
-    },
-    {
-      "source": "/((?!api/)(?!portal/)(?!assets/)(?!.*\\.).*)",
-      "has": [{ "type": "host", "value": "portal\\..*" }],
-      "destination": "/portal/index.html"
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "admin\\..*" }],
-      "destination": "/portal-admin/index.html"
-    },
-    {
-      "source": "/((?!api/)(?!portal-admin/)(?!assets/)(?!.*\\.).*)",
-      "has": [{ "type": "host", "value": "admin\\..*" }],
-      "destination": "/portal-admin/index.html"
-    },
-    {
       "source": "/portal-admin",
       "destination": "/portal-admin/index.html"
     },

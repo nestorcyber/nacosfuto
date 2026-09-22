@@ -63,41 +63,6 @@ const PortalLayout = ({ children }) => {
 
   const isExpanded = !isCollapsed || isHovered;
 
-  // Dropdown & Modal states
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activePopupNotice, setActivePopupNotice] = useState(null);
-
-  // Auto-check and trigger urgent pop-up notice for student on login / session mount
-  useEffect(() => {
-    let isMounted = true;
-    const checkPopup = async () => {
-      try {
-        const notice = await fetchActivePopupNotice({ level: user.level || user.currentLevel });
-        if (isMounted && notice) {
-          setActivePopupNotice(notice);
-        }
-      } catch (err) {
-        console.warn('Popup notice check error:', err);
-      }
-    };
-    checkPopup();
-    return () => { isMounted = false; };
-  }, [user?.level, user?.id]);
-
-  // Password change state
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-
-  const profileRef = useRef(null);
-  const notifRef = useRef(null);
-
   const [user, setUser] = useState(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('nacos_user');
@@ -130,6 +95,44 @@ const PortalLayout = ({ children }) => {
       window.removeEventListener('nacos_user_updated', handleUserUpdate);
     };
   }, []);
+
+  // Dropdown & Modal states
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activePopupNotice, setActivePopupNotice] = useState(null);
+
+  // Auto-check and trigger urgent pop-up notice for student on login / session mount
+  useEffect(() => {
+    let isMounted = true;
+    const checkPopup = async () => {
+      try {
+        const studentLevel = user?.level || user?.currentLevel || user?.current_level;
+        const notice = await fetchActivePopupNotice({ level: studentLevel });
+        if (isMounted && notice) {
+          setActivePopupNotice(notice);
+        }
+      } catch (err) {
+        console.warn('Popup notice check error:', err);
+      }
+    };
+    checkPopup();
+    return () => { isMounted = false; };
+  }, [user?.level, user?.id, user?.current_level, user?.currentLevel]);
+
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const profileRef = useRef(null);
+  const notifRef = useRef(null);
+
+
 
   // Close dropdowns on click outside
   useEffect(() => {
