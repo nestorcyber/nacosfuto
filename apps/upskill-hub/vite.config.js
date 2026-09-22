@@ -9,6 +9,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@nacos/media': path.resolve(__dirname, '../../packages/media/src/index.js'),
+      '@nacos/supabase/auth': path.resolve(__dirname, '../../packages/supabase/src/auth.js'),
+      '@nacos/supabase': path.resolve(__dirname, '../../packages/supabase/src/index.js'),
+      '@nacos/config/academic': path.resolve(__dirname, '../../packages/config/academic.js'),
+      '@nacos/config/idCardTemplate': path.resolve(__dirname, '../../packages/config/idCardTemplate.js'),
+      '@nacos/config/urls': path.resolve(__dirname, '../../packages/config/urls.js'),
+      '@nacos/config': path.resolve(__dirname, '../../packages/config/tailwind.preset.js')
     },
   },
   esbuild: {

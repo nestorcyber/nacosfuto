@@ -1,367 +1,544 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Calendar,
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { 
+  CheckCircle2, 
+  ChevronDown, 
+  ChevronUp, 
+  Play, 
+  ArrowLeft, 
+  Menu, 
+  X, 
+  Award, 
+  FileText, 
+  HelpCircle, 
+  Share2, 
+  Download,
+  GraduationCap,
   Clock,
-  MapPin,
   Sparkles,
-  Check,
-  Play,
-  Lock,
   BookOpen,
-  Video,
-  Share2
-} from "lucide-react";
-import { Layout } from "../components/layout/Layout";
-import { CoursePlayer } from "../components/courses/CoursePlayer";
-import { BrutalCard } from "../components/ui/BrutalCard";
-import { BrutalButton } from "../components/ui/BrutalButton";
-import { BrutalTag } from "../components/ui/BrutalTag";
-import { LevelBadge } from "../components/ui/LevelBadge";
-import { CourseLoading } from "../components/loading/CourseLoading";
-import { useAuthStore } from "../stores/authStore";
-import { useCourseStore } from "../stores/courseStore";
-import { cn } from "../lib/utils";
+  LayoutGrid
+} from 'lucide-react';
+import { useCourseStore } from '../stores/courseStore';
+import { useAuthStore } from '../stores/authStore';
 
-export function CourseDetailPage() {
+const CourseDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { 
+    currentCourse, 
+    currentTopics, 
+    fetchCourseById, 
+    currentEnrollment, 
+    fetchCurrentEnrollment, 
+    enrollInCourse, 
+    markTopicComplete, 
+    status 
+  } = useCourseStore();
 
-  const user = useAuthStore((state) => state.user);
-  const currentCourse = useCourseStore((state) => state.currentCourse);
-  const currentTopics = useCourseStore((state) => state.currentTopics);
-  const currentEnrollment = useCourseStore((state) => state.currentEnrollment);
-  const workshopRegistration = useCourseStore((state) => state.workshopRegistration);
-  const status = useCourseStore((state) => state.status);
-
-  const fetchCourseById = useCourseStore((state) => state.fetchCourseById);
-  const fetchCurrentEnrollment = useCourseStore((state) => state.fetchCurrentEnrollment);
-  const enrollInCourse = useCourseStore((state) => state.enrollInCourse);
-  const markTopicComplete = useCourseStore((state) => state.markTopicComplete);
-  const registerForWorkshop = useCourseStore((state) => state.registerForWorkshop);
-  const fetchMyWorkshopRegistration = useCourseStore((state) => state.fetchMyWorkshopRegistration);
-  const updateStudentNote = useCourseStore((state) => state.updateStudentNote);
-
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [note, setNote] = useState("");
+  // Active video & curriculum states
+  const [activeTopicIndex, setActiveTopicIndex] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('content'); // 'content' | 'quizzes' | 'certificates'
+  const [expandedModules, setExpandedModules] = useState({ 0: true, 1: true, 2: true });
+  const [personalNotes, setPersonalNotes] = useState('');
+  const [showCompletionToast, setShowCompletionToast] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchCourseById(id);
       if (user?.id) {
         fetchCurrentEnrollment(user.id, id);
-        fetchMyWorkshopRegistration(user.id, id);
       }
     }
-  }, [id, user, fetchCourseById, fetchCurrentEnrollment, fetchMyWorkshopRegistration]);
+  }, [id, user?.id]);
 
-  useEffect(() => {
-    if (workshopRegistration?.student_note !== undefined) {
-      setNote(workshopRegistration.student_note || "");
+  const activeTopic = currentTopics[activeTopicIndex] || currentTopics[0];
+
+  // Group topics into 2-3 logical course modules (like Coursera / screenshot)
+  const modules = useMemo(() => {
+    if (!currentTopics || currentTopics.length === 0) return [];
+
+    const total = currentTopics.length;
+    if (total <= 3) {
+      return [
+        {
+          id: 'mod-1',
+          title: currentCourse?.title ? `${currentCourse.title} - Core Architecture` : 'Core Foundations',
+          topics: currentTopics,
+        }
+      ];
     }
-  }, [workshopRegistration]);
 
-  if (status === "PENDING" && !currentCourse) {
-    return (
-      <Layout>
-        <CourseLoading />
-      </Layout>
-    );
-  }
+    const mid = Math.ceil(total / 2);
+    return [
+      {
+        id: 'mod-1',
+        title: 'Foundations & Architectural Overview',
+        topics: currentTopics.slice(0, mid),
+      },
+      {
+        id: 'mod-2',
+        title: 'Deep Dive & Practical Implementation',
+        topics: currentTopics.slice(mid, total - 1),
+      },
+      {
+        id: 'mod-3',
+        title: 'Production Testing & Conclusion',
+        topics: currentTopics.slice(total - 1),
+      }
+    ];
+  }, [currentTopics, currentCourse]);
 
-  if (!currentCourse) {
-    return (
-      <Layout>
-        <BrutalCard className="text-center py-16 space-y-3">
-          <p className="font-bold text-base">Course Not Found</p>
-          <p className="text-xs text-muted-foreground">The requested course track does not exist or has been archived.</p>
-          <button
-            type="button"
-            onClick={() => navigate("/courses")}
-            className="px-4 py-2 rounded-md bg-foreground text-primary-foreground text-xs font-semibold cursor-pointer"
-          >
-            Back to All Courses
-          </button>
-        </BrutalCard>
-      </Layout>
-    );
-  }
+  // Completed topics tracker
+  const completedTopicIds = useMemo(() => {
+    return currentEnrollment?.completed_topic_ids || [];
+  }, [currentEnrollment]);
 
-  const isWorkshop = !!currentCourse.is_live_workshop;
-  const isEnrolled = !!currentEnrollment;
-  const isRegistered = !!workshopRegistration;
-  const canAccessTopics = isWorkshop ? isRegistered : isEnrolled;
+  // Derived progress percentage
+  const progressPercent = useMemo(() => {
+    if (!currentTopics || currentTopics.length === 0) return 0;
+    if (currentEnrollment?.progress_percentage !== undefined) {
+      return currentEnrollment.progress_percentage;
+    }
+    const completedCount = completedTopicIds.length;
+    return Math.min(100, Math.round((completedCount / currentTopics.length) * 100));
+  }, [currentTopics, currentEnrollment, completedTopicIds]);
 
-  const isTopicCompleted = (topicId) => {
-    return currentEnrollment?.completed_topic_ids?.includes(topicId);
+  const handleToggleModule = (index) => {
+    setExpandedModules(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
   };
 
-  const handleCTA = async () => {
-    if (!user?.id) return;
-    setActionLoading(true);
-    try {
-      if (isWorkshop) {
-        await registerForWorkshop(user.id, currentCourse.id, currentCourse.creator_id);
-      } else {
-        await enrollInCourse(user.id, currentCourse.id);
-      }
-    } finally {
-      setActionLoading(false);
-    }
+  const handleSelectTopic = (index) => {
+    setActiveTopicIndex(index);
   };
 
   const handleMarkComplete = async () => {
-    if (!selectedTopic) return;
-    await markTopicComplete(selectedTopic.id);
-  };
+    if (!activeTopic) return;
+    // Auto-enroll if not enrolled
+    if (!currentEnrollment && user?.id) {
+      await enrollInCourse(user.id, id);
+    }
+    await markTopicComplete(activeTopic.id);
+    setShowCompletionToast(true);
+    setTimeout(() => setShowCompletionToast(false), 2500);
 
-  const handleNoteChange = (text) => {
-    setNote(text);
-    if (workshopRegistration?.id) {
-      updateStudentNote(workshopRegistration.id, text);
+    // Auto-advance to next topic if available
+    if (activeTopicIndex < currentTopics.length - 1) {
+      setActiveTopicIndex(activeTopicIndex + 1);
     }
   };
 
-  // If a topic is currently active, render Course Player
-  if (selectedTopic) {
+  // Extract clean YouTube embed ID
+  const youtubeVideoId = useMemo(() => {
+    if (!activeTopic?.video_url) return 'W6NZfCO5SIk';
+    let url = activeTopic.video_url;
+    if (url.includes('v=')) {
+      url = url.split('v=')[1].split('&')[0];
+    }
+    if (url.includes('youtu.be/')) {
+      url = url.split('youtu.be/')[1].split('?')[0];
+    }
+    return url.substring(0, 11);
+  }, [activeTopic]);
+
+  if (status === 'PENDING' && !currentCourse) {
     return (
-      <Layout>
-        <CoursePlayer
-          topic={selectedTopic}
-          isCompleted={isTopicCompleted(selectedTopic.id)}
-          onMarkComplete={handleMarkComplete}
-          onBack={() => setSelectedTopic(null)}
-        />
-      </Layout>
+      <div className="min-h-screen bg-[#041801] flex items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-[#138601] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-semibold text-gray-300">Loading course player...</p>
+        </div>
+      </div>
     );
   }
 
-  return (
-    <Layout>
-      <div className="space-y-6 font-sans">
-        {/* Back navigation */}
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-        >
-          <ArrowLeft size={16} />
-          <span>Back</span>
-        </button>
+  const courseTitle = currentCourse?.title || "Modern JavaScript & Architecture";
 
-        {/* Main Course Header Hero Card */}
-        <BrutalCard className="p-5 sm:p-6">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Thumbnail */}
-            <div className="lg:w-1/3 shrink-0">
-              <div className="aspect-video rounded-md overflow-hidden border border-border bg-muted">
-                <img
-                  src={currentCourse.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop"}
-                  alt={currentCourse.title}
-                  className="w-full h-full object-cover"
+  return (
+    <div className="min-h-screen bg-[#f8fafc] text-gray-900 flex flex-col font-sans">
+      
+      {/* ─── EXACT TOP BAR MATCHING ATTACHED SCREENSHOT ─── */}
+      <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 px-4 sm:px-6 h-18 flex items-center justify-between shadow-xs">
+        
+        {/* Left: Organization Logos & Course Title with Progress */}
+        <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+          
+          {/* Brand Logos */}
+          <Link to="/" className="flex items-center gap-2 shrink-0 group">
+            <div className="w-9 h-9 rounded-xl bg-[#138601] flex items-center justify-center text-white shadow-xs">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div className="hidden md:block">
+              <span className="text-xs font-black tracking-tight text-[#083002] block leading-tight">
+                NACOS UPSKILL
+              </span>
+              <span className="text-[10px] font-semibold text-gray-400 font-mono">
+                FUTO ECOSYSTEM
+              </span>
+            </div>
+          </Link>
+
+          <div className="h-8 w-px bg-gray-200 hidden sm:block" />
+
+          {/* Course Title + Orange Progress Bar exactly like image */}
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base font-bold text-gray-900 truncate max-w-xs sm:max-w-md lg:max-w-xl">
+              {courseTitle}
+            </h1>
+            
+            {/* Progress track */}
+            <div className="flex items-center gap-3 mt-1.5">
+              <div className="w-36 sm:w-56 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.max(4, progressPercent)}%` }}
                 />
               </div>
+              <span className="text-[11px] font-bold text-gray-600 font-sans whitespace-nowrap">
+                {progressPercent}% Learnt
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Action Buttons: "Course Page", "My courses", and Hamburger Icon */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <Link
+            to="/courses"
+            className="hidden sm:inline-flex items-center px-4 py-2 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg shadow-2xs transition-colors"
+          >
+            Course Page
+          </Link>
+
+          <Link
+            to="/my-learning"
+            className="hidden sm:inline-flex items-center px-4 py-2 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg shadow-2xs transition-colors"
+          >
+            My courses
+          </Link>
+
+          {/* Hamburger Menu Toggle (Curriculum Sidebar) */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg text-gray-700 hover:text-black hover:bg-gray-100 border border-gray-300 transition-colors cursor-pointer"
+            title={sidebarOpen ? "Hide syllabus sidebar" : "Show syllabus sidebar"}
+            aria-label="Toggle Syllabus"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+
+      </header>
+
+      {/* ─── MAIN CONTENT VIEW (VIDEO PLAYER + RIGHT SYLLABUS SIDEBAR) ─── */}
+      <div className="flex-1 flex overflow-hidden">
+        
+        {/* LEFT / CENTER: VIDEO PLAYER & LESSON NOTES */}
+        <div className="flex-1 overflow-y-auto bg-gray-950 flex flex-col justify-between">
+          
+          {/* Responsive 16:9 Video Canvas */}
+          <div className="w-full bg-black flex items-center justify-center relative aspect-video max-h-[72vh] shadow-2xl">
+            <iframe
+              key={youtubeVideoId}
+              src={`https://www.youtube-nocookie.com/embed/${youtubeVideoId}?autoplay=1&rel=0&modestbranding=1`}
+              title={activeTopic?.title || "Course Video"}
+              className="w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+
+          {/* Video Footer Action Strip */}
+          <div className="bg-white border-t border-gray-200 p-4 sm:p-6 text-gray-900">
+            <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span className="text-[11px] font-bold text-[#138601] uppercase tracking-wider block mb-1">
+                  Topic {activeTopicIndex + 1} of {currentTopics.length || 1}
+                </span>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-tight">
+                  {activeTopic?.title || 'Interactive Course Overview'}
+                </h2>
+                <p className="text-xs text-gray-500 mt-1 flex items-center gap-3">
+                  <span>Duration: {activeTopic?.duration || '15:00'}</span>
+                  <span>•</span>
+                  <span>Category: {currentCourse?.tags?.[0] || 'Technical Skill'}</span>
+                </p>
+              </div>
+
+              {/* Complete Topic Action Button */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleMarkComplete}
+                  className="px-6 py-2.5 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Mark as Complete</span>
+                </button>
+              </div>
             </div>
 
-            {/* Meta and Details */}
-            <div className="lg:w-2/3 flex flex-col justify-between">
-              <div>
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <LevelBadge level={currentCourse.level} />
+            {/* Topic Summary & Learner Notes */}
+            <div className="max-w-5xl mx-auto mt-6 pt-6 border-t border-gray-200 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Summary */}
+              <div className="lg:col-span-2 space-y-3">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                  Lesson Summary & Educational Objectives
+                </h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {activeTopic?.summary_text || currentCourse?.description || "In this module, you will gain hands-on architectural experience, study best practices, and implement key features with step-by-step guidance."}
+                </p>
+              </div>
 
-                  {currentCourse.is_ai_generated && (
-                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-medium bg-foreground text-primary-foreground rounded">
-                      <Sparkles size={10} className="mr-1 text-amber-300" /> AI Generated
-                    </span>
-                  )}
+              {/* Live Topic Note Taker */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
+                <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-[#138601]" />
+                  <span>Quick Lesson Notes</span>
+                </h4>
+                <textarea
+                  value={personalNotes}
+                  onChange={(e) => setPersonalNotes(e.target.value)}
+                  placeholder="Type personal takeaways or code notes..."
+                  className="w-full h-24 p-2.5 text-xs bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#138601] resize-none"
+                />
+                <button
+                  onClick={() => alert('Note saved to your session!')}
+                  className="w-full py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
+                >
+                  Save Note
+                </button>
+              </div>
 
-                  {isWorkshop && (
-                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-medium bg-[#138601] text-white rounded">
-                      <Video size={10} className="mr-1" /> Live Workshop
-                    </span>
-                  )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* ─── RIGHT: ACCORDION SYLLABUS SIDEBAR MATCHING ATTACHED SCREENSHOT ─── */}
+        {sidebarOpen && (
+          <aside className="w-80 sm:w-96 bg-white border-l border-gray-200 flex flex-col shrink-0 z-30 shadow-lg animate-in slide-in-from-right duration-200">
+            
+            {/* Top Navigation Tabs: Content | Quizzes | Certificates */}
+            <div className="border-b border-gray-200 flex items-center justify-around px-2 pt-3 shrink-0">
+              <button
+                onClick={() => setActiveTab('content')}
+                className={`pb-3 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border-b-2 ${
+                  activeTab === 'content'
+                    ? 'text-sky-600 border-sky-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-900'
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Content</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('quizzes')}
+                className={`pb-3 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border-b-2 ${
+                  activeTab === 'quizzes'
+                    ? 'text-sky-600 border-sky-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-900'
+                }`}
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span>Quizzes</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('certificates')}
+                className={`pb-3 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border-b-2 ${
+                  activeTab === 'certificates'
+                    ? 'text-sky-600 border-sky-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-900'
+                }`}
+              >
+                <Award className="w-4 h-4" />
+                <span>Certificates</span>
+              </button>
+            </div>
+
+            {/* TAB 1: CONTENT (ACCORDION MODULES MATCHING SCREENSHOT) */}
+            {activeTab === 'content' && (
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {modules.map((mod, modIdx) => {
+                  const isExpanded = Boolean(expandedModules[modIdx]);
+                  const modTopicCount = mod.topics.length;
+                  const modPassedCount = mod.topics.filter(t => completedTopicIds.includes(t.id)).length;
+                  const isModCompleted = modPassedCount === modTopicCount && modTopicCount > 0;
+
+                  return (
+                    <div 
+                      key={mod.id} 
+                      className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-2xs"
+                    >
+                      {/* Module Accordion Header */}
+                      <button
+                        onClick={() => handleToggleModule(modIdx)}
+                        className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Circular Blue Icon exactly as in screenshot */}
+                          <div className="w-9 h-9 rounded-xl bg-sky-600 flex items-center justify-center text-white shrink-0">
+                            <LayoutGrid className="w-5 h-5" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <h4 className="text-xs sm:text-sm font-bold text-gray-900 leading-snug truncate">
+                              {mod.title}
+                            </h4>
+                            <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium mt-0.5">
+                              {isModCompleted ? (
+                                <span className="inline-flex items-center gap-1 text-sky-600 font-bold">
+                                  <CheckCircle2 className="w-3.5 h-3.5 fill-sky-600 text-white" />
+                                  <span>{modPassedCount}/{modTopicCount} passed</span>
+                                </span>
+                              ) : (
+                                <span className="text-gray-500">
+                                  {modPassedCount}/{modTopicCount} passed
+                                </span>
+                              )}
+                              <span>•</span>
+                              <span>{modTopicCount} Topics</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Chevron Toggle */}
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                        )}
+                      </button>
+
+                      {/* Expanded Topics List */}
+                      {isExpanded && (
+                        <div className="border-t border-gray-100 divide-y divide-gray-100 p-2 space-y-1">
+                          {mod.topics.map((topic) => {
+                            const globalIndex = currentTopics.findIndex(t => t.id === topic.id);
+                            const isActive = globalIndex === activeTopicIndex;
+                            const isTopicCompleted = completedTopicIds.includes(topic.id);
+
+                            return (
+                              <button
+                                key={topic.id}
+                                onClick={() => handleSelectTopic(globalIndex)}
+                                className={`w-full p-3 rounded-xl flex items-center justify-between text-left transition-all cursor-pointer ${
+                                  isActive
+                                    ? 'bg-sky-50 text-sky-900 border border-sky-300 shadow-2xs font-semibold'
+                                    : 'hover:bg-gray-50 text-gray-700'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  {/* Item Icon */}
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                    isActive
+                                      ? 'bg-sky-600 text-white'
+                                      : isTopicCompleted
+                                      ? 'bg-gray-100 text-sky-600'
+                                      : 'bg-gray-100 text-gray-400'
+                                  }`}>
+                                    {isActive ? (
+                                      <Play className="w-3.5 h-3.5 fill-white" />
+                                    ) : (
+                                      <LayoutGrid className="w-3.5 h-3.5" />
+                                    )}
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-semibold leading-snug truncate">
+                                      {topic.title}
+                                    </p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">
+                                      Video · {topic.duration || '12:30'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Completion Checkmark */}
+                                {isTopicCompleted && (
+                                  <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0 ml-2" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* TAB 2: QUIZZES */}
+            {activeTab === 'quizzes' && (
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 text-sky-950">
+                  <h4 className="text-xs font-bold uppercase tracking-wider mb-1">Knowledge Checks</h4>
+                  <p className="text-xs text-sky-800">
+                    Test your understanding after completing modules to unlock your graduation certificate.
+                  </p>
                 </div>
 
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mb-2">
-                  {currentCourse.title}
-                </h1>
-
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
-                  {currentCourse.description}
-                </p>
-
-                {/* Workshop Information box */}
-                {isWorkshop && currentCourse.workshop_details && (
-                  <div className="bg-secondary/60 rounded-md p-3.5 mb-4 font-mono text-xs space-y-1.5 border border-border/80">
-                    <div className="flex items-center gap-2 text-foreground/80">
-                      <Calendar size={13} className="text-[#138601]" />
-                      <span>{currentCourse.workshop_details.date} at {currentCourse.workshop_details.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-foreground/80">
-                      <Clock size={13} className="text-[#138601]" />
-                      <span>Duration: {currentCourse.workshop_details.duration}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-foreground/80">
-                      <MapPin size={13} className="text-[#138601]" />
-                      <span>{currentCourse.workshop_details.location}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Tags */}
-                {currentCourse.tags && currentCourse.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {currentCourse.tags.map((t) => (
-                      <BrutalTag key={t} variant="muted">#{t}</BrutalTag>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons & Progress Status */}
-              <div className="pt-2 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                {isWorkshop ? (
-                  !isRegistered ? (
-                    <BrutalButton
-                      variant="primary"
-                      onClick={handleCTA}
-                      isLoading={actionLoading}
-                    >
-                      <Video size={15} className="mr-1.5" />
-                      <span>Register for Live Workshop</span>
-                    </BrutalButton>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#138601] text-white rounded">
-                        <Check size={14} /> Registered Participant
-                      </span>
-                    </div>
-                  )
-                ) : !isEnrolled ? (
-                  <BrutalButton
-                    variant="primary"
-                    onClick={handleCTA}
-                    isLoading={actionLoading}
+                <div className="border border-gray-200 rounded-xl p-4 space-y-2">
+                  <p className="text-xs font-bold text-gray-900">Module 1 Assessment</p>
+                  <p className="text-[11px] text-gray-500">5 Multiple Choice Questions · 80% passing mark</p>
+                  <button 
+                    onClick={() => alert('Quiz simulation: Congratulations, you passed with 100%!')}
+                    className="w-full py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
                   >
-                    <Play size={15} className="mr-1.5 fill-current" />
-                    <span>Start Learning Track</span>
-                  </BrutalButton>
-                ) : (
-                  <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <div className="flex-1 sm:w-48">
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-muted-foreground font-mono">Curriculum Progress</span>
-                        <span className="font-bold">{currentEnrollment?.progress || 0}%</span>
-                      </div>
-                      <div className="progress-brutal">
-                        <div
-                          className="progress-brutal-fill"
-                          style={{ width: `${currentEnrollment?.progress || 0}%` }}
-                        />
-                      </div>
-                    </div>
+                    Start Assessment
+                  </button>
+                </div>
+              </div>
+            )}
 
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-emerald-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/25 rounded shrink-0">
-                      <Check size={12} /> Active Student
-                    </span>
+            {/* TAB 3: CERTIFICATES */}
+            {activeTab === 'certificates' && (
+              <div className="flex-1 overflow-y-auto p-4 text-center space-y-4">
+                <div className="p-6 border border-gray-200 rounded-2xl bg-gray-50">
+                  <Award className="w-12 h-12 text-amber-500 mx-auto mb-2" />
+                  <h4 className="text-sm font-bold text-gray-900">Certificate of Completion</h4>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Issued by NACOS FUTO Academic Board upon 100% course completion.
+                  </p>
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs font-bold text-gray-700 mb-2">
+                      Current Progress: {progressPercent}%
+                    </p>
+                    <button
+                      disabled={progressPercent < 100}
+                      className="w-full py-2.5 rounded-xl bg-[#138601] text-white text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                    >
+                      {progressPercent >= 100 ? 'Claim Verified Certificate' : 'Complete All Modules to Unlock'}
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        </BrutalCard>
+            )}
 
-        {/* Live Workshop Student Notes */}
-        {isWorkshop && isRegistered && (
-          <BrutalCard className="p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider font-mono">
-                <BookOpen size={14} className="text-[#138601]" />
-                <span>My Live Workshop Notes</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-mono">Auto-saved</span>
-            </div>
-            <textarea
-              rows={4}
-              value={note}
-              onChange={(e) => handleNoteChange(e.target.value)}
-              placeholder="Record your takeaways, code snippets, and instructor remarks here..."
-              className="w-full px-3 py-2 text-xs border border-border bg-background rounded-md outline-none focus:border-foreground resize-none"
-            />
-          </BrutalCard>
+          </aside>
         )}
 
-        {/* Syllabus / Lessons Outline */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold tracking-tight text-foreground flex items-center gap-2">
-              <BookOpen size={16} className="text-[#138601]" />
-              <span>Curriculum Content & Lessons ({currentTopics.length})</span>
-            </h2>
-            {!canAccessTopics && (
-              <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
-                <Lock size={12} /> Enroll to unlock full videos
-              </span>
-            )}
-          </div>
-
-          {currentTopics.length === 0 ? (
-            <BrutalCard className="text-center py-12 space-y-1">
-              <p className="font-semibold text-sm">No topics added yet</p>
-              <p className="text-xs text-muted-foreground">The creator is currently structuring lessons for this track.</p>
-            </BrutalCard>
-          ) : (
-            <div className="space-y-2">
-              {currentTopics.map((topic, index) => {
-                const completed = isTopicCompleted(topic.id);
-                return (
-                  <BrutalCard
-                    key={topic.id}
-                    interactive={canAccessTopics}
-                    onClick={() => canAccessTopics && setSelectedTopic(topic)}
-                    className={cn(
-                      "flex items-center gap-4 transition-all p-3.5",
-                      !canAccessTopics && "opacity-60 cursor-not-allowed"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs shrink-0 font-mono",
-                        completed
-                          ? "bg-[#138601] text-white"
-                          : "bg-secondary text-foreground"
-                      )}
-                    >
-                      {completed ? <Check size={14} /> : index + 1}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm truncate text-foreground">
-                        {topic.title}
-                      </h3>
-                      <p className="text-[11px] text-muted-foreground font-mono">
-                        Duration: {topic.duration || "15:00"}
-                      </p>
-                    </div>
-
-                    {canAccessTopics ? (
-                      <span className="p-1.5 rounded bg-secondary text-muted-foreground group-hover:text-foreground">
-                        <Play size={14} className="fill-current text-[#138601]" />
-                      </span>
-                    ) : (
-                      <Lock size={14} className="text-muted-foreground shrink-0" />
-                    )}
-                  </BrutalCard>
-                );
-              })}
-            </div>
-          )}
-        </section>
       </div>
-    </Layout>
+
+      {/* Completion Toast Notification */}
+      {showCompletionToast && (
+        <div className="fixed bottom-6 left-6 z-50 bg-[#138601] text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 border border-white/20 animate-in fade-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4" />
+          <span className="text-xs font-bold">Topic marked as complete! Progress updated.</span>
+        </div>
+      )}
+
+    </div>
   );
-}
+};
 
 export default CourseDetailPage;

@@ -355,19 +355,19 @@ const PortalLayout = ({ children }) => {
               <img src={isDark ? logoDark : logoLight} alt="NACOS FUTO Logo" className="h-8 md:h-9 w-auto object-contain" />
             </Link>
 
-            {/* Desktop Sidebar Collapse / Expand Toggle Button */}
+            {/* Desktop Sidebar Collapse / Expand Toggle Button - Single Hamburger Icon */}
             <button
               type="button"
               onClick={toggleCollapse}
-              className={`hidden md:flex items-center justify-center p-2 rounded transition-colors cursor-pointer border ${
+              className={`hidden md:flex items-center justify-center p-2 rounded transition-all duration-200 cursor-pointer border ${
                 isDark
-                  ? 'text-gray-300 hover:text-white bg-[#041801] hover:bg-[#138601]/20 border-[#138601]/30'
-                  : 'text-gray-600 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200 border-gray-200'
+                  ? 'text-gray-300 hover:text-white bg-[#041801] hover:bg-[#138601]/20 border-[#138601]/30 active:scale-95'
+                  : 'text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border-gray-200 active:scale-95'
               }`}
-              title={isCollapsed ? "Expand navigation sidebar" : "Collapse navigation to icons"}
-              aria-label={isCollapsed ? "Expand navigation sidebar" : "Collapse navigation to icons"}
+              title={isCollapsed ? "Expand navigation sidebar" : "Collapse navigation sidebar"}
+              aria-label={isCollapsed ? "Expand navigation sidebar" : "Collapse navigation sidebar"}
             >
-              {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+              <Menu className="w-4.5 h-4.5 transition-transform duration-200" />
             </button>
           </div>
 
@@ -819,31 +819,12 @@ const PortalLayout = ({ children }) => {
             }`}
           >
             <div className="space-y-4">
-              {/* Header inside sidebar with expand/collapse control */}
-              <div className="flex items-center justify-between px-2 pb-1">
-                {isExpanded ? (
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-green-300/70">
-                      Menu Navigation
-                    </span>
-                    <button
-                      type="button"
-                      onClick={toggleCollapse}
-                      className="p-1 rounded text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#041801] transition-colors cursor-pointer"
-                      title={isCollapsed ? "Pin sidebar open" : "Collapse into icons"}
-                    >
-                      <PanelLeftClose className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={toggleCollapse}
-                    className="w-full flex items-center justify-center p-1.5 rounded text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#041801] transition-colors cursor-pointer"
-                    title="Click to expand sidebar"
-                  >
-                    <PanelLeftOpen className="w-4 h-4" />
-                  </button>
+              {/* Header inside sidebar */}
+              <div className="px-2 pb-1">
+                {isExpanded && (
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-green-300/70">
+                    Menu Navigation
+                  </span>
                 )}
               </div>
 
@@ -875,11 +856,12 @@ const PortalLayout = ({ children }) => {
                       </div>
                       {isExpanded && active && <ChevronRight className="w-4 h-4 text-white shrink-0" />}
 
-                      {/* Floating Tooltip when icon-only */}
+                      {/* Dynamic Floating Tooltip Popup when collapsed */}
                       {!isExpanded && (
-                        <span className="absolute left-full ml-3 px-2.5 py-1 text-xs font-semibold text-white bg-gray-900 dark:bg-[#041801] border border-gray-700 dark:border-[#138601]/40 rounded shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-                          {item.label}
-                        </span>
+                        <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-semibold text-white bg-gray-900/95 dark:bg-[#083002] border border-gray-700/80 dark:border-[#138601]/60 rounded-md shadow-2xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 -translate-x-1 transition-all duration-200 z-50 whitespace-nowrap flex items-center gap-1.5 backdrop-blur-xs">
+                          <span>{item.label}</span>
+                          <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-gray-900/95 dark:border-r-[#083002]"></span>
+                        </div>
                       )}
                     </Link>
                   );

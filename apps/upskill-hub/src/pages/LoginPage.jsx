@@ -1,97 +1,182 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, ArrowRight } from "lucide-react";
-import { BrutalCard } from "../components/ui/BrutalCard";
-import { BrutalButton } from "../components/ui/BrutalButton";
-import { useAuthStore } from "../stores/authStore";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { GraduationCap, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Sparkles } from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
+import { getAppUrls } from '@nacos/config/urls';
 
-export function LoginPage() {
+const LoginPage = () => {
   const navigate = useNavigate();
-  const setUser = useAuthStore((state) => state.setUser);
+  const { login } = useAuthStore();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isNacosAccountPrompt, setIsNacosAccountPrompt] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) {
-      setError("Please enter your student email.");
+    setError('');
+    setIsNacosAccountPrompt(false);
+
+    if (!identifier.trim()) {
+      setError('Please enter your Registration / Matric Number or Email.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter your Password.');
       return;
     }
 
-    const scholarUser = {
-      id: `user-${Date.now()}`,
-      email: email.trim(),
-      user_metadata: {
-        full_name: email.split("@")[0].replace(".", " "),
-        role: "creator",
-      },
-    };
-
-    setUser(scholarUser);
-    navigate("/");
+    setIsLoading(true);
+    try {
+      const result = await login(identifier.trim(), password);
+      if (result.success) {
+        navigate('/my-learning');
+      } else {
+        setError(result.error || 'Authentication failed. Please check your credentials.');
+        if (result.isNacosAccount) {
+          setIsNacosAccountPrompt(true);
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 font-sans">
-      <BrutalCard className="max-w-md w-full p-6 sm:p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-10 h-10 rounded-xl bg-[#138601] text-white flex items-center justify-center font-bold text-base mx-auto">
-            UH
+    <div className="min-h-screen bg-[#041801] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
+        
+        {/* Brand Icon */}
+        <Link to="/" className="inline-flex items-center gap-2 group">
+          <div className="w-12 h-12 rounded-2xl bg-[#138601] flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform">
+            <GraduationCap className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Upskill Hub</h1>
-          <p className="text-xs text-muted-foreground">Sign in to your learning dashboard</p>
+        </Link>
+
+        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+          Sign In to <span className="text-[#4bd043]">Upskill Hub</span>
+        </h2>
+        
+        <p className="text-xs sm:text-sm text-green-100/70">
+          NACOS students can sign in directly using their student portal credentials.
+        </p>
+
+        {/* NACOS Student Badge Notice */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#138601]/20 border border-[#138601]/40 text-[#4bd043] text-[11px] font-semibold">
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>Unified NACOS FUTO Authentication Active</span>
         </div>
+      </div>
 
-        {error && (
-          <div className="p-3 text-xs bg-red-500/10 border border-red-500/30 text-red-500 rounded-md">
-            {error}
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-[#083002] py-8 px-6 sm:px-10 border border-[#138601]/30 rounded-2xl shadow-2xl space-y-6">
+          
+          {error && (
+            <div className={`p-4 rounded-xl text-xs flex items-start gap-2.5 border ${
+              isNacosAccountPrompt 
+                ? 'bg-amber-950/40 border-amber-500/50 text-amber-200' 
+                : 'bg-red-950/40 border-red-500/40 text-red-200'
+            }`}>
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+              <div className="space-y-1">
+                <p className="font-semibold">{error}</p>
+                {isNacosAccountPrompt && (
+                  <p className="text-[11px] text-amber-300/80">
+                    Tip: Use your standard student portal password or visit the NACOS portal to reset it.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                Reg Number or Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="e.g. 2021123456 or student@nacosfuto.org"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                />
+              </div>
+              <span className="text-[10px] text-gray-400 mt-1 block">
+                NACOS scholars can use their Matric / Reg number.
+              </span>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider">
+                  Password
+                </label>
+                <a
+                  href={`${getAppUrls().portal}/forgot-password`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] text-[#4bd043] hover:underline"
+                >
+                  Forgot Password?
+                </a>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#041801] border border-[#138601]/40 rounded-xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#138601]"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 px-4 rounded-xl bg-[#138601] hover:bg-[#0f6c01] text-white text-xs sm:text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span>Sign In to Learning Dashboard</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-[#138601]/20 text-center space-y-3 text-xs text-gray-400">
+            <p>
+              New learner or external student?{' '}
+              <Link to="/sign-up" className="font-bold text-[#4bd043] hover:underline">
+                Create Free Account
+              </Link>
+            </p>
+            
+            <p className="text-[11px]">
+              Want to visit the main student portal?{' '}
+              <a href={getAppUrls().portal} target="_blank" rel="noreferrer" className="text-gray-300 hover:text-white underline">
+                Go to NACOS Portal
+              </a>
+            </p>
           </div>
-        )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider block mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="scholar@nacosfuto.org"
-              className="w-full px-3 py-2 text-sm border border-border bg-background rounded-md outline-none focus:border-foreground"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider block mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3 py-2 text-sm border border-border bg-background rounded-md outline-none focus:border-foreground"
-            />
-          </div>
-
-          <BrutalButton type="submit" variant="primary" size="lg" className="w-full">
-            <span>Sign In</span>
-            <ArrowRight size={16} className="ml-1.5" />
-          </BrutalButton>
-        </form>
-
-        <div className="text-center text-xs text-muted-foreground">
-          Don't have an account?{" "}
-          <Link to="/sign-up" className="font-semibold text-foreground underline">
-            Sign up
-          </Link>
         </div>
-      </BrutalCard>
+      </div>
     </div>
   );
-}
+};
 
 export default LoginPage;

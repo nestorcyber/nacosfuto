@@ -1,54 +1,52 @@
 /**
  * authStore.js
- * Authentication & Creator Role State for Upskill Hub.
+ * Authentication & Role State for Upskill Hub with NACOS Student integration.
  */
 import { create } from "zustand";
-
-const STORAGE_KEY_AUTH = "nacos_upskill_user";
-
-function getInitialUser() {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_AUTH);
-    if (raw) return JSON.parse(raw);
-
-    // If student is already logged into NACOS Portal, auto-derive user
-    const portalUserRaw = localStorage.getItem("nacos_user");
-    if (portalUserRaw) {
-      const p = JSON.parse(portalUserRaw);
-      return {
-        id: p.id || "student-user",
-        email: p.email || "student@nacos.org.ng",
-        user_metadata: {
-          full_name: p.full_name || p.name || "NACOS Scholar",
-          role: "creator", // Allow exploration of creator features by default
-          matric_number: p.matric_number || "",
-        },
-      };
-    }
-  } catch (e) {}
-
-  // Default guest scholar
-  return {
-    id: "guest-scholar-1",
-    email: "scholar@nacosfuto.org",
-    user_metadata: {
-      full_name: "NACOS Scholar",
-      role: "creator",
-    },
-  };
-}
+import { authService } from "../services/authService";
 
 export const useAuthStore = create((set, get) => ({
-  user: getInitialUser(),
-  status: "SUCCESS",
-  isAuthenticated: true,
+  user: authService.getCurrentUser(),
+  status: "IDLE",
+  isAuthenticated: Boolean(authService.getCurrentUser()),
+  errorMessage: null,
 
   setUser: (userData) => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(userData));
-    }
     set({ user: userData, isAuthenticated: !!userData, status: "SUCCESS" });
+  },
+
+  login: async (identifier, password) => {
+    set({ status: "PENDING", errorMessage: null });
+    try {
+      const result = await authService.login(identifier, password);
+      if (result.success) {
+        set({ user: result.user, isAuthenticated: true, status: "SUCCESS", errorMessage: null });
+        return { success: true };
+      } else {
+        set({ status: "ERROR", errorMessage: result.error });
+        return result;
+      }
+    } catch (err) {
+      set({ status: "ERROR", errorMessage: err.message });
+      return { success: false, error: err.message };
+    }
+  },
+
+  register: async (formData) => {
+    set({ status: "PENDING", errorMessage: null });
+    try {
+      const result = await authService.register(formData);
+      if (result.success) {
+        set({ user: result.user, isAuthenticated: true, status: "SUCCESS", errorMessage: null });
+        return { success: true };
+      } else {
+        set({ status: "ERROR", errorMessage: result.error });
+        return result;
+      }
+    } catch (err) {
+      set({ status: "ERROR", errorMessage: err.message });
+      return { success: false, error: err.message };
+    }
   },
 
   toggleRole: () => {
@@ -64,15 +62,13 @@ export const useAuthStore = create((set, get) => ({
       },
     };
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(updated));
+      localStorage.setItem("nacos_upskill_user", JSON.stringify(updated));
     }
     set({ user: updated });
   },
 
-  logout: async () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(STORAGE_KEY_AUTH);
-    }
-    set({ user: null, isAuthenticated: false, status: "NO_USER" });
+  logout: () => {
+    authService.logout();
+    set({ user: null, isAuthenticated: false, status: "IDLE", errorMessage: null });
   },
 }));
