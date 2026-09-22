@@ -17,7 +17,8 @@ import {
   CreditCard,
   GraduationCap,
   Globe,
-  ExternalLink
+  ExternalLink,
+  Bell
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { getPortalAdminSession, logoutPortalAdmin } from '@nacos/auth';
@@ -96,6 +97,7 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
     { label: 'Portal Overview', path: '/', icon: LayoutDashboard, exact: true },
     { label: 'Student Registry', path: '/students', icon: Users },
     { label: 'ID Card Applications', path: '/id-cards', icon: ShieldCheck },
+    { label: 'Notices & Bulletins', path: '/notices', icon: Bell },
     { label: 'Resource Hub', path: '/resources', icon: BookOpen },
     { label: 'Student Media', path: '/media', icon: ImageIcon },
     { label: 'Portal Settings', path: '/settings', icon: Settings }

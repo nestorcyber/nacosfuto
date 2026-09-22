@@ -8,6 +8,7 @@ import PortalAdminStudents from './pages/PortalAdminStudents';
 import PortalAdminIdCards from './pages/PortalAdminIdCards';
 import PortalAdminResources from './pages/PortalAdminResources';
 import PortalAdminMedia from './pages/PortalAdminMedia';
+import PortalAdminNotices from './pages/PortalAdminNotices';
 import PortalAdminSettings from './pages/PortalAdminSettings';
 import PortalAdminProtectedRoute from './components/PortalAdminProtectedRoute';
 
@@ -51,6 +52,14 @@ function App() {
             element={
               <PortalAdminProtectedRoute requiredPermission="student_portal.id_cards">
                 <PortalAdminIdCards />
+              </PortalAdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/notices" 
+            element={
+              <PortalAdminProtectedRoute requiredPermission="student_portal.view">
+                <PortalAdminNotices />
               </PortalAdminProtectedRoute>
             } 
           />

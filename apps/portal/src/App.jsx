@@ -11,6 +11,7 @@ import Courses from './pages/Courses';
 import Profile from './pages/Profile';
 import IdCard from './pages/IdCard';
 import IdVerification from './pages/IdVerification';
+import Notices from './pages/Notices';
 import HackathonDetail from './pages/HackathonDetail';
 import HackathonApply from './pages/HackathonApply';
 import AdminHub from './pages/AdminHub';
@@ -30,6 +31,8 @@ function App() {
 
           {/* Core Student Academic Portal */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/notices" element={<Notices />} />
+          <Route path="/bulletin" element={<Notices />} />
           <Route path="/results" element={<Results />} />
           <Route path="/dues" element={<Dues />} />
           <Route path="/courses" element={<Courses />} />

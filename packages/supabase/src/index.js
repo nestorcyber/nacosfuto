@@ -9,4 +9,5 @@ export * from './emailService.js';
 export * from './smsService.js';
 export * from './storageService.js';
 export * from './resources.js';
+export * from './notices.js';
 export { default } from './client.js';

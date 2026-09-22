@@ -30,8 +30,9 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { hashPassword, isLocalEnvironment } from '@nacos/supabase/auth';
-import { supabase } from '@nacos/supabase';
+import { supabase, fetchActivePopupNotice } from '@nacos/supabase';
 import { getAppUrls } from '@nacos/config/urls';
+import NoticeModal from './NoticeModal';
 import logoDark from '../assets/full-logo-dark.png';
 import logoLight from '../assets/full-logo-light.png';
 
@@ -66,6 +67,24 @@ const PortalLayout = ({ children }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activePopupNotice, setActivePopupNotice] = useState(null);
+
+  // Auto-check and trigger urgent pop-up notice for student on login / session mount
+  useEffect(() => {
+    let isMounted = true;
+    const checkPopup = async () => {
+      try {
+        const notice = await fetchActivePopupNotice({ level: user.level || user.currentLevel });
+        if (isMounted && notice) {
+          setActivePopupNotice(notice);
+        }
+      } catch (err) {
+        console.warn('Popup notice check error:', err);
+      }
+    };
+    checkPopup();
+    return () => { isMounted = false; };
+  }, [user?.level, user?.id]);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -284,6 +303,7 @@ const PortalLayout = ({ children }) => {
 
   const navItems = [
     { label: 'Dashboard Overview', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Notices & Bulletin', path: '/notices', icon: Bell },
     { label: 'Dues & Clearance', path: '/dues', icon: CreditCard },
     { label: 'ID Card Application', path: '/id-card', icon: ShieldCheck },
     { label: 'Academic Results', path: '/results', icon: GraduationCap },
@@ -891,6 +911,13 @@ const PortalLayout = ({ children }) => {
         </main>
 
       </div>
+
+      {/* Institutional Login Urgent Pop-up Notice */}
+      <NoticeModal
+        notice={activePopupNotice}
+        isOpen={Boolean(activePopupNotice)}
+        onClose={() => setActivePopupNotice(null)}
+      />
 
     </div>
   );
