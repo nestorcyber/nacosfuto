@@ -120,6 +120,54 @@ export default async function handler(req, res) {
       });
     }
 
+    if (action === 'delete') {
+      // 1. List file versions matching the cleanKey
+      const listRes = await fetch(`${auth.apiUrl}/b2api/v3/b2_list_file_versions`, {
+        method: 'POST',
+        headers: {
+          Authorization: auth.authorizationToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          bucketId: auth.bucketId,
+          startFileName: cleanKey,
+          prefix: cleanKey
+        })
+      });
+
+      if (!listRes.ok) {
+        const errText = await listRes.text();
+        throw new Error(`Failed to list file versions from B2: ${errText}`);
+      }
+
+      const listData = await listRes.json();
+      const matchingFiles = (listData.files || []).filter(f => f.fileName === cleanKey);
+      const deletedVersions = [];
+
+      for (const file of matchingFiles) {
+        const delRes = await fetch(`${auth.apiUrl}/b2api/v3/b2_delete_file_version`, {
+          method: 'POST',
+          headers: {
+            Authorization: auth.authorizationToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            fileName: file.fileName,
+            fileId: file.fileId
+          })
+        });
+        if (delRes.ok) {
+          deletedVersions.push(await delRes.json());
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: `Deleted ${deletedVersions.length} version(s) of ${cleanKey}`,
+        deletedCount: deletedVersions.length
+      });
+    }
+
     return res.status(200).json({
       success: true,
       authorizationToken: dlToken.token,

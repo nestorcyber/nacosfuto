@@ -326,12 +326,37 @@ export async function adminDeleteResource(id, storageKey = null, thumbnailKey = 
   if (!supabase || !id) return { success: false, error: 'Missing ID' };
 
   try {
-    // 1. Delete associated Backblaze B2 files
-    if (storageKey) {
-      await storageService.delete(storageKey);
+    let keyToDelete = storageKey;
+    let thumbToDelete = thumbnailKey;
+
+    // If storage keys weren't passed directly, fetch them from the database first
+    if (!keyToDelete) {
+      const { data: current } = await supabase
+        .from('resources')
+        .select('storage_key, thumbnail_storage_key')
+        .eq('id', id)
+        .single();
+
+      if (current) {
+        keyToDelete = current.storage_key;
+        thumbToDelete = thumbToDelete || current.thumbnail_storage_key;
+      }
     }
-    if (thumbnailKey) {
-      await storageService.delete(thumbnailKey);
+
+    // 1. Delete associated Backblaze B2 files
+    if (keyToDelete) {
+      try {
+        await storageService.delete(keyToDelete);
+      } catch (delErr) {
+        console.warn('Storage delete warning:', delErr);
+      }
+    }
+    if (thumbToDelete) {
+      try {
+        await storageService.delete(thumbToDelete);
+      } catch (delErr) {
+        console.warn('Thumbnail storage delete warning:', delErr);
+      }
     }
 
     // 2. Delete database record (cascades to download/view tracking)

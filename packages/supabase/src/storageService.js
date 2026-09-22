@@ -221,6 +221,27 @@ export function buildResourceStorageKey(resourceId, filename, type = 'original')
   return `nacos/resources/${cleanId}/${timestamp}-${cleanFile}`;
 }
 
+/**
+ * Extract clean relative storage key even if a full URL or dirty path is provided
+ */
+export function extractCleanStorageKey(keyOrUrl) {
+  if (!keyOrUrl) return '';
+  let str = String(keyOrUrl).trim();
+  
+  // Strip out full B2 URLs like https://f005.backblazeb2.com/file/nacos-resources/nacos/...
+  const b2Match = str.match(/backblazeb2\.com\/file\/[^\/]+\/(.+)/);
+  if (b2Match && b2Match[1]) {
+    str = b2Match[1];
+  }
+  
+  // Strip query parameters
+  if (str.includes('?')) {
+    str = str.split('?')[0];
+  }
+  
+  return str.replace(/^\/+/, '');
+}
+
 export const storageService = {
   /**
    * Upload a file to Backblaze B2 / Storage Provider.
@@ -471,67 +492,49 @@ export const storageService = {
   },
 
   /**
-   * Get secure authorized download URL (includes download authorization token for private bucket access)
+   * Get secure download URL (Serverless download proxy endpoint that streams attachment directly)
    */
   async getDownloadUrl(storageKey, options = {}) {
     if (!storageKey) return null;
 
-    if (storageKey.startsWith('http://') || storageKey.startsWith('https://')) {
-      return storageKey;
+    const cleanKey = extractCleanStorageKey(storageKey);
+    const fileName = options.downloadFileName || 'document.pdf';
+
+    // 1. Primary: Use dedicated serverless download streaming proxy
+    // (Bypasses all client CORS restrictions, prevents 401s, forces native attachment download)
+    if (typeof window !== 'undefined') {
+      return `/api/download?key=${encodeURIComponent(cleanKey)}&name=${encodeURIComponent(fileName)}`;
     }
 
-    const cleanKey = storageKey.replace(/^\/+/, '');
-
-    // 1. Retrieve authorization token
+    // Direct B2 authorized token fallback for Node.js
     try {
       const dlAuth = await getB2DownloadToken();
       if (dlAuth?.token) {
         const base = dlAuth.downloadUrl || 'https://f005.backblazeb2.com';
         const bucket = dlAuth.bucketName || 'nacos-resources';
         let url = `${base}/file/${bucket}/${cleanKey}?Authorization=${dlAuth.token}`;
-        if (options.downloadFileName) {
-          url += `&b2ContentDisposition=${encodeURIComponent(`attachment; filename="${options.downloadFileName}"`)}`;
-        }
+        url += `&b2ContentDisposition=${encodeURIComponent(`attachment; filename="${fileName}"`)}`;
         return url;
-      }
-    } catch (e) {
-      console.warn('getDownloadUrl authorization error:', e);
-    }
-
-    // 2. Try Edge function if deployed
-    try {
-      if (supabase && typeof supabase.functions?.invoke === 'function') {
-        const { data, error } = await supabase.functions.invoke('resource-storage', {
-          body: {
-            action: 'presign-download',
-            storageKey: cleanKey,
-            downloadFileName: options.downloadFileName,
-            expiresInSeconds: options.expiresIn || 3600
-          }
-        });
-
-        if (!error && data?.downloadUrl) {
-          return data.downloadUrl;
-        }
       }
     } catch (e) {}
 
-    // 3. Fallback to public delivery prefix
     return `${B2_PUBLIC_BASE_URL}/${cleanKey}`;
   },
 
   /**
-   * Get preview URL for streaming / inline rendering (PDF, Video, Image)
+   * Get preview URL for streaming / inline rendering in iframes and PDF viewers
    */
   async getPreviewUrl(storageKey) {
     if (!storageKey) return null;
-    if (storageKey.startsWith('http://') || storageKey.startsWith('https://')) {
-      return storageKey;
+
+    const cleanKey = extractCleanStorageKey(storageKey);
+
+    // 1. Primary: Use dedicated serverless inline preview proxy
+    if (typeof window !== 'undefined') {
+      return `/api/preview?key=${encodeURIComponent(cleanKey)}`;
     }
 
-    const cleanKey = storageKey.replace(/^\/+/, '');
-
-    // 1. Retrieve authorization token
+    // Direct B2 authorized token fallback for Node.js
     try {
       const dlAuth = await getB2DownloadToken();
       if (dlAuth?.token) {
@@ -539,60 +542,118 @@ export const storageService = {
         const bucket = dlAuth.bucketName || 'nacos-resources';
         return `${base}/file/${bucket}/${cleanKey}?Authorization=${dlAuth.token}`;
       }
-    } catch (e) {
-      console.warn('getPreviewUrl authorization error:', e);
-    }
-
-    // 2. Try Edge Function if deployed
-    try {
-      if (supabase && typeof supabase.functions?.invoke === 'function') {
-        const { data } = await supabase.functions.invoke('resource-storage', {
-          body: { action: 'presign-preview', storageKey: cleanKey }
-        });
-        if (data?.previewUrl) return data.previewUrl;
-      }
     } catch (e) {}
 
     return `${B2_PUBLIC_BASE_URL}/${cleanKey}`;
   },
 
   /**
-   * Perform silent background download of file as a Blob.
-   * Prevents browser navigation, popups, or new tabs, and initiates saving directly to disk.
+   * Triggers native browser download in the background without opening a new tab or window.
+   * Leverages server-side Content-Disposition: attachment via a hidden iframe.
+   */
+  triggerDownload(downloadUrl) {
+    if (typeof window === 'undefined' || !downloadUrl) return;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = downloadUrl;
+    document.body.appendChild(iframe);
+
+    setTimeout(() => {
+      try {
+        document.body.removeChild(iframe);
+      } catch (_) {}
+    }, 60000);
+  },
+
+  /**
+   * Safe silent file download method.
+   * Always prefers native streaming attachment trigger to avoid memory bloat and CORS "Failed to fetch" errors.
    */
   async downloadFile(url, fileName = 'document.pdf') {
     if (!url) throw new Error('No download URL provided');
 
-    const res = await fetch(url, { method: 'GET', mode: 'cors' });
-    if (!res.ok) {
-      let errDetail = `Download request failed with HTTP ${res.status}`;
+    // Always trigger native browser background download for all download/proxy URLs
+    this.triggerDownload(url);
+    return true;
+  },
+
+  /**
+   * Delete object from Backblaze B2 storage
+   */
+  async delete(storageKey) {
+    if (!storageKey) return { success: false, error: 'No storageKey provided' };
+    const cleanKey = extractCleanStorageKey(storageKey);
+    if (!cleanKey) return { success: false, error: 'Invalid storageKey' };
+
+    // 1. Browser/client-side: Call serverless delete endpoint
+    if (typeof window !== 'undefined') {
       try {
-        const j = await res.json();
-        if (j?.code === 'unauthorized') {
-          errDetail = 'Storage authorization required. Please try again.';
-        } else if (j?.message) {
-          errDetail = j.message;
+        const res = await fetch('/api/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storageKey: cleanKey })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return { success: true, ...data };
         }
-      } catch (_) {}
-      throw new Error(errDetail);
+      } catch (err) {
+        console.warn('Delete via /api/delete failed, attempting fallback...', err);
+      }
+
+      try {
+        const res = await fetch('/api/resource-storage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', storageKey: cleanKey })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return { success: true, ...data };
+        }
+      } catch (err) {
+        console.error('Delete via /api/resource-storage failed:', err);
+      }
     }
 
-    const blob = await res.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
+    // 2. Direct B2 deletion (Node.js environment or backend scripts)
+    try {
+      const keyId = getB2Env('VITE_B2_KEY_ID', '00504e4d4912f750000000001');
+      const appKey = getB2Env('VITE_B2_APPLICATION_KEY', 'K005IgcedfJWsbGIXMn6tQlFhUchfNo');
+      const bucketId = getB2Env('VITE_B2_BUCKET_ID', '50149e04ad14c911a20f0715');
 
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = fileName;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+      const creds = (typeof btoa !== 'undefined') 
+        ? btoa(`${keyId}:${appKey}`) 
+        : Buffer.from(`${keyId}:${appKey}`).toString('base64');
 
-    setTimeout(() => {
-      window.URL.revokeObjectURL(blobUrl);
-    }, 15000);
+      const authRes = await fetch('https://api.backblazeb2.com/b2api/v3/b2_authorize_account', {
+        headers: { Authorization: `Basic ${creds}` }
+      });
+      if (!authRes.ok) throw new Error('B2 authorization failed');
+      const auth = await authRes.json();
 
-    return true;
+      const listRes = await fetch(`${auth.apiInfo.storageApi.apiUrl}/b2api/v3/b2_list_file_versions`, {
+        method: 'POST',
+        headers: { Authorization: auth.authorizationToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bucketId, startFileName: cleanKey, prefix: cleanKey })
+      });
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        const matches = (listData.files || []).filter(f => f.fileName === cleanKey);
+        for (const file of matches) {
+          await fetch(`${auth.apiInfo.storageApi.apiUrl}/b2api/v3/b2_delete_file_version`, {
+            method: 'POST',
+            headers: { Authorization: auth.authorizationToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: file.fileName, fileId: file.fileId })
+          });
+        }
+      }
+      return { success: true };
+    } catch (e) {
+      console.error('B2 direct delete error:', e);
+      return { success: false, error: e.message };
+    }
   },
 
   /**
