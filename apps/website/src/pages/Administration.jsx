@@ -88,7 +88,7 @@ const Administration = () => {
                                     </div>
                                 )}
                                 <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-between items-end">
-                                    <span className="inline-block px-3 py-1 rounded-full bg-green-500/90 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-lg border border-white/20">
+                                    <span className="inline-block px-3 py-1 rounded-md bg-green-500/90 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-lg border border-white/20">
                                         {person.role || person.rank}
                                     </span>
                                 </div>

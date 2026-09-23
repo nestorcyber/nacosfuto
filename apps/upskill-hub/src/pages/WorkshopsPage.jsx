@@ -62,7 +62,7 @@ export function WorkshopsPage() {
             </div>
           </div>
 
-          <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-[#0056D2] border border-blue-200">
+          <span className="text-xs font-bold px-2.5 py-1 rounded bg-blue-50 text-[#0056D2] border border-blue-200">
             {workshops.length} Scheduled Sessions
           </span>
         </div>

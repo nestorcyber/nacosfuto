@@ -538,7 +538,7 @@ const Results = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-gray-900 dark:text-[#4bd043] bg-[#f1f3f5] dark:bg-[#041801] px-3.5 py-1 rounded-full">
+                    <span className="text-xs font-semibold text-gray-900 dark:text-[#4bd043] bg-[#f1f3f5] dark:bg-[#041801] px-3 py-1 rounded-md">
                       Semester GPA: {sem.gpa}
                     </span>
                   </div>
@@ -569,7 +569,7 @@ const Results = () => {
                           <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-green-100">{course.exam}</td>
                           <td className="py-3 px-3 sm:px-4 text-center font-semibold text-gray-900 dark:text-white">{course.score}%</td>
                           <td className="py-3 px-3 sm:px-4 text-center">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                            <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
                               course.grade === 'A' 
                                 ? 'bg-[#ebf3ff] text-[#138601] dark:bg-[#138601]/30 dark:text-[#4bd043]' 
                                 : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'

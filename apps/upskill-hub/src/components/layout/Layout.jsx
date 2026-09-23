@@ -8,12 +8,12 @@ export const Layout = () => {
   
   // The Course Taking view (/courses/:id) uses the specialized top bar
   const isCourseTakingView = Boolean(
-    location.pathname.match(/^\/courses\/[^/]+$/) && !location.pathname.endsWith('/courses')
+    location.pathname.match(/^\/courses\/[^/]+(\/learn)?$/) && !location.pathname.endsWith('/courses')
   );
 
   if (isCourseTakingView) {
     return (
-      <div className="h-screen max-h-screen w-full overflow-hidden bg-[#f8fafc] text-gray-900 flex flex-col font-sans">
+      <div className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#f8fafc] text-gray-900 flex flex-col font-sans">
         <Outlet />
       </div>
     );

@@ -294,7 +294,7 @@ const Dashboard = () => {
                   }`}>
                   Fees paid
                 </h4>
-                <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${isPaid
+                <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md ${isPaid
                     ? 'bg-white/80 dark:bg-[#041801]/60 text-[#138601] dark:text-[#4bd043]'
                     : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
                   }`}>
@@ -329,7 +329,7 @@ const Dashboard = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Dues Clearance Receipt</h4>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${isPaid
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${isPaid
                         ? 'bg-green-100 text-green-800 dark:bg-[#138601]/20 dark:text-[#4bd043]'
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
                       }`}>

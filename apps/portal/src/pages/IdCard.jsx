@@ -305,7 +305,7 @@ const IdCard = () => {
 
           <div className="flex items-center gap-2">
             {application && (
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isState7
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold ${isState7
                   ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700/50'
                   : isState8 || isState9
                     ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700/50'
@@ -449,7 +449,7 @@ const IdCard = () => {
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold">
                 <CheckCircle className="w-3.5 h-3.5" /> Payment Verified ({application.payment_reference || 'CLEARED'})
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -592,7 +592,7 @@ const IdCard = () => {
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
+              <span className="inline-block px-3 py-1 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
                 Status: Application Under Review
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -651,7 +651,7 @@ const IdCard = () => {
                     <h3 className="text-base font-bold text-gray-900 dark:text-white">
                       Official Student Identity Card (Two-Sided)
                     </h3>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                    <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
                       Active
                     </span>
                   </div>
@@ -803,7 +803,7 @@ const IdCard = () => {
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-semibold">
+              <span className="inline-block px-3 py-1 rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-semibold">
                 Application Rejected
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -845,7 +845,7 @@ const IdCard = () => {
             </div>
 
             <div className="max-w-md mx-auto space-y-2">
-              <span className="inline-block px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-200 text-xs font-bold uppercase tracking-wider">
+              <span className="inline-block px-3 py-1 rounded-md bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-200 text-xs font-bold uppercase tracking-wider">
                 Card Revoked
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">

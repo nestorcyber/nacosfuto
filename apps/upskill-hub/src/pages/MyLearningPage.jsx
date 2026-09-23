@@ -65,10 +65,6 @@ const MyLearningPage = () => {
         <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#0056D2] text-xs font-bold uppercase tracking-wider mb-2">
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Learner Dashboard</span>
-              </div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#000000]">
                 Welcome back, {displayName}!
               </h1>

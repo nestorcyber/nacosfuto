@@ -80,16 +80,16 @@ export function CoursesPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 flex-1 md:max-w-xl justify-end">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 flex-1 md:max-w-xl justify-end w-full">
             {/* Search Input */}
-            <div className="relative flex-1 min-w-[180px]">
+            <div className="relative w-full sm:flex-1 sm:min-w-[180px]">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search tracks, topics..."
-                className="w-full bg-gray-50 text-[#000000] placeholder-gray-400 text-xs pl-9 pr-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0056D2] focus:border-[#0056D2] font-medium"
+                className="w-full bg-gray-50 text-[#000000] placeholder-gray-400 text-xs pl-9 pr-7 py-2 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0056D2] focus:border-[#0056D2] font-medium"
               />
               {search && (
                 <button
@@ -102,42 +102,43 @@ export function CoursesPage() {
               )}
             </div>
 
-            {/* Level Selector */}
-            <select
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
-              className="px-3 py-2 rounded bg-gray-50 text-xs font-semibold text-[#000000] border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0056D2] cursor-pointer"
-            >
-              <option value="all">All Levels</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="professional">Professional</option>
-              <option value="100">100 Level</option>
-              <option value="200">200 Level</option>
-              <option value="300">300 Level</option>
-            </select>
-
-            {/* Type Selector */}
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="px-3 py-2 rounded bg-gray-50 text-xs font-semibold text-[#000000] border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0056D2] cursor-pointer"
-            >
-              <option value="all">All Formats</option>
-              <option value="self-paced">Self-Paced Track</option>
-              <option value="workshop">Live Workshop</option>
-            </select>
-
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="p-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs cursor-pointer"
-                title="Reset filters"
+            {/* Filter selectors row on mobile */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <select
+                value={selectedLevel}
+                onChange={(e) => setSelectedLevel(e.target.value)}
+                className="flex-1 sm:flex-none px-2.5 sm:px-3 py-2 rounded bg-gray-50 text-xs font-semibold text-[#000000] border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0056D2] cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            )}
+                <option value="all">All Levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="professional">Professional</option>
+                <option value="100">100 Level</option>
+                <option value="200">200 Level</option>
+                <option value="300">300 Level</option>
+              </select>
+
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="flex-1 sm:flex-none px-2.5 sm:px-3 py-2 rounded bg-gray-50 text-xs font-semibold text-[#000000] border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0056D2] cursor-pointer"
+              >
+                <option value="all">All Formats</option>
+                <option value="self-paced">Self-Paced Track</option>
+                <option value="workshop">Live Workshop</option>
+              </select>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="p-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs cursor-pointer shrink-0"
+                  title="Reset filters"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

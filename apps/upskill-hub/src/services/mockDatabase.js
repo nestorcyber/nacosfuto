@@ -104,6 +104,26 @@ const INITIAL_COURSES = [
       "created_at": "2026-03-10T14:00:00Z"
   },
   {
+      "id": "course-google-ai",
+      "creator_id": "creator-admin",
+      "creator_name": "Grow with Google",
+      "title": "Google AI Professional Certificate: Learn How to Become AI Fluent",
+      "level": "All Levels",
+      "is_live_workshop": false,
+      "workshop_details": null,
+      "thumbnail": "https://i.ytimg.com/vi/l4L5q-OwiMg/hqdefault.jpg",
+      "description": "Master practical AI fluency with Grow with Google. Move beyond basic prompting to use modern generative AI tools—Gemini, NotebookLM, and Google AI Studio—as collaborative work partners for ideation, strategic research, content communications, multimedia creation, data analysis, and building custom productivity workflows.",
+      "tags": [
+          "ai",
+          "google",
+          "gemini",
+          "productivity",
+          "machine-learning",
+          "certification"
+      ],
+      "created_at": "2026-03-12T10:00:00Z"
+  },
+  {
     id: "course-1",
     creator_id: "creator-admin",
     creator_name: "Engr. David Okon",
@@ -231,6 +251,86 @@ const INITIAL_COURSES = [
 ];
 
 const INITIAL_TOPICS = [
+  {
+      "id": "topic-gai-1",
+      "course_id": "course-google-ai",
+      "title": "Google AI Professional Certificate: Learn how to become AI fluent",
+      "video_url": "https://www.youtube.com/watch?v=l4L5q-OwiMg",
+      "start_playing_at": 0,
+      "summary_text": "Introduction to the Google AI Professional Certificate. Discover how generative AI transforms real-world productivity, how to collaborate with AI tools, and key principles to become AI-fluent in any industry.",
+      "order_index": 1,
+      "duration": "03:15"
+  },
+  {
+      "id": "topic-gai-2",
+      "course_id": "course-google-ai",
+      "title": "The fundamentals of AI | AI Professional Certificate",
+      "video_url": "https://www.youtube.com/watch?v=OH43A-tRm4M",
+      "start_playing_at": 0,
+      "summary_text": "Understand core machine learning foundations, large language models (LLMs), neural networks, tokenization, context windows, and effective prompting techniques to get high-accuracy responses.",
+      "order_index": 2,
+      "duration": "11:42"
+  },
+  {
+      "id": "topic-gai-3",
+      "course_id": "course-google-ai",
+      "title": "Learn AI for brainstorming and planning | AI Professional Certificate",
+      "video_url": "https://www.youtube.com/watch?v=XRere_JdIPo",
+      "start_playing_at": 0,
+      "summary_text": "Use generative AI as a thought partner for ideation, project roadmapping, risk assessment, strategic decision making, and agile sprint planning.",
+      "order_index": 3,
+      "duration": "09:30"
+  },
+  {
+      "id": "topic-gai-4",
+      "course_id": "course-google-ai",
+      "title": "Use AI as your strategic research partner | AI Professional Certificate",
+      "video_url": "https://www.youtube.com/watch?v=ZCBc5NDaO04",
+      "start_playing_at": 0,
+      "summary_text": "Leverage NotebookLM and grounded search to synthesize dense research documents, extract critical insights, benchmark data, and fact-check findings with citations.",
+      "order_index": 4,
+      "duration": "12:10"
+  },
+  {
+      "id": "topic-gai-5",
+      "course_id": "course-google-ai",
+      "title": "Get communications just right with AI | AI Professional Certificate",
+      "video_url": "https://www.youtube.com/watch?v=1JIVY-b5j68",
+      "start_playing_at": 0,
+      "summary_text": "Draft executive memos, client pitches, technical documentation, and persuasive stakeholder updates with customized tone, clarity, and precision.",
+      "order_index": 5,
+      "duration": "10:15"
+  },
+  {
+      "id": "topic-gai-6",
+      "course_id": "course-google-ai",
+      "title": "Create images, videos, and presentations | AI Professional Certificate",
+      "video_url": "https://www.youtube.com/watch?v=W2VgkdHU-yc",
+      "start_playing_at": 0,
+      "summary_text": "Build multimedia assets, visual slide decks, mockups, and video outlines using Google Imagen and modern generative visual tools.",
+      "order_index": 6,
+      "duration": "14:20"
+  },
+  {
+      "id": "topic-gai-7",
+      "course_id": "course-google-ai",
+      "title": "How Gemini helps you analyze data | AI Professional Certificate",
+      "video_url": "https://www.youtube.com/watch?v=ablim7LnA0o",
+      "start_playing_at": 0,
+      "summary_text": "Analyze complex datasets, spot market trends, generate formulas, and produce visual summaries effortlessly using Gemini Advanced data analysis.",
+      "order_index": 7,
+      "duration": "13:45"
+  },
+  {
+      "id": "topic-gai-8",
+      "course_id": "course-google-ai",
+      "title": "Build your own tools to ease your workday | AI Professional Certificate",
+      "video_url": "https://www.youtube.com/watch?v=Q9vddMFZncM",
+      "start_playing_at": 0,
+      "summary_text": "Prototype custom AI assistants, automated workflows, and Google AI Studio system prompts to streamline repetitive daily operations.",
+      "order_index": 8,
+      "duration": "16:20"
+  },
   {
       "id": "topic-ps-1",
       "course_id": "course-photoshop",
@@ -751,7 +851,11 @@ export const db = {
 
     const record = enrollments[idx];
     const completed = new Set(record.completed_topic_ids || []);
-    completed.add(topicId);
+    if (completed.has(topicId)) {
+      completed.delete(topicId);
+    } else {
+      completed.add(topicId);
+    }
 
     const completedArr = Array.from(completed);
     const progress = Math.min(100, Math.round((completedArr.length / Math.max(1, totalTopics)) * 100));
@@ -760,6 +864,7 @@ export const db = {
       ...record,
       completed_topic_ids: completedArr,
       progress,
+      progress_percentage: progress,
       last_accessed_at: new Date().toISOString(),
     };
     saveToStorage(STORAGE_KEY_ENROLLMENTS, enrollments);

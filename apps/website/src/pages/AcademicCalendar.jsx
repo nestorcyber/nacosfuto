@@ -67,7 +67,7 @@ const AcademicCalendar = () => {
                                 <div className="absolute -left-[14px] top-1 w-6 h-6 rounded-full border-4 bg-[#138601] border-green-200 z-10 box-content"></div>
                                 <div className={`p-5 rounded-2xl shadow-sm border transition-all hover:shadow-xl ${theme === 'dark' ? 'bg-[#083002] border-[#138601]/30' : 'bg-white border-gray-200'}`}>
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-1">
-                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-600`}>
+                                        <span className={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-600`}>
                                             {event.semester}
                                         </span>
                                         <div className="flex items-center text-sm font-semibold opacity-70">

@@ -204,7 +204,7 @@ const AdminHub = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-950/60 text-[#4bd043] border border-green-600/40">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-green-950/60 text-[#4bd043] border border-green-600/40">
               <span className="w-2 h-2 rounded-full bg-current animate-pulse"></span>
               <span>Live Database Connected</span>
             </span>
@@ -222,7 +222,7 @@ const AdminHub = () => {
       {/* Hero Banner */}
       <div className="relative overflow-hidden bg-gradient-to-b from-[#083002] via-[#041801] to-[#041801] border-b border-[#138601]/20 py-12 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#138601]/20 border border-[#138601]/40 text-[#4bd043] text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-md bg-[#138601]/20 border border-[#138601]/40 text-[#4bd043] text-xs font-semibold">
             <ShieldCheck className="w-4 h-4" />
             <span>Universal Admin Gateway & Security Router</span>
           </div>
@@ -234,9 +234,9 @@ const AdminHub = () => {
             Standard authentication portal and unified launchpad for Super Administrators, Student Portal Officers, Examination Teams, and Website CMS Managers.
           </p>
 
-          {/* Super Admin Verified Status Pill */}
+          {/* Super Admin Verified Status Badge */}
           <div className="pt-2">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#083002] border border-[#138601]/40 text-xs text-green-200">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-md bg-[#083002] border border-[#138601]/40 text-xs text-green-200">
               <Shield className="w-3.5 h-3.5 text-[#4bd043]" />
               <span>Main Super Admin: <strong>neorxpro@gmail.com</strong> (Anyanwu Nestor Ifeanyi) • <em>Database Verified</em></span>
             </div>
@@ -478,7 +478,7 @@ const AdminHub = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-base sm:text-lg font-bold text-white">Anyanwu Nestor Ifeanyi</h3>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-amber-950 uppercase tracking-wider">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-400 text-amber-950 uppercase tracking-wider">
                         Main Super Administrator
                       </span>
                     </div>
@@ -487,7 +487,7 @@ const AdminHub = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-[#4bd043] border border-green-500/30 flex items-center gap-1.5">
+                  <span className="px-3 py-1 rounded-md text-xs font-semibold bg-green-500/20 text-[#4bd043] border border-green-500/30 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-[#4bd043]"></span>
                     <span>Universal Oversight (*)</span>
                   </span>
@@ -574,7 +574,7 @@ const AdminHub = () => {
                               {(admin.role || '').replace(/_/g, ' ')}
                             </td>
                             <td className="py-3 px-4">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
                                 admin.is_active
                                   ? 'bg-green-500/20 text-[#4bd043] border border-green-500/30'
                                   : 'bg-red-500/20 text-red-400 border border-red-500/30'
@@ -783,7 +783,7 @@ const AdminHub = () => {
                           {(admin.role || '').replace(/_/g, ' ')}
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
                             admin.is_active
                               ? 'bg-green-500/20 text-[#4bd043] border border-green-500/30'
                               : 'bg-red-500/20 text-red-400 border border-red-500/30'

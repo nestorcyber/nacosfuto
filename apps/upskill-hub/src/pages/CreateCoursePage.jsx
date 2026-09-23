@@ -207,11 +207,6 @@ export function CreateCoursePage() {
         {/* Hero Section */}
         <section className="relative overflow-hidden border-b border-gray-200 dark:border-[#0056D2]/30 py-16 sm:py-24 bg-gradient-to-b from-[#f8fdf7] to-white dark:from-[#07101e] dark:to-[#000000]">
           <div className="site-container max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0056D2]/10 text-[#0056D2] dark:text-[#1d72fe] border border-[#0056D2]/25 font-mono shadow-xs">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>NACOS FUTO Instructor Community</span>
-            </div>
-
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#000000] dark:text-white leading-tight">
               Empower the Next Generation of <span className="text-[#0056D2] dark:text-[#1d72fe]">Tech Leaders</span>
             </h1>

@@ -125,7 +125,7 @@ export function MyWorkshopsPage() {
                       </span>
                     </div>
 
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-secondary border border-border">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-secondary border border-border">
                       <Users size={12} className="text-[#0056D2]" />
                       <span>{workshopRoster.length} Registrations</span>
                     </span>

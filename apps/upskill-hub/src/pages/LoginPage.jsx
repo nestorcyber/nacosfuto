@@ -64,12 +64,6 @@ const LoginPage = () => {
         <p className="text-xs sm:text-sm text-blue-100/70">
           NACOS students can sign in directly using their student portal credentials.
         </p>
-
-        {/* NACOS Student Badge Notice */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0056D2]/20 border border-[#0056D2]/40 text-[#1d72fe] text-[11px] font-semibold">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Unified NACOS FUTO Authentication Active</span>
-        </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">

@@ -144,29 +144,30 @@ body {
   }
 }
 
-/* Global Base Typography Styles (Webflow Principle: Tight Tracking, Optical Balance) */
+/* Global Base Typography Styles (Optical Balance & Consistent Sizing) */
 html {
   scroll-behavior: smooth;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   background-color: #ffffff;
   color: #07101e;
   font-family: var(--font-sans);
-  font-size: 1.0625rem; /* 17px default base size */
-  line-height: 1.7;
+  font-size: 1rem; /* 16px standard steady base font size */
+  line-height: 1.6;
   letter-spacing: -0.011em;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Webflow-style Crisp Headings */
+/* Crisp Headings Hierarchy */
 h1, .h1 {
   font-family: var(--font-heading);
   letter-spacing: -0.03em;
-  line-height: 1.12;
+  line-height: 1.15;
   font-weight: 700;
 }
 
@@ -186,37 +187,7 @@ h3, h4, h5, h6, .font-heading, .font-display {
 
 p {
   font-family: var(--font-sans);
-  font-size: 1.0625rem;
-  letter-spacing: -0.011em;
-  line-height: 1.75;
-}
-
-/* Mobile typographic enhancement */
-@media (max-width: 640px) {
-  html {
-    font-size: 17px; /* Scales rem-based utilities up on mobile */
-  }
-
-  body {
-    font-size: 1.0625rem; /* Effective 18px on mobile screen */
-    line-height: 1.75;
-  }
-
-  p {
-    font-size: 1.0625rem;
-    line-height: 1.8;
-  }
-
-  /* Prevent tiny text classes on mobile */
-  .text-xs {
-    font-size: 0.875rem !important; /* 14px instead of 12px */
-    line-height: 1.4 !important;
-  }
-
-  .text-sm {
-    font-size: 0.9375rem !important; /* 15px instead of 14px */
-    line-height: 1.5 !important;
-  }
+  line-height: 1.6;
 }
 
 [data-theme="dark"] body,

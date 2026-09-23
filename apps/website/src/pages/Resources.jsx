@@ -605,7 +605,7 @@ const Resources = () => {
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[#083002] dark:text-white tracking-tight flex items-center gap-2">
               <span>Catalog & Archive</span>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#138601]/10 dark:bg-[#138601]/30 text-[#138601] dark:text-[#4bd043]">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-[#138601]/10 dark:bg-[#138601]/30 text-[#138601] dark:text-[#4bd043]">
                 {resources.length} Available
               </span>
             </h2>

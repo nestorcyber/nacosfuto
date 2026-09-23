@@ -70,6 +70,7 @@ export function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/courses" element={<CoursesPage />} />
               <Route path="/courses/:id" element={<CourseDetailPage />} />
+              <Route path="/courses/:id/learn" element={<CourseDetailPage />} />
               <Route path="/resources" element={<ResourcesPage />} />
               <Route path="/my-learning" element={<MyLearningPage />} />
               <Route path="/my-courses" element={<Navigate to="/my-learning" replace />} />

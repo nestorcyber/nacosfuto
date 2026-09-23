@@ -422,7 +422,7 @@ const PortalLayout = ({ children }) => {
                   setProfileDropdownOpen(!profileDropdownOpen);
                   setNotificationsOpen(false);
                 }}
-                className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#041801] border border-gray-200/80 dark:border-[#138601]/30 transition-all cursor-pointer group"
+                className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-[#041801] border border-gray-200/80 dark:border-[#138601]/30 transition-all cursor-pointer group"
                 title="User Profile Menu"
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-[#138601] flex items-center justify-center text-white font-bold text-xs ring-2 ring-[#138601]/30 shrink-0">
@@ -497,7 +497,7 @@ const PortalLayout = ({ children }) => {
                         )}
                         <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
                       </div>
-                      <span className="text-[10px] text-gray-400 font-medium bg-gray-100 dark:bg-[#041801] px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] text-gray-400 font-medium bg-gray-100 dark:bg-[#041801] px-2 py-0.5 rounded-md">
                         {isDark ? 'Active' : 'Off'}
                       </span>
                     </button>
