@@ -12,12 +12,6 @@ const ResourcesOverlay = ({ isOpen, closeOverlay }) => {
   const { upskillHub } = getAppUrls();
 
   const resources = {
-    UPSKILL: [
-      { name: "AI Fluency", link: `${upskillHub}/courses/course-ai-fluency`, isExternal: true },
-      { name: "Web Development", link: `${upskillHub}/courses/course-web-dev`, isExternal: true },
-      { name: "Resources", link: "/resources" },
-      { name: "View all courses", link: `${upskillHub}/courses`, isExternal: true },
-    ],
     ABOUT: [
       { name: "About Us", link: "/about" },
       { name: "Administration", link: "/about/administration" },

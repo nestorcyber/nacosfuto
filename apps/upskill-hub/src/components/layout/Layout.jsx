@@ -13,7 +13,7 @@ export const Layout = () => {
 
   if (isCourseTakingView) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] text-gray-900 flex flex-col font-sans">
+      <div className="h-screen max-h-screen w-full overflow-hidden bg-[#f8fafc] text-gray-900 flex flex-col font-sans">
         <Outlet />
       </div>
     );

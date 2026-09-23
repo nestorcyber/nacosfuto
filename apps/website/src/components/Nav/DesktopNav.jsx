@@ -147,13 +147,6 @@ const DesktopNav = () => {
   const { theme, toggleTheme } = useTheme();
   const { upskillHub } = getAppUrls();
 
-  const upskillItems = [
-    { name: "AI Fluency", link: `${upskillHub}/courses/course-ai-fluency`, isExternal: true },
-    { name: "Web Development", link: `${upskillHub}/courses/course-web-dev`, isExternal: true },
-    { name: "Resources", link: "/resources" },
-    { name: "View all courses", link: `${upskillHub}/courses`, isExternal: true },
-  ];
-
   const aboutItems = [
     { name: "About Us", link: "/about" },
     { name: "Administration", link: "/about/administration" },
@@ -200,7 +193,16 @@ const DesktopNav = () => {
           HOME
         </NavLink>
 
-        <NavDropdown label="UPSKILL" items={upskillItems} theme={theme} headerLink={upskillHub} />
+        <a
+          href={upskillHub}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`tracking-wide font-semibold transition-colors cursor-pointer ${
+            theme === "light" ? "text-[#083002] hover:text-[#138601]" : "text-gray-200 hover:text-[#4bd043]"
+          }`}
+        >
+          UPSKILL
+        </a>
         <NavDropdown label="ABOUT" items={aboutItems} theme={theme} />
         <NavDropdown label="ACADEMICS" items={academicsItems} theme={theme} />
         <NavDropdown label="CAMPUS LIFE" items={campusLifeItems} theme={theme} />

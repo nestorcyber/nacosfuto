@@ -24,12 +24,6 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
   };
 
   const resources = {
-    UPSKILL: [
-      { name: "AI Fluency", link: `${upskillHub}/courses/course-ai-fluency`, isExternal: true },
-      { name: "Web Development", link: `${upskillHub}/courses/course-web-dev`, isExternal: true },
-      { name: "Resources", link: "/resources" },
-      { name: "View all courses", link: `${upskillHub}/courses`, isExternal: true },
-    ],
     ABOUT: [
       { name: "About Us", link: "/about" },
       { name: "Administration", link: "/about/administration" },
@@ -119,6 +113,24 @@ const MobileNav = ({ isOpen, closeMenu, toggleDarkMode, darkMode, isNacosExec })
       <div className="flex-1 flex flex-col px-4 sm:px-6 py-5 overflow-y-auto">
         {/* Category dropdowns - Home button removed as requested */}
         <div className="flex flex-col space-y-2">
+          {/* Direct UPSKILL Link */}
+          <div className="mb-2">
+            <a
+              href={upskillHub}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeMenu}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded cursor-pointer ${
+                darkMode
+                  ? "bg-[#138601] text-white hover:bg-[#0f6c01]"
+                  : "bg-[#138601] text-white hover:bg-[#0f6c01]"
+              } font-semibold text-base sm:text-lg transition-all duration-200 shadow-sm`}
+            >
+              <span>UPSKILL</span>
+              <FiChevronRight className="ml-2 text-white" />
+            </a>
+          </div>
+
           {Object.entries(resources).map(([category, items]) => (
             <div key={category} className="mb-2">
               <button

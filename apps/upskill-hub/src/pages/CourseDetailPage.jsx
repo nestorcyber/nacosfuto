@@ -155,10 +155,10 @@ const CourseDetailPage = () => {
   const courseTitle = currentCourse?.title || "Modern JavaScript & Architecture";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-gray-900 flex flex-col font-sans">
+    <div className="h-screen max-h-screen w-full flex flex-col overflow-hidden bg-[#f8fafc] text-gray-900 font-sans">
       
       {/* ─── EXACT TOP BAR MATCHING ATTACHED SCREENSHOT ─── */}
-      <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 px-4 sm:px-6 h-18 flex items-center justify-between shadow-xs">
+      <header className="shrink-0 z-40 w-full bg-white border-b border-gray-200 px-4 sm:px-6 h-18 flex items-center justify-between shadow-xs">
         
         {/* Left: Organization Logos & Course Title with Progress */}
         <div className="flex items-center gap-4 sm:gap-6 min-w-0">
@@ -232,10 +232,10 @@ const CourseDetailPage = () => {
       </header>
 
       {/* ─── MAIN CONTENT VIEW (VIDEO PLAYER + RIGHT SYLLABUS SIDEBAR) ─── */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0 w-full">
         
         {/* LEFT / CENTER: VIDEO PLAYER & LESSON NOTES */}
-        <div className="flex-1 overflow-y-auto bg-gray-950 flex flex-col justify-between">
+        <div className="flex-1 overflow-y-auto min-h-0 bg-gray-950 flex flex-col justify-between overscroll-contain">
           
           {/* Video Player Frame - Fits Edge-to-Edge into Frame */}
           <div className="w-full bg-black border-b border-gray-800">
@@ -321,7 +321,7 @@ const CourseDetailPage = () => {
 
         {/* ─── RIGHT: ACCORDION SYLLABUS SIDEBAR MATCHING ATTACHED SCREENSHOT ─── */}
         {sidebarOpen && (
-          <aside className="w-80 sm:w-96 bg-white border-l border-gray-200 flex flex-col shrink-0 z-30 shadow-lg animate-in slide-in-from-right duration-200">
+          <aside className="w-80 sm:w-96 bg-white border-l border-gray-200 flex flex-col shrink-0 h-full overflow-hidden min-h-0 z-30 shadow-lg animate-in slide-in-from-right duration-200">
             
             {/* Top Navigation Tabs: Content | Quizzes | Certificates */}
             <div className="border-b border-gray-200 flex items-center justify-around px-2 pt-3 shrink-0">
@@ -364,7 +364,7 @@ const CourseDetailPage = () => {
 
             {/* TAB 1: CONTENT (ACCORDION MODULES MATCHING SCREENSHOT) */}
             {activeTab === 'content' && (
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-4 overscroll-contain">
                 {modules.map((mod, modIdx) => {
                   const isExpanded = Boolean(expandedModules[modIdx]);
                   const modTopicCount = mod.topics.length;
@@ -477,7 +477,7 @@ const CourseDetailPage = () => {
 
             {/* TAB 2: QUIZZES */}
             {activeTab === 'quizzes' && (
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3 overscroll-contain">
                 <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 text-sky-950">
                   <h4 className="text-xs font-bold uppercase tracking-wider mb-1">Knowledge Checks</h4>
                   <p className="text-xs text-sky-800">
@@ -500,7 +500,7 @@ const CourseDetailPage = () => {
 
             {/* TAB 3: CERTIFICATES */}
             {activeTab === 'certificates' && (
-              <div className="flex-1 overflow-y-auto p-4 text-center space-y-4">
+              <div className="flex-1 overflow-y-auto min-h-0 p-4 text-center space-y-4 overscroll-contain">
                 <div className="p-6 border border-gray-200 rounded-2xl bg-gray-50">
                   <Award className="w-12 h-12 text-amber-500 mx-auto mb-2" />
                   <h4 className="text-sm font-bold text-gray-900">Certificate of Completion</h4>
