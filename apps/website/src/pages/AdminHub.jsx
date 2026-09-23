@@ -27,7 +27,6 @@ import {
   Image as ImageIcon,
   Compass,
   Layers,
-  Sparkles,
   ChevronRight,
   Server,
   Activity,

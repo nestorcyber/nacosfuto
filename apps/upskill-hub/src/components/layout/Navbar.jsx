@@ -3,8 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthStore } from '../../stores/authStore';
 import { getAppUrls } from '@nacos/config/urls';
-import logoLight from '../../assets/full-logo-light.png';
-import logoDark from '../../assets/full-logo-dark.png';
+import upskillLogo from '../../assets/upskill-full-logo.png';
+import upskillLogoMark from '../../assets/upskill-logo-mark.png';
 import { FiMenu, FiX, FiSearch, FiUser, FiLogOut, FiRefreshCw, FiPlusCircle, FiBookOpen } from 'react-icons/fi';
 import { BsSun, BsMoon } from 'react-icons/bs';
 
@@ -66,9 +66,14 @@ const Navbar = () => {
         <div className="flex items-center flex-shrink-0 mr-4 lg:mr-6 gap-2">
           <Link to="/" className="flex items-center">
             <img
-              src={logoLight}
-              alt="NACOS FUTO Logo"
-              className="h-7 md:h-9 w-auto object-contain transition-all duration-300"
+              src={upskillLogo}
+              alt="NACOS FUTO Upskill Hub"
+              className="h-8 md:h-10 w-auto object-contain transition-all duration-300 hidden sm:block"
+            />
+            <img
+              src={upskillLogoMark}
+              alt="NACOS FUTO Upskill Hub"
+              className="h-8 w-auto object-contain sm:hidden"
             />
           </Link>
 
@@ -270,6 +275,12 @@ const Navbar = () => {
             ? 'bg-white border-gray-100 text-[#07101e]'
             : 'bg-[#07101e] border-[#0056D2]/30 text-white'
         }`}>
+          {/* Mobile Drawer Brand Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <img src={upskillLogo} alt="Upskill Hub" className="h-7 w-auto object-contain" />
+            <span className="text-[11px] font-bold text-[#0056D2] uppercase tracking-wide">Open Source</span>
+          </div>
+
           {/* Mobile Search */}
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <FiSearch className="absolute left-3 top-3 text-gray-400 text-xs" />

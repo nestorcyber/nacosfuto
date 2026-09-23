@@ -225,55 +225,86 @@ export const PortalAdminSettings = () => {
               <h2 className="text-sm font-bold">Administrator Level Assignments & Scope Rights</h2>
             </div>
             {adminUpdateMsg && (
-              <span className="text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-800">
+              <span className="text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-md border border-emerald-800">
                 {adminUpdateMsg}
               </span>
             )}
           </div>
 
           <p className="text-xs text-slate-400 leading-relaxed">
-            Assign designated academic levels to individual administrators. Level-scoped administrators (e.g. <em>200 Level Coordinator</em>) are restricted to managing courses, grade uploads, and student records belonging exclusively to their assigned level.
+            Assign designated academic levels and specific operational features (e.g. <em>Results Management</em>, <em>Student Registry</em>, or <em>ID Processing</em>) to individual administrators. Course Advisers solely manage their assigned cohort results and student records.
           </p>
 
           <div className="divide-y divide-gray-100 dark:divide-white/10 border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden text-xs">
             {portalAdmins.map((admin) => {
               const isSuper = admin.scope === 'super_admin' || admin.role === 'super_admin';
               const assigned = admin.assigned_level || 'all';
+              const features = admin.permissions?.filter(p => p.startsWith('feature:')) || [
+                'feature:student_registry',
+                'feature:results_management'
+              ];
 
               return (
-                <div key={admin.id || admin.email} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-900 dark:text-white">{admin.full_name}</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        isSuper 
-                          ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300' 
-                          : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
-                      }`}>
-                        {admin.role?.replace('_', ' ')}
-                      </span>
+                <div key={admin.id || admin.email} className="p-4 flex flex-col gap-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-gray-900 dark:text-white">{admin.full_name}</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          isSuper 
+                            ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300' 
+                            : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                        }`}>
+                          {admin.role?.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-500 font-mono">{admin.email}</p>
                     </div>
-                    <p className="text-[11px] text-gray-500 font-mono">{admin.email}</p>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-semibold text-gray-400">Assigned Level:</span>
+                      <select
+                        value={assigned}
+                        onChange={(e) => handleLevelChange(admin.id, e.target.value)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                          assigned === 'all'
+                            ? 'bg-emerald-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border-[#138601]/30'
+                            : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                        }`}
+                      >
+                        <option value="all">Full Access (All Levels)</option>
+                        <option value="100">100 Level (Course Adviser)</option>
+                        <option value="200">200 Level (Course Adviser)</option>
+                        <option value="300">300 Level (Course Adviser)</option>
+                        <option value="400">400 Level (Course Adviser)</option>
+                        <option value="500">500 Level (Course Adviser)</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-gray-400">Assigned Level:</span>
-                    <select
-                      value={assigned}
-                      onChange={(e) => handleLevelChange(admin.id, e.target.value)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
-                        assigned === 'all'
-                          ? 'bg-emerald-50 dark:bg-[#041801] text-[#138601] dark:text-[#4bd043] border-[#138601]/30'
-                          : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
-                      }`}
-                    >
-                      <option value="all">Full Access (All Levels)</option>
-                      <option value="100">100 Level Only</option>
-                      <option value="200">200 Level Only</option>
-                      <option value="300">300 Level Only</option>
-                      <option value="400">400 Level Only</option>
-                      <option value="500">500 Level Only</option>
-                    </select>
+                  {/* Feature-Based Capabilities Strip */}
+                  <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Assigned Features:</span>
+                    {[
+                      { key: 'feature:student_registry', label: 'Student Registry' },
+                      { key: 'feature:results_management', label: 'Results & Grading' },
+                      { key: 'feature:id_management', label: 'ID Verification' },
+                      { key: 'feature:resource_management', label: 'Resource Management' }
+                    ].map(f => {
+                      const isActive = isSuper || features.includes(f.key) || admin.role === 'course_adviser' && (f.key === 'feature:student_registry' || f.key === 'feature:results_management');
+                      return (
+                        <span 
+                          key={f.key}
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                            isActive
+                              ? 'bg-green-50 dark:bg-[#083002] text-[#138601] dark:text-[#4bd043] border-[#138601]/30'
+                              : 'bg-gray-100 dark:bg-white/5 text-gray-400 border-transparent opacity-60'
+                          }`}
+                        >
+                          {f.label}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               );

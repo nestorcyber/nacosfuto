@@ -1,17 +1,20 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, BookOpen, RotateCcw, ArrowRight, Play, Video, Clock, CheckCircle } from "lucide-react";
+import { Search, BookOpen, RotateCcw, ArrowRight, Play, Video, Clock, CheckCircle, CheckCircle2, Plus } from "lucide-react";
 import { useCourseStore } from "../stores/courseStore";
 import { useAuthStore } from "../stores/authStore";
+import { checkCreatorVerifiedSync } from "../services/mockDatabase";
 
 export function CoursesPage() {
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
+  const { user, activeMode, isCreatorApproved } = useAuthStore();
   const allCourses = useCourseStore((state) => state.allCourses);
   const userEnrollments = useCourseStore((state) => state.userEnrollments);
   const status = useCourseStore((state) => state.status);
   const fetchAllCourses = useCourseStore((state) => state.fetchAllCourses);
   const fetchUserEnrollments = useCourseStore((state) => state.fetchUserEnrollments);
+
+  const isTutor = activeMode === 'creator' || (isCreatorApproved && isCreatorApproved());
 
   const [search, setSearch] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("all");
@@ -138,6 +141,15 @@ export function CoursesPage() {
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
               )}
+
+              {isTutor && (
+                <Link
+                  to="/create-course"
+                  className="px-3.5 py-2 rounded bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs font-bold shrink-0 shadow-xs inline-flex items-center gap-1.5"
+                >
+                  <span>+ Create Course</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -146,6 +158,28 @@ export function CoursesPage() {
       {/* ─── Main Courses Grid ─── */}
       <main className="site-container py-8 sm:py-10">
         
+        {/* Open Learning Contribution Callout Banner */}
+        <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-50 via-white to-blue-50/60 border border-blue-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#0056D2]">
+              Open Source Learning Catalog
+            </p>
+            <h3 className="text-sm sm:text-base font-bold text-gray-900">
+              Free & Community Driven: Anyone Can Learn or Request to Contribute a Course
+            </h3>
+            <p className="text-xs text-gray-600 max-w-2xl leading-relaxed">
+              Upskill Hub is an open educational initiative by NACOS FUTO. Have expertise in an emerging framework, algorithm, or skill? Request to contribute a course and empower tech scholars worldwide.
+            </p>
+          </div>
+          <Link
+            to="/create-course"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs font-bold shadow-xs transition-colors shrink-0 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Contribute a Course</span>
+          </Link>
+        </div>
+
         {status === "PENDING" && allCourses.length === 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -243,9 +277,24 @@ export function CoursesPage() {
                   {/* Card Footer */}
                   <div className="p-4 sm:p-5 pt-0">
                     <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                      <span className="font-semibold text-gray-700 truncate max-w-[140px]">
-                        {course.creator_name || "NACOS Faculty"}
-                      </span>
+                      {(() => {
+                        const isVerified = checkCreatorVerifiedSync(course.creator_name || course.creator_id || course.instructor_name);
+                        return (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const slug = String(course.creator_name || course.instructor_name || 'instructor').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                              navigate(`/instructors/${slug}`);
+                            }}
+                            className="font-semibold text-gray-700 hover:text-[#0056D2] hover:underline truncate max-w-[140px] text-left cursor-pointer flex items-center gap-1"
+                            title={`View ${course.creator_name || 'Instructor'}'s profile and published courses`}
+                          >
+                            <span className="truncate">{course.creator_name || "Instructor"}</span>
+                            {isVerified && <CheckCircle2 className="w-3.5 h-3.5 text-[#0056D2] shrink-0" title="Verified Creator" />}
+                          </button>
+                        );
+                      })()}
                       <div className="inline-flex items-center gap-1 font-bold text-[#0056D2] group-hover:translate-x-1 transition-transform shrink-0">
                         <span>Learn Track</span>
                         <ArrowRight className="w-3.5 h-3.5 text-[#0056D2]" />

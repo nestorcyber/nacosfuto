@@ -59,6 +59,7 @@ const Footer = () => {
             <h4 className="text-base font-bold mb-4 text-white uppercase tracking-wider">Resources</h4>
             <ul className="space-y-2.5 text-sm text-green-100/80">
               <li><a href='https://www.futo.edu.ng' target='_blank' rel="noopener noreferrer" className="hover:text-[#4bd043] transition-colors">FUTO Main Portal</a></li>
+              <li><ScrollToTopLink to="/upskill-hub" className="hover:text-[#4bd043] transition-colors font-medium text-emerald-300">Upskill Hub (Open Source Courses)</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/resources" className="hover:text-[#4bd043] transition-colors">Academic Resources</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/about/calendar" className="hover:text-[#4bd043] transition-colors">Academic Calendar</ScrollToTopLink></li>
               <li><ScrollToTopLink to="/faqs" className="hover:text-[#4bd043] transition-colors">Help & FAQs</ScrollToTopLink></li>

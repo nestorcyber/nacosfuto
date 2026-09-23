@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { GraduationCap, Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { getAppUrls } from '@nacos/config/urls';
+import upskillLogo from '../assets/upskill-full-logo.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -48,21 +49,23 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
         
-        {/* Brand Icon */}
-        <Link to="/" className="inline-flex items-center gap-2 group">
-          <div className="w-12 h-12 rounded-2xl bg-[#0056D2] flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform">
-            <GraduationCap className="w-7 h-7" />
-          </div>
+        {/* Official Brand Logo */}
+        <Link to="/" className="inline-block group">
+          <img 
+            src={upskillLogo} 
+            alt="NACOS FUTO Upskill Hub" 
+            className="h-10 md:h-12 w-auto object-contain mx-auto group-hover:scale-105 transition-transform" 
+          />
         </Link>
 
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
           Sign In to <span className="text-[#1d72fe]">Upskill Hub</span>
         </h2>
         
-        <p className="text-xs sm:text-sm text-blue-100/70">
-          NACOS students can sign in directly using their student portal credentials.
+        <p className="text-xs sm:text-sm text-blue-100/80">
+          Open Source Learning Platform · Free for All Students & Tech Learners
         </p>
       </div>
 

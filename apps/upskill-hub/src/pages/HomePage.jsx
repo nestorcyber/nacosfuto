@@ -16,7 +16,9 @@ import {
   Flame,
   Clock,
   Check,
-  ChevronRight
+  ChevronRight,
+  PlusCircle,
+  Star
 } from "lucide-react";
 import { useCourseStore } from "../stores/courseStore";
 import { useAuthStore } from "../stores/authStore";
@@ -211,102 +213,69 @@ const HomePage = () => {
           </div>
         </section>
       ) : (
-        // ─── PUBLIC GUEST MARKETING HERO (Signature Coursera Royal Blue Banner) ───
-        <section className="relative overflow-hidden pt-14 pb-20 bg-gradient-to-r from-[#0056D2] via-[#004bbd] to-[#003e9c] text-white shadow-md">
-          {/* Subtle grid pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff15_1px,transparent_1px),linear-gradient(to_bottom,#ffffff15_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none opacity-40" />
+        // ─── PUBLIC GUEST MARKETING HERO (Signature Deep Navy SaaS Gradient - Standard Height) ───
+        <section className="relative overflow-hidden min-h-[500px] lg:min-h-[540px] flex items-center justify-center py-16 lg:py-20 bg-gradient-to-b from-[#021430] via-[#041c44] to-[#021430] text-white border-b border-blue-900/40 shadow-lg">
+          {/* Ambient SaaS Glow & Subtle Grid */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-80 bg-[#0056D2]/25 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative site-container text-center space-y-6">
-            
+          <div className="relative site-container text-center space-y-6 w-full">
+
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight sm:leading-none">
               Learn Without Limits. <br className="hidden sm:block" />
-              <span className="text-white underline decoration-white/30 decoration-wavy underline-offset-8">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300">
                 Master In-Demand Tech Skills.
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-blue-100 max-w-2xl mx-auto leading-relaxed font-normal">
-              Curated developer courses, hands-on programming bootcamps, and departmental curriculums built specifically for computing scholars.
+            <p className="text-sm sm:text-base text-blue-100/80 max-w-2xl mx-auto leading-relaxed font-normal">
+              An open-access tech education platform built for everyone. Free courses, hands-on workshops, and community-contributed curriculums.
             </p>
 
-            {/* Coursera Search Box */}
-            <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto relative pt-4">
-              <div className="flex items-center bg-white border-2 border-white rounded-2xl p-2 shadow-2xl focus-within:ring-4 focus-within:ring-blue-300 transition-all">
-                <Search className="w-5 h-5 text-[#0056D2] ml-3 shrink-0" />
+            {/* Clean Centered Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto relative pt-1">
+              <div className="flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-1.5 sm:p-2 shadow-2xl focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-400/30 transition-all">
+                <Search className="w-5 h-5 text-blue-300 ml-3 shrink-0" />
                 <input
                   type="text"
                   value={heroSearch}
                   onChange={(e) => setHeroSearch(e.target.value)}
                   placeholder="What skill do you want to learn? (e.g. React, Python, Fullstack, AI...)"
-                  className="w-full px-4 py-2.5 bg-transparent text-[#000000] placeholder-gray-500 text-sm focus:outline-none font-medium"
+                  className="w-full px-3 sm:px-4 py-2 bg-transparent text-white placeholder-blue-200/60 text-xs sm:text-sm focus:outline-none font-medium"
                 />
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-colors shrink-0 cursor-pointer"
+                  className="px-5 sm:px-6 py-2.5 bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-colors shrink-0 cursor-pointer"
                 >
                   Search
                 </button>
               </div>
-
-              {/* Popular Topics Quick Tags */}
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-3.5 text-xs text-blue-100">
-                <span className="font-semibold text-white">Popular:</span>
-                {['Web Development', 'Photoshop', 'AI Fluency', 'JavaScript', 'React Projects'].map(term => (
-                  <button
-                    key={term}
-                    type="button"
-                    onClick={() => navigate(`/courses?search=${encodeURIComponent(term)}`)}
-                    className="px-3 py-1 rounded-lg bg-white/10 backdrop-blur-xs border border-white/25 hover:bg-white hover:text-[#0056D2] transition-colors cursor-pointer text-white font-medium"
-                  >
-                    {term}
-                  </button>
-                ))}
-              </div>
             </form>
 
-            {/* Quick Dual Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+            {/* Clean Dual Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-1">
               <Link
                 to="/sign-up"
-                className="px-8 py-3.5 rounded-xl bg-white hover:bg-gray-100 text-[#0056D2] text-sm font-black shadow-xl transition-transform transform hover:-translate-y-0.5"
+                className="px-8 py-3.5 rounded-xl bg-[#0056D2] hover:bg-[#0043aa] text-white text-sm font-bold shadow-lg shadow-blue-900/50 transition-all transform hover:-translate-y-0.5"
               >
                 Join for Free
               </Link>
 
               <Link
                 to="/courses"
-                className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold border border-white/30 backdrop-blur-xs transition-colors"
+                className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-bold border border-white/20 backdrop-blur-xs transition-colors"
               >
                 Explore Catalog
               </Link>
-
-              <Link
-                to="/resources"
-                className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold border border-white/30 backdrop-blur-xs transition-colors flex items-center gap-1.5"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Curriculum Notes</span>
-              </Link>
             </div>
 
-            {/* Platform Metrics Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8 border-t border-white/20 text-center">
-              <div className="p-2">
-                <p className="text-2xl sm:text-3xl font-black text-white">1,200+</p>
-                <p className="text-xs text-blue-200 uppercase font-semibold">Active Scholars</p>
-              </div>
-              <div className="p-2">
-                <p className="text-2xl sm:text-3xl font-black text-white">100% Free</p>
-                <p className="text-xs text-blue-200 uppercase font-semibold">For NACOS FUTO</p>
-              </div>
-              <div className="p-2">
-                <p className="text-2xl sm:text-3xl font-black text-white">Interactive</p>
-                <p className="text-xs text-blue-200 uppercase font-semibold">Video Course Studio</p>
-              </div>
-              <div className="p-2">
-                <p className="text-2xl sm:text-3xl font-black text-white">Certified</p>
-                <p className="text-xs text-blue-200 uppercase font-semibold">Curriculum Tracks</p>
-              </div>
+            {/* Clean Minimal Stats Row */}
+            <div className="flex flex-wrap items-center justify-center gap-6 pt-5 border-t border-white/15 text-xs text-blue-200/70 font-medium max-w-xl mx-auto">
+              <span><strong className="text-white">1,200+</strong> Active Scholars</span>
+              <span>•</span>
+              <span><strong className="text-white">100% Free</strong> Access</span>
+              <span>•</span>
+              <span><strong className="text-white">Community</strong> Contributed</span>
             </div>
 
           </div>
@@ -728,10 +697,10 @@ const HomePage = () => {
         <div className="site-container">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-3xl font-black text-[#000000]">
-              Why Learn on <span className="text-[#0056D2]">NACOS Upskill Hub?</span>
+              Why Learn on <span className="text-[#0056D2]">Upskill Hub?</span>
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-2">
-              Engineered exclusively for computing undergraduates and aspiring software professionals.
+              Engineered for computing scholars, developers, and aspiring software professionals.
             </p>
           </div>
 

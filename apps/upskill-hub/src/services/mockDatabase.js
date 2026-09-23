@@ -10,7 +10,13 @@ const STORAGE_KEY_ENROLLMENTS = "nacos_upskill_enrollments";
 const STORAGE_KEY_WORKSHOPS = "nacos_upskill_workshop_regs";
 const STORAGE_KEY_CREATOR_APPS = "nacos_creator_applications_db";
 const STORAGE_KEY_APPROVED_CREATORS = "nacos_approved_creators_db";
+const STORAGE_KEY_VERIFIED_CREATORS = "nacos_verified_creators_db";
 
+const INITIAL_VERIFIED_CREATORS = [
+  "john-smilga",
+  "grow-with-google",
+  "creator-admin"
+];
 const INITIAL_ENROLLMENTS = [
   {
     id: "enroll-sample-1",
@@ -986,5 +992,60 @@ export const db = {
              (userId && String(c.user_id) === String(userId)) ||
              c.status === "approved"
     );
+  },
+
+  // ─── ASSIGNABLE CREATOR VERIFICATION BADGES ───
+  async getVerifiedCreators() {
+    return loadFromStorage(STORAGE_KEY_VERIFIED_CREATORS, INITIAL_VERIFIED_CREATORS);
+  },
+
+  async isCreatorVerified(creatorIdOrName) {
+    return checkCreatorVerifiedSync(creatorIdOrName);
+  },
+
+  async setCreatorVerification(creatorIdOrName, isVerified = true) {
+    await delay(60);
+    const list = loadFromStorage(STORAGE_KEY_VERIFIED_CREATORS, INITIAL_VERIFIED_CREATORS);
+    const slug = String(creatorIdOrName).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    
+    let updated;
+    if (isVerified) {
+      const exists = list.some(item => (typeof item === 'string' ? item : item.id || item.name).toLowerCase().replace(/[^a-z0-9]+/g, '-') === slug);
+      if (!exists) {
+        updated = [...list, slug];
+      } else {
+        updated = list;
+      }
+    } else {
+      updated = list.filter(item => {
+        const itemSlug = (typeof item === 'string' ? item : item.id || item.name).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        return itemSlug !== slug;
+      });
+    }
+
+    saveToStorage(STORAGE_KEY_VERIFIED_CREATORS, updated);
+    return { creator: creatorIdOrName, is_verified: isVerified, updated_list: updated };
+  }
+};
+
+/**
+ * Synchronous creator verification check for instant, reactive UI rendering across all pages.
+ */
+export const checkCreatorVerifiedSync = (creatorIdOrName) => {
+  if (!creatorIdOrName) return false;
+  if (typeof window === 'undefined') return false;
+  try {
+    const raw = localStorage.getItem("nacos_verified_creators_db");
+    const list = raw ? JSON.parse(raw) : ["john-smilga", "grow-with-google", "creator-admin"];
+    const slug = String(creatorIdOrName).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const lower = String(creatorIdOrName).toLowerCase().trim();
+
+    return list.some(item => {
+      const itemStr = typeof item === 'string' ? item : (item.id || item.name || '');
+      const itemSlug = itemStr.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return itemSlug === slug || itemStr.toLowerCase() === lower;
+    });
+  } catch (e) {
+    return false;
   }
 };

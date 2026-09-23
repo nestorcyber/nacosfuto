@@ -81,12 +81,44 @@ export function getLocalAdminScopesDatabase() {
       is_active: true,
       password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
       created_at: '2026-07-01T08:00:00Z'
+    },
+    {
+      id: 'admin-seed-course-adviser',
+      user_id: 'usr-adviser-1',
+      email: 'adviser200l@nacos.org.ng',
+      full_name: 'Dr. Ibe (200L Course Adviser)',
+      scope: 'student_portal',
+      role: 'course_adviser',
+      assigned_level: '200',
+      permissions: [
+        'student_portal.results',
+        'student_portal.students',
+        'feature:results_management',
+        'feature:student_registry',
+        'feature:course_management'
+      ],
+      is_active: true,
+      password_hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
+      created_at: '2026-08-15T10:00:00Z'
     }
   ];
 
   localStorage.setItem(ADMIN_SCOPES_STORAGE_KEY, JSON.stringify(seeded));
   return seeded;
 }
+
+export const AVAILABLE_ADMIN_FEATURES = [
+  { key: 'feature:student_registry', label: 'Student Registry & Profiles', platform: 'portal', description: 'Search, verify, and manage departmental student profiles' },
+  { key: 'feature:results_management', label: 'Results & Grades (Course Adviser)', platform: 'portal', description: 'Upload, compute CGPA, and approve semester student results' },
+  { key: 'feature:id_management', label: 'ID Card Applications & Verification', platform: 'portal', description: 'Review student ID applications, approve, and generate official cards' },
+  { key: 'feature:resource_management', label: 'Academic Resource Hub (Backblaze B2)', platform: 'shared', description: 'Upload, manage handouts, past questions, and video courses in B2' },
+  { key: 'feature:course_management', label: 'Academic Curriculum & Courses', platform: 'portal', description: 'Manage course units, semester allocations, and curriculum' },
+  { key: 'feature:yellow_pages', label: 'Yellow Pages Business Directory', platform: 'website', description: 'Review, approve, reject, and manage indigenous student businesses' },
+  { key: 'feature:campus_clubs', label: 'Campus Clubs & Tech Communities', platform: 'website', description: 'Approve student tech clubs, communities, and leadership links' },
+  { key: 'feature:alumni_management', label: 'Alumni Network & Spotlights', platform: 'website', description: 'Review alumni join requests, spotlights, and graduate records' },
+  { key: 'feature:news_events', label: 'News & Event Flyers CMS', platform: 'website', description: 'Publish departmental announcements, hackathons, and social mixers' },
+  { key: 'feature:media_library', label: 'Cloudinary Media Asset Library', platform: 'shared', description: 'Manage CDN image uploads, folders, and banners' }
+];
 
 /**
  * Seeded Audit Logs
@@ -378,6 +410,46 @@ export function hasPermission(admin, permission) {
   if (admin.is_super_admin || admin.scope === 'super_admin') return true;
   if (admin.permissions?.includes('*')) return true;
   return Array.isArray(admin.permissions) && admin.permissions.includes(permission);
+}
+
+/**
+ * Check if the active admin has access to a specific feature or platform
+ * Supports both platform assignments and feature-based assignments (e.g. for Course Advisers)
+ */
+export function hasAdminFeature(admin, featureKey) {
+  if (!admin) return false;
+  if (admin.is_super_admin || admin.scope === 'super_admin' || admin.role === 'super_admin') return true;
+  if (admin.permissions?.includes('*')) return true;
+
+  // Platform inheritance
+  const isWebsiteAdmin = admin.scope === 'main_website' || admin.role === 'website_admin';
+  const isPortalAdmin = admin.scope === 'student_portal' || admin.role === 'portal_admin';
+
+  if (isWebsiteAdmin) {
+    if (['feature:yellow_pages', 'feature:campus_clubs', 'feature:alumni_management', 'feature:news_events', 'feature:media_library', 'feature:resource_management'].includes(featureKey)) {
+      return true;
+    }
+  }
+
+  if (isPortalAdmin) {
+    if (['feature:student_registry', 'feature:results_management', 'feature:id_management', 'feature:course_management', 'feature:resource_management', 'feature:media_library'].includes(featureKey)) {
+      return true;
+    }
+  }
+
+  // Course Adviser check
+  if (admin.role === 'course_adviser') {
+    if (['feature:results_management', 'feature:student_registry', 'feature:course_management'].includes(featureKey)) {
+      return true;
+    }
+  }
+
+  // Explicit feature permission check
+  return Array.isArray(admin.permissions) && (
+    admin.permissions.includes(featureKey) || 
+    admin.permissions.includes(featureKey.replace('feature:', '')) ||
+    admin.permissions.some(p => p.startsWith(featureKey) || featureKey.startsWith(p))
+  );
 }
 
 /**

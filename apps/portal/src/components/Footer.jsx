@@ -51,6 +51,7 @@ const Footer = () => {
             <h4 className="text-white font-bold text-sm mb-4">Ecosystem</h4>
             <ul className="space-y-2.5 text-xs">
               <li><a href={getAppUrls().website} className="hover:text-[#4bd043] transition-colors">Main Public Website</a></li>
+              <li><a href={getAppUrls().upskillHub} target="_blank" rel="noreferrer" className="hover:text-[#4bd043] transition-colors font-medium text-emerald-300">Upskill Hub (Open Source Courses)</a></li>
               <li><a href={getAppUrls().adminHub} className="hover:text-[#4bd043] transition-colors">Admin Command Center</a></li>
               <li><Link to="/hackathons/BuildXNACOS" className="hover:text-[#4bd043] transition-colors">BUILDX Hackathon Hub</Link></li>
               <li><Link to="/hackathons/BuildXNACOS/apply" className="hover:text-[#4bd043] transition-colors">Team Application</Link></li>

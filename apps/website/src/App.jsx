@@ -34,6 +34,7 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 import IdVerification from "./pages/IdVerification";
 import AdminHub from "./pages/AdminHub";
+import HealthServices from "./pages/HealthServices";
 
 // Lazy-loaded pages
 const Events = lazy(() => import("./pages/Events"));
@@ -155,8 +156,8 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/guidance-counselling" element={<PlaceholderPage title="Guidance & Counselling" />} />
             <Route path="/safety-alerts" element={<PlaceholderPage title="Safety Alerts" />} />
-            <Route path="/report-emergency" element={<ReportIssue />} />
-            <Route path="/health-services" element={<PlaceholderPage title="Health Services" />} />
+            <Route path="/health-services" element={<HealthServices />} />
+            <Route path="/medical-services" element={<HealthServices />} />
             <Route path="/careers-recruitment" element={<PlaceholderPage title="Careers & Recruitment" />} />
 
             {/* Upskill Courses & Hub (Directs into Upskill Hub) */}

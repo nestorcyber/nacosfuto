@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useCourseStore } from '../stores/courseStore';
 import { useAuthStore } from '../stores/authStore';
-import logoLight from '../assets/full-logo-light.png';
+import upskillLogo from '../assets/upskill-full-logo.png';
 
 const CourseDetailPage = () => {
   const { id } = useParams();
@@ -53,13 +53,17 @@ const CourseDetailPage = () => {
   const [toastMessage, setToastMessage] = useState('Lesson updated!');
 
   useEffect(() => {
+    if (!user) {
+      navigate(`/courses/${id}`, { replace: true });
+      return;
+    }
     if (id) {
       fetchCourseById(id);
       if (user?.id) {
         fetchCurrentEnrollment(user.id, id);
       }
     }
-  }, [id, user?.id]);
+  }, [id, user]);
 
   const activeTopic = currentTopics[activeTopicIndex] || currentTopics[0];
 
@@ -197,9 +201,9 @@ const CourseDetailPage = () => {
         <div className="flex items-center justify-between gap-3">
           <Link to="/courses" className="flex items-center gap-2 group" title="Back to Courses">
             <img 
-              src={logoLight} 
-              alt="NACOS FUTO" 
-              className="h-6 sm:h-7 w-auto object-contain" 
+              src={upskillLogo} 
+              alt="NACOS FUTO Upskill Hub" 
+              className="h-7 sm:h-8 w-auto object-contain" 
             />
           </Link>
 
@@ -255,14 +259,14 @@ const CourseDetailPage = () => {
       {/* ─── MAIN CONTENT VIEW (RESPONSIVE: LESSON PLAYER VS SYLLABUS) ─── */}
       <div className="flex-1 flex overflow-hidden min-h-0 w-full relative">
         
-        {/* ─── LEFT / CENTER: LESSON PLAYER VIEW (Screenshot 2) ─── */}
-        <div className={`flex-1 overflow-y-auto min-h-0 bg-[#f8fafc] flex flex-col justify-between overscroll-contain w-full p-4 sm:p-6 lg:p-8 ${
+        {/* ─── LEFT / CENTER: LESSON PLAYER VIEW (FLUSH LAPTOP-FIT EDGES) ─── */}
+        <div className={`flex-1 overflow-y-auto min-h-0 bg-[#f8fafc] flex flex-col justify-between overscroll-contain w-full p-0 sm:p-3 lg:p-4 ${
           sidebarOpen ? 'hidden md:flex' : 'flex'
         }`}>
-          <div className="w-full space-y-4">
+          <div className="w-full space-y-3 sm:space-y-4">
             
-            {/* Slide / Video Player Card Container */}
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xs">
+            {/* Slide / Video Player Card Container - Flush to edges on mobile, snug on laptop */}
+            <div className="bg-black sm:rounded-2xl overflow-hidden shadow-sm border-b sm:border border-gray-200">
               <div className="w-full aspect-video bg-black relative">
                 <iframe
                   key={youtubeVideoId}
@@ -277,7 +281,7 @@ const CourseDetailPage = () => {
             </div>
 
             {/* Bottom Status Row: Module | Topic Title + Status Dot + Lesson Completed + Toggle Switch */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-5">
+            <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4 mx-3 sm:mx-0">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
                 <h2 className="text-sm sm:text-base font-bold text-gray-900 leading-snug">
                   {activeModule?.title || 'Foundations'} | {activeTopic?.title || 'Interactive Lesson'}
@@ -285,10 +289,10 @@ const CourseDetailPage = () => {
 
                 <div className="flex items-center gap-2.5 shrink-0">
                   <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                    isCurrentTopicCompleted ? 'bg-emerald-500' : 'bg-amber-500'
+                    isCurrentTopicCompleted ? 'bg-[#0056D2]' : 'bg-amber-500'
                   }`} />
                   <span className={`text-xs font-semibold whitespace-nowrap ${
-                    isCurrentTopicCompleted ? 'text-emerald-700' : 'text-gray-600 font-medium'
+                    isCurrentTopicCompleted ? 'text-[#0056D2]' : 'text-gray-600 font-medium'
                   }`}>
                     {isCurrentTopicCompleted ? 'Lesson completed' : 'Lesson incomplete'}
                   </span>
@@ -300,7 +304,7 @@ const CourseDetailPage = () => {
                     aria-checked={isCurrentTopicCompleted}
                     onClick={handleToggleComplete}
                     className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
-                      isCurrentTopicCompleted ? 'bg-emerald-600' : 'bg-gray-300'
+                      isCurrentTopicCompleted ? 'bg-[#0056D2]' : 'bg-gray-300'
                     }`}
                     title={isCurrentTopicCompleted ? "Click to mark as incomplete" : "Click to mark as complete"}
                   >
@@ -319,7 +323,7 @@ const CourseDetailPage = () => {
                   type="button"
                   onClick={handlePrevTopic}
                   disabled={activeTopicIndex === 0}
-                  className="px-6 py-2.5 rounded-lg border border-[#1b8057] text-[#1b8057] hover:bg-emerald-50 text-xs sm:text-sm font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-6 py-2.5 rounded-lg border border-[#0056D2] text-[#0056D2] hover:bg-blue-50 text-xs sm:text-sm font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Previous
                 </button>
@@ -328,7 +332,7 @@ const CourseDetailPage = () => {
                   type="button"
                   onClick={handleNextTopic}
                   disabled={activeTopicIndex >= currentTopics.length - 1}
-                  className="px-6 py-2.5 rounded-lg bg-[#1b8057] hover:bg-[#156a47] text-white text-xs sm:text-sm font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shadow-xs"
+                  className="px-6 py-2.5 rounded-lg bg-[#0056D2] hover:bg-[#0046a8] text-white text-xs sm:text-sm font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shadow-xs"
                 >
                   Next
                 </button>
@@ -522,13 +526,12 @@ const CourseDetailPage = () => {
                                   </div>
                                 </div>
 
-                                {/* Sub Course Completion Checkmark Badge */}
+                                {/* Sub Course Completion Checkmark Badge - Clean blue checkmark, no 'Done' text */}
                                 <div className="shrink-0 ml-2">
                                   {isTopicCompleted ? (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100/90 text-emerald-800 border border-emerald-200 text-[11px] font-bold">
-                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                      <span>Done</span>
-                                    </span>
+                                    <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-[#0056D2]" title="Lesson Completed">
+                                      <Check className="w-3.5 h-3.5 stroke-[3] text-[#0056D2]" />
+                                    </div>
                                   ) : (
                                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0 inline-block" title="Lesson incomplete" />
                                   )}

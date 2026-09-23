@@ -6,6 +6,7 @@ import Layout from "./components/layout/Layout";
 import HomePage from "./pages/HomePage";
 import CoursesPage from "./pages/CoursesPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
+import CoursePreviewPage from "./pages/CoursePreviewPage";
 import ResourcesPage from "./pages/ResourcesPage";
 import MyLearningPage from "./pages/MyLearningPage";
 import CreateCoursePage from "./pages/CreateCoursePage";
@@ -14,6 +15,7 @@ import MyWorkshopsPage from "./pages/MyWorkshopsPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import InstructorProfilePage from "./pages/InstructorProfilePage";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -69,7 +71,8 @@ export function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/courses" element={<CoursesPage />} />
-              <Route path="/courses/:id" element={<CourseDetailPage />} />
+              <Route path="/courses/:id" element={<CoursePreviewPage />} />
+              <Route path="/courses/:id/preview" element={<CoursePreviewPage />} />
               <Route path="/courses/:id/learn" element={<CourseDetailPage />} />
               <Route path="/resources" element={<ResourcesPage />} />
               <Route path="/my-learning" element={<MyLearningPage />} />
@@ -78,6 +81,7 @@ export function App() {
               <Route path="/create-course" element={<CreateCoursePage />} />
               <Route path="/my-workshops" element={<MyWorkshopsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/instructors/:id" element={<InstructorProfilePage />} />
             </Route>
 
             <Route path="/login" element={<LoginPage />} />

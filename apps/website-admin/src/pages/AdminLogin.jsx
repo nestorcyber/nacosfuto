@@ -80,7 +80,7 @@ export const AdminLogin = () => {
 
         {/* Text bottom left */}
         <div className="relative z-10 max-w-lg space-y-2 mt-auto pt-16">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 border border-white/20 text-white text-xs font-semibold backdrop-blur-xs mb-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/40 border border-white/20 text-white text-xs font-semibold backdrop-blur-xs mb-2">
             <ShieldCheck className="w-3.5 h-3.5 text-[#4bd043]" />
             <span>Secure Database Authentication</span>
           </div>

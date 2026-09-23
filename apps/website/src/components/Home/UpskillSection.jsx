@@ -1,5 +1,7 @@
 import React from "react";
 import { getAppUrls } from "@nacos/config/urls";
+import upskillLogo from "../../assets/upskill-full-logo.png";
+import upskillLogoMark from "../../assets/upskill-logo-mark.png";
 
 const UpskillSection = () => {
   const { upskillHub } = getAppUrls();
@@ -34,18 +36,22 @@ const UpskillSection = () => {
   return (
     <section className="py-20 bg-[#f4faf3] dark:bg-[#041801] transition-colors duration-300">
       <div className="site-container">
-        <div className="text-center mb-12 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#138601]/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/25 mb-3 font-mono">
-            Interactive Learning Catalog
+        <div className="text-center mb-12 max-w-3xl mx-auto space-y-3">
+          <div className="flex justify-center mb-1">
+            <img 
+              src={upskillLogo} 
+              alt="Upskill Hub Logo" 
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight mb-3">
-            <span className="text-[#138601] dark:text-[#4bd043]">
-              UPSKILL HUB
-            </span>{" "}
-            Practical Masterclasses
+          <p className="text-xs font-bold uppercase tracking-widest text-[#138601] dark:text-[#4bd043] font-mono">
+            Open Source Learning Platform · Free for Everyone · Anyone Can Contribute
+          </p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#083002] dark:text-white tracking-tight">
+            Open Community Masterclasses & Tech Tracks
           </h2>
           <p className="text-base text-[#083002]/70 dark:text-green-100/70 leading-relaxed max-w-2xl mx-auto">
-            Level up your technical competence with structured video curriculums, interactive workshops, and hands-on developer tracks.
+            An open learning platform available to everyone. Anyone can access free practical curriculums or request to contribute a course to empower scholars.
           </p>
         </div>
 

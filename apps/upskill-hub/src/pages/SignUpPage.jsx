@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { authService } from '../services/authService';
+import upskillLogo from '../assets/upskill-full-logo.png';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -122,21 +123,23 @@ const SignUpPage = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
         
-        {/* Brand Icon */}
-        <Link to="/" className="inline-flex items-center gap-2 group">
-          <div className="w-12 h-12 rounded-2xl bg-[#0056D2] flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform">
-            <GraduationCap className="w-7 h-7" />
-          </div>
+        {/* Official Brand Logo */}
+        <Link to="/" className="inline-block group">
+          <img 
+            src={upskillLogo} 
+            alt="NACOS FUTO Upskill Hub" 
+            className="h-10 md:h-12 w-auto object-contain mx-auto group-hover:scale-105 transition-transform" 
+          />
         </Link>
 
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
           Create Your <span className="text-[#1d72fe]">Upskill Account</span>
         </h2>
         
-        <p className="text-xs sm:text-sm text-blue-100/70">
-          Join hundreds of scholars building world-class software skills.
+        <p className="text-xs sm:text-sm text-blue-100/80">
+          Open Source Learning Platform · Free for All Students & Tech Learners
         </p>
       </div>
 

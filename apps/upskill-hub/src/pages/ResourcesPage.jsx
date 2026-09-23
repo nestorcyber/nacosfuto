@@ -28,7 +28,8 @@ import {
   fetchResourceCategories, 
   recordResourceDownload, 
   recordResourceView,
-  storageService 
+  storageService,
+  adminCreateResource 
 } from '@nacos/supabase';
 import { getAppUrls } from '@nacos/config/urls';
 import { useAuthStore } from '../stores/authStore';
@@ -36,7 +37,21 @@ import { useAuthStore } from '../stores/authStore';
 // Pure real-time resource catalog connected to Supabase & Backblaze B2
 
 const ResourcesPage = () => {
-  const { user: storeUser } = useAuthStore();
+  const { user: storeUser, activeMode, isCreatorApproved } = useAuthStore();
+  const isTutor = activeMode === 'creator' || (isCreatorApproved && isCreatorApproved());
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadForm, setUploadForm] = useState({
+    title: '',
+    description: '',
+    courseCode: '',
+    level: '200 Level',
+    semester: 'Harmattan',
+    resourceType: 'Handout'
+  });
 
   // Active Filter States (Strictly Level and Semester per requirement)
   const [selectedLevel, setSelectedLevel] = useState('All Levels');
@@ -233,6 +248,75 @@ const ResourcesPage = () => {
   useEffect(() => {
     loadResourceData();
   }, [loadResourceData]);
+
+  const handleUploadResource = async (e) => {
+    e.preventDefault();
+    if (!uploadFile) {
+      showToast('Please select a file to upload.', 'error');
+      return;
+    }
+    if (!uploadForm.title.trim()) {
+      showToast('Please enter a resource title.', 'error');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(15);
+    try {
+      const ext = uploadFile.name.split('.').pop()?.toLowerCase() || 'pdf';
+      const resourceUuid = crypto.randomUUID();
+
+      // 1. Stream file directly to Backblaze B2 via storageService
+      const uploadRes = await storageService.upload(uploadFile, {
+        resourceId: resourceUuid,
+        type: 'original',
+        fileName: uploadFile.name,
+        mimeType: uploadFile.type,
+        onProgress: (percent) => setUploadProgress(Math.min(90, Math.max(20, percent)))
+      });
+
+      setUploadProgress(95);
+
+      // 2. Persist metadata in Supabase resources catalog
+      await adminCreateResource({
+        title: uploadForm.title,
+        description: uploadForm.description,
+        courseCode: uploadForm.courseCode,
+        level: uploadForm.level,
+        semester: uploadForm.semester,
+        resourceType: uploadForm.resourceType,
+        fileName: uploadFile.name,
+        fileExtension: ext,
+        fileType: ext,
+        mimeType: uploadFile.type || 'application/octet-stream',
+        fileSize: uploadFile.size,
+        storageProvider: uploadRes?.storageProvider || 'backblaze_b2',
+        storageBucket: uploadRes?.storageBucket || 'nacos-resources',
+        storageKey: uploadRes?.storageKey || `resources/${resourceUuid}.${ext}`,
+        isPublic: true,
+        isActive: true
+      });
+
+      setIsUploadModalOpen(false);
+      setUploadFile(null);
+      setUploadForm({
+        title: '',
+        description: '',
+        courseCode: '',
+        level: '200 Level',
+        semester: 'Harmattan',
+        resourceType: 'Handout'
+      });
+      showToast(`Resource "${uploadForm.title}" uploaded to Backblaze B2 successfully!`, 'success');
+      loadResourceData();
+    } catch (err) {
+      console.error('Error uploading resource:', err);
+      showToast(err.message || 'Failed to upload resource to Backblaze B2', 'error');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
 
   const showToast = (msg, type = 'success') => {
     setToastMessage({ text: msg, type });
@@ -593,6 +677,17 @@ const ResourcesPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {isTutor && (
+              <button
+                type="button"
+                onClick={() => setIsUploadModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#0056D2] hover:bg-[#0043aa] text-white text-xs font-bold transition-colors shadow-xs cursor-pointer shrink-0"
+              >
+                <FiUploadCloud className="w-3.5 h-3.5" />
+                <span>+ Upload to Vault</span>
+              </button>
+            )}
+
             {user ? (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#0056D2]/10 dark:bg-[#0056D2]/20 border border-[#0056D2]/30 text-xs text-[#0056D2] dark:text-[#1d72fe] font-semibold">
                 <FiCheckCircle className="w-3.5 h-3.5" />
@@ -966,6 +1061,143 @@ const ResourcesPage = () => {
                 )}
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── TUTOR BACKBLAZE B2 RESOURCE UPLOAD MODAL ─── */}
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#07101e] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 dark:border-[#0056D2]/30 space-y-5 animate-in fade-in zoom-in-95 text-gray-900 dark:text-white">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded bg-blue-50 dark:bg-blue-900/40 text-[#0056D2] dark:text-[#1d72fe] flex items-center justify-center font-bold">
+                  <FiUploadCloud className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold">Upload Resource (Backblaze B2)</h3>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">Streams directly to B2 Object Storage & syncs to catalog</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsUploadModalOpen(false)}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadResource} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Resource Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={uploadForm.title}
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="e.g. MTH201 Mathematical Methods Lecture Notes & Solutions"
+                  className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/40 focus:outline-none focus:border-[#0056D2]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Course Code</label>
+                  <input
+                    type="text"
+                    value={uploadForm.courseCode}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, courseCode: e.target.value }))}
+                    placeholder="e.g. CSC 201"
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/40 focus:outline-none focus:border-[#0056D2]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Type</label>
+                  <select
+                    value={uploadForm.resourceType}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, resourceType: e.target.value }))}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/40 focus:outline-none focus:border-[#0056D2]"
+                  >
+                    <option value="Handout">Handout</option>
+                    <option value="Past Question">Past Question</option>
+                    <option value="Book">Textbook</option>
+                    <option value="Tutorial">Lab Guide / Tutorial</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Target Level</label>
+                  <select
+                    value={uploadForm.level}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, level: e.target.value }))}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/40 focus:outline-none focus:border-[#0056D2]"
+                  >
+                    <option value="100 Level">100 Level</option>
+                    <option value="200 Level">200 Level</option>
+                    <option value="300 Level">300 Level</option>
+                    <option value="400 Level">400 Level</option>
+                    <option value="500 Level">500 Level</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Semester</label>
+                  <select
+                    value={uploadForm.semester}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, semester: e.target.value }))}
+                    className="w-full text-xs px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/40 focus:outline-none focus:border-[#0056D2]"
+                  >
+                    <option value="Harmattan">Harmattan (1st)</option>
+                    <option value="Rain">Rain (2nd)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">File to Upload *</label>
+                <input
+                  type="file"
+                  required
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.mp4,.png,.jpg"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-black/30 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#0056D2] file:text-white cursor-pointer"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">PDF, Office, or Media files up to 100MB directly to Backblaze B2</p>
+              </div>
+
+              {isUploading && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-[#0056D2]">
+                    <span>Uploading to Backblaze B2...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#0056D2] rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-800">
+                <button
+                  type="button"
+                  disabled={isUploading}
+                  onClick={() => setIsUploadModalOpen(false)}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUploading}
+                  className="px-5 py-2 rounded-lg text-xs font-bold text-white bg-[#0056D2] hover:bg-[#0043aa] shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <FiUploadCloud className="w-4 h-4" />
+                  <span>{isUploading ? 'Streaming to B2...' : 'Upload Resource'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

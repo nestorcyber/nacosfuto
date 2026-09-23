@@ -144,7 +144,7 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
 
         {/* Scope & Level Clearance Pill Badge */}
         <div className="px-5 py-3 border-b border-inherit space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
             <Shield className="w-3 h-3" />
             <span>Portal Administration</span>
           </div>
@@ -193,7 +193,7 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
         {/* User Profile Card & Sign Out */}
         <div className="p-4 border-t border-inherit space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#138601] text-white flex items-center justify-center font-bold text-xs shadow-inner">
+            <div className="w-9 h-9 rounded-lg bg-[#138601] text-white flex items-center justify-center font-bold text-xs shadow-inner">
               {displayInitials}
             </div>
             <div className="min-w-0 flex-1">
@@ -410,8 +410,8 @@ export const PortalAdminLayout = ({ children, title, subtitle }) => {
               <ExternalLink className="w-3 h-3 opacity-80" />
             </a>
 
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
-              <span className="w-2 h-2 rounded-full bg-[#138601] animate-pulse"></span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-500/10 text-[#138601] dark:text-[#4bd043] border border-[#138601]/30">
+              <span className="w-2 h-2 rounded-xs bg-[#138601] animate-pulse"></span>
               <span>System Live</span>
             </span>
           </div>

@@ -17,6 +17,8 @@ import {
 import { cn } from "../../lib/utils";
 import { useAuthStore } from "../../stores/authStore";
 import { getAppUrls } from "@nacos/config/urls";
+import upskillLogo from "../../assets/upskill-full-logo.png";
+import upskillLogoMark from "../../assets/upskill-logo-mark.png";
 
 const navItems = [
   { href: "/", icon: Home, label: "Home" },
@@ -61,18 +63,12 @@ export function Sidebar({ isOpen, onToggle }) {
       >
         {/* Brand Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <Link to="/" onClick={() => onToggle(false)} className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-lg bg-[#0056D2] text-white flex items-center justify-center font-bold text-sm shadow-xs">
-              UH
-            </span>
-            <div>
-              <h1 className="text-base font-bold tracking-tight text-foreground leading-tight">
-                Upskill Hub
-              </h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">
-                NACOS FUTO
-              </p>
-            </div>
+          <Link to="/" onClick={() => onToggle(false)} className="flex items-center gap-2">
+            <img 
+              src={upskillLogo} 
+              alt="NACOS FUTO Upskill Hub" 
+              className="h-8 w-auto object-contain"
+            />
           </Link>
           <button
             onClick={() => onToggle(false)}

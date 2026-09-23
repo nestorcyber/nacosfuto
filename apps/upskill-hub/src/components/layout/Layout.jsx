@@ -6,12 +6,12 @@ import Footer from "./Footer";
 export const Layout = () => {
   const location = useLocation();
   
-  // The Course Taking view (/courses/:id) uses the specialized top bar
-  const isCourseTakingView = Boolean(
-    location.pathname.match(/^\/courses\/[^/]+(\/learn)?$/) && !location.pathname.endsWith('/courses')
+  // Only the course video player (/courses/:id/learn) uses the specialized full-viewport layout
+  const isCoursePlayerView = Boolean(
+    location.pathname.match(/^\/courses\/[^/]+\/learn(\/.*)?$/)
   );
 
-  if (isCourseTakingView) {
+  if (isCoursePlayerView) {
     return (
       <div className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#f8fafc] text-gray-900 flex flex-col font-sans">
         <Outlet />

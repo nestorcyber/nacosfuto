@@ -13,6 +13,9 @@ import AdminEvents from './pages/AdminEvents';
 import AdminHomepage from './pages/AdminHomepage';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminUsers from './pages/AdminUsers';
+import AdminYellowPages from './pages/AdminYellowPages';
+import AdminClubs from './pages/AdminClubs';
+import AdminAlumni from './pages/AdminAlumni';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 
 function App() {
@@ -58,6 +61,16 @@ function App() {
 
           <Route path="/homepage" element={<AdminProtectedRoute requiredPermission="main_website.homepage"><AdminHomepage /></AdminProtectedRoute>} />
           <Route path="/admin/homepage" element={<AdminProtectedRoute requiredPermission="main_website.homepage"><AdminHomepage /></AdminProtectedRoute>} />
+
+          {/* Yellow Pages, Clubs, Alumni Directories */}
+          <Route path="/yellow-pages" element={<AdminProtectedRoute><AdminYellowPages /></AdminProtectedRoute>} />
+          <Route path="/admin/yellow-pages" element={<AdminProtectedRoute><AdminYellowPages /></AdminProtectedRoute>} />
+
+          <Route path="/clubs" element={<AdminProtectedRoute><AdminClubs /></AdminProtectedRoute>} />
+          <Route path="/admin/clubs" element={<AdminProtectedRoute><AdminClubs /></AdminProtectedRoute>} />
+
+          <Route path="/alumni" element={<AdminProtectedRoute><AdminAlumni /></AdminProtectedRoute>} />
+          <Route path="/admin/alumni" element={<AdminProtectedRoute><AdminAlumni /></AdminProtectedRoute>} />
 
           <Route path="/audit-logs" element={<AdminProtectedRoute requiredPermission="main_website.view"><AdminAuditLogs /></AdminProtectedRoute>} />
           <Route path="/admin/audit-logs" element={<AdminProtectedRoute requiredPermission="main_website.view"><AdminAuditLogs /></AdminProtectedRoute>} />

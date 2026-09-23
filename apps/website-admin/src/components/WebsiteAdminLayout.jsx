@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -19,12 +19,22 @@ import {
   ChevronRight,
   UserCheck,
   GraduationCap,
-  ExternalLink
+  ExternalLink,
+  Store,
+  Bell,
+  CheckCircle2,
+  AlertCircle,
+  BookOpen
 } from 'lucide-react';
 import { BsSun, BsMoon } from 'react-icons/bs';
 import { useTheme } from '../context/ThemeContext';
 import { getWebsiteAdminSession, logoutWebsiteAdmin, hasPermission } from '@nacos/auth';
 import { getAppUrls } from '@nacos/config/urls';
+import { 
+  getAdminNotifications, 
+  markNotificationRead, 
+  markAllNotificationsRead 
+} from '@nacos/supabase';
 import logoDark from '../assets/full-logo-dark.png';
 import logoLight from '../assets/full-logo-light.png';
 
@@ -34,6 +44,9 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [admin, setAdmin] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef(null);
 
   useEffect(() => {
     const session = getWebsiteAdminSession();
@@ -42,15 +55,42 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
     }
   }, []);
 
+  useEffect(() => {
+    const loadNotifs = () => {
+      setNotifications(getAdminNotifications());
+    };
+    loadNotifs();
+    window.addEventListener('nacos_notification_added', loadNotifs);
+    window.addEventListener('nacos_notifications_updated', loadNotifs);
+    return () => {
+      window.removeEventListener('nacos_notification_added', loadNotifs);
+      window.removeEventListener('nacos_notifications_updated', loadNotifs);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSignOut = async () => {
     await logoutWebsiteAdmin();
     navigate('/admin/login');
   };
 
   const isDark = theme === 'dark';
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const navItems = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard, exact: true },
+    { label: 'Yellow Pages', path: '/admin/yellow-pages', icon: Store, permission: 'main_website.yellow_pages' },
+    { label: 'Campus Clubs', path: '/admin/clubs', icon: Users, permission: 'main_website.clubs' },
+    { label: 'Alumni Network', path: '/admin/alumni', icon: GraduationCap, permission: 'main_website.alumni' },
     { label: 'Media Library', path: '/admin/media', icon: ImageIcon, permission: 'main_website.media' },
     { label: 'Campus Gallery', path: '/admin/gallery', icon: Camera, permission: 'main_website.gallery' },
     { label: 'News & Journal', path: '/admin/news', icon: Newspaper, permission: 'main_website.news' },
@@ -58,7 +98,7 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
     { label: 'Homepage Content', path: '/admin/homepage', icon: Home, permission: 'main_website.homepage' },
     { label: 'Audit Trail', path: '/admin/audit-logs', icon: History, permission: 'main_website.view' },
     ...(admin?.is_super_admin
-      ? [{ label: 'Admin Management', path: '/admin/admins', icon: Users }]
+      ? [{ label: 'Admin Management', path: '/admin/admins', icon: ShieldCheck }]
       : []),
     { label: 'Website Settings', path: '/admin/settings', icon: Settings, permission: 'main_website.settings' }
   ];
@@ -102,6 +142,107 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
           {/* Right Header Actions */}
           <div className="flex items-center space-x-3">
             
+            {/* Notification Bell with Badge & Dropdown */}
+            <div className="relative" ref={notifRef}>
+              <button
+                type="button"
+                onClick={() => setNotifOpen(!notifOpen)}
+                className={`relative p-2 rounded-lg text-sm transition-colors cursor-pointer ${
+                  isDark
+                    ? 'text-green-200 bg-[#0d4603] hover:bg-[#138601]/40'
+                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                }`}
+                title="Admin Notifications"
+                aria-label="Notifications"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[10px] font-bold rounded flex items-center justify-center shadow-xs animate-pulse">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Popover */}
+              {notifOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-[#083002] border border-gray-200 dark:border-[#138601]/40 shadow-2xl z-50 overflow-hidden font-sans">
+                  <div className="p-3.5 border-b border-gray-100 dark:border-[#138601]/30 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-[#138601] dark:text-[#4bd043]" />
+                      <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                        CMS Notifications
+                      </span>
+                      {unreadCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400">
+                          {unreadCount} pending
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => markAllNotificationsRead()}
+                        className="text-[11px] font-semibold text-[#138601] dark:text-[#4bd043] hover:underline cursor-pointer"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-[#138601]/20">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-gray-500 dark:text-green-200/60">
+                        No notifications yet.
+                      </div>
+                    ) : (
+                      notifications.slice(0, 10).map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            markNotificationRead(n.id);
+                            setNotifOpen(false);
+                            if (n.link) navigate(n.link);
+                          }}
+                          className={`p-3 text-xs transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-[#0d4603]/50 flex items-start gap-2.5 ${
+                            !n.isRead ? 'bg-green-50/60 dark:bg-[#0b3d03]/40' : ''
+                          }`}
+                        >
+                          <div className="mt-0.5 shrink-0">
+                            {n.type === 'yellow_pages' && <Store className="w-4 h-4 text-amber-500" />}
+                            {n.type === 'alumni' && <GraduationCap className="w-4 h-4 text-purple-500" />}
+                            {n.type === 'course' && <BookOpen className="w-4 h-4 text-blue-500" />}
+                            {n.type === 'resource' && <CheckCircle2 className="w-4 h-4 text-[#138601]" />}
+                            {!['yellow_pages', 'alumni', 'course', 'resource'].includes(n.type) && (
+                              <AlertCircle className="w-4 h-4 text-[#138601]" />
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <p className={`font-bold ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+                                {n.title}
+                              </p>
+                              {!n.isRead && (
+                                <span className="w-2 h-2 rounded bg-red-500 shrink-0"></span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-gray-500 dark:text-green-200/70 leading-relaxed">
+                              {n.message}
+                            </p>
+                            <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-green-200/50 pt-0.5">
+                              <span>{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="text-[#138601] dark:text-[#4bd043] font-semibold hover:underline">
+                                Review Details &rarr;
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Dark mode toggle */}
             <button
               onClick={toggleTheme}
@@ -142,7 +283,7 @@ export const WebsiteAdminLayout = ({ children, title, subtitle }) => {
             {/* Current Admin Pill */}
             {admin && (
               <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-[#138601]/30 text-xs">
-                <div className="w-8 h-8 rounded-full bg-[#138601] text-white font-bold flex items-center justify-center text-xs">
+                <div className="w-8 h-8 rounded-lg bg-[#138601] text-white font-bold flex items-center justify-center text-xs">
                   {admin.full_name?.slice(0, 2).toUpperCase() || 'AD'}
                 </div>
                 <div className="text-left">

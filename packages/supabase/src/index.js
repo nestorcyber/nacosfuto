@@ -12,4 +12,6 @@ export * from './resources.js';
 export * from './notices.js';
 export * from './courses.js';
 export * from './results.js';
+export * from './directoryService.js';
+export * from './notificationService.js';
 export { default } from './client.js';
